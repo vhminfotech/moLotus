@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+
+    <!-- On Marshmallow, use the light status bar -->
+    <style name="AppTheme" parent="AppBaseTheme">
+        <item name="android:statusBarColor">@color/backgroundLight</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+
+</resources>

@@ -1,0 +1,198 @@
+package com.sms.moLotus.feature.contacts
+
+import android.view.inputmethod.EditorInfo
+import com.sms.moLotus.common.base.QkViewModel
+import com.sms.moLotus.extensions.mapNotNull
+import com.sms.moLotus.extensions.removeAccents
+import com.sms.moLotus.feature.compose.editing.ComposeItem
+import com.sms.moLotus.feature.compose.editing.PhoneNumberAction
+import com.sms.moLotus.filter.ContactFilter
+import com.sms.moLotus.filter.ContactGroupFilter
+import com.sms.moLotus.interactor.SetDefaultPhoneNumber
+import com.sms.moLotus.model.Contact
+import com.sms.moLotus.model.ContactGroup
+import com.sms.moLotus.model.Conversation
+import com.sms.moLotus.model.PhoneNumber
+import com.sms.moLotus.model.Recipient
+import com.sms.moLotus.repository.ContactRepository
+import com.sms.moLotus.repository.ConversationRepository
+import com.sms.moLotus.util.PhoneNumberUtils
+import com.uber.autodispose.android.lifecycle.scope
+import com.uber.autodispose.autoDisposable
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.rxkotlin.Observables
+import io.reactivex.rxkotlin.withLatestFrom
+import io.reactivex.schedulers.Schedulers
+import io.realm.RealmList
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.rx2.awaitFirst
+import javax.inject.Inject
+
+class ContactsViewModel @Inject constructor(
+    sharing: Boolean,
+    serializedChips: HashMap<String, String?>,
+    private val contactFilter: ContactFilter,
+    private val contactGroupFilter: ContactGroupFilter,
+    private val contactsRepo: ContactRepository,
+    private val conversationRepo: ConversationRepository,
+    private val phoneNumberUtils: PhoneNumberUtils,
+    private val setDefaultPhoneNumber: SetDefaultPhoneNumber
+) : QkViewModel<ContactsContract, ContactsState>(ContactsState()) {
+
+    private val contactGroups: Observable<List<ContactGroup>> by lazy { contactsRepo.getUnmanagedContactGroups() }
+    private val contacts: Observable<List<Contact>> by lazy { contactsRepo.getUnmanagedContacts() }
+    private val recents: Observable<List<Conversation>> by lazy {
+        if (sharing) conversationRepo.getUnmanagedConversations() else Observable.just(listOf())
+    }
+    private val starredContacts: Observable<List<Contact>> by lazy { contactsRepo.getUnmanagedContacts(true) }
+
+    private val selectedChips = Observable.just(serializedChips)
+            .observeOn(Schedulers.io())
+            .map { hashmap ->
+                hashmap.map { (address, lookupKey) ->
+                    Recipient(address = address, contact = lookupKey?.let(contactsRepo::getUnmanagedContact))
+                }
+            }
+
+    private var shouldOpenKeyboard: Boolean = true
+
+    override fun bindView(view: ContactsContract) {
+        super.bindView(view)
+
+        if (shouldOpenKeyboard) {
+            view.openKeyboard()
+            shouldOpenKeyboard = false
+        }
+
+        // Update the state's query, so we know if we should show the cancel button
+        view.queryChangedIntent
+                .autoDisposable(view.scope())
+                .subscribe { query -> newState { copy(query = query.toString()) } }
+
+        // Clear the query
+        view.queryClearedIntent
+                .autoDisposable(view.scope())
+                .subscribe { view.clearQuery() }
+
+        // Update the list of contact suggestions based on the query input, while also filtering out any contacts
+        // that have already been selected
+        Observables
+                .combineLatest(
+                        view.queryChangedIntent, recents, starredContacts, contactGroups, contacts, selectedChips
+                ) { query, recents, starredContacts, contactGroups, contacts, selectedChips ->
+                    val composeItems = mutableListOf<ComposeItem>()
+                    if (query.isBlank()) {
+                        composeItems += recents
+                                .filter { conversation ->
+                                    conversation.recipients.any { recipient ->
+                                        selectedChips.none { chip ->
+                                            if (recipient.contact == null) {
+                                                chip.address == recipient.address
+                                            } else {
+                                                chip.contact?.lookupKey == recipient.contact?.lookupKey
+                                            }
+                                        }
+                                    }
+                                }
+                                .map(ComposeItem::Recent)
+
+                        composeItems += starredContacts
+                                .filter { contact -> selectedChips.none { it.contact?.lookupKey == contact.lookupKey } }
+                                .map(ComposeItem::Starred)
+
+                        composeItems += contactGroups
+                                .filter { group ->
+                                    group.contacts.any { contact ->
+                                        selectedChips.none { chip -> chip.contact?.lookupKey == contact.lookupKey }
+                                    }
+                                }
+                                .map(ComposeItem::Group)
+
+                        composeItems += contacts
+                                .filter { contact -> selectedChips.none { it.contact?.lookupKey == contact.lookupKey } }
+                                .map(ComposeItem::Person)
+                    } else {
+                        // If the entry is a valid destination, allow it as a recipient
+                        if (phoneNumberUtils.isPossibleNumber(query.toString())) {
+                            val newAddress = phoneNumberUtils.formatNumber(query)
+                            val newContact = Contact(numbers = RealmList(PhoneNumber(address = newAddress)))
+                            composeItems += ComposeItem.New(newContact)
+                        }
+
+                        // Strip the accents from the query. This can be an expensive operation, so
+                        // cache the result instead of doing it for each contact
+                        val normalizedQuery = query.removeAccents()
+                        composeItems += starredContacts
+                                .asSequence()
+                                .filter { contact -> selectedChips.none { it.contact?.lookupKey == contact.lookupKey } }
+                                .filter { contact -> contactFilter.filter(contact, normalizedQuery) }
+                                .map(ComposeItem::Starred)
+
+                        composeItems += contactGroups
+                                .asSequence()
+                                .filter { group ->
+                                    group.contacts.any { contact ->
+                                        selectedChips.none { chip -> chip.contact?.lookupKey == contact.lookupKey }
+                                    }
+                                }
+                                .filter { group -> contactGroupFilter.filter(group, normalizedQuery) }
+                                .map(ComposeItem::Group)
+
+                        composeItems += contacts
+                                .asSequence()
+                                .filter { contact -> selectedChips.none { it.contact?.lookupKey == contact.lookupKey } }
+                                .filter { contact -> contactFilter.filter(contact, normalizedQuery) }
+                                .map(ComposeItem::Person)
+                    }
+
+                    composeItems
+                }
+                .subscribeOn(Schedulers.computation())
+                .autoDisposable(view.scope())
+                .subscribe { items -> newState { copy(composeItems = items) } }
+
+        // Listen for ComposeItems being selected, and then send them off to the number picker dialog in case
+        // the user needs to select a phone number
+        view.queryEditorActionIntent
+                .filter { actionId -> actionId == EditorInfo.IME_ACTION_DONE }
+                .withLatestFrom(state) { _, state -> state }
+                .mapNotNull { state -> state.composeItems.firstOrNull() }
+                .mergeWith(view.composeItemPressedIntent)
+                .map { composeItem -> composeItem to false }
+                .mergeWith(view.composeItemLongPressedIntent.map { composeItem -> composeItem to true })
+                .observeOn(Schedulers.io())
+                .map { (composeItem, force) ->
+                    HashMap(composeItem.getContacts().associate { contact ->
+                        if (contact.numbers.size == 1 || contact.getDefaultNumber() != null && !force) {
+                            val address = contact.getDefaultNumber()?.address ?: contact.numbers[0]!!.address
+                            address to contact.lookupKey
+                        } else {
+                            runBlocking {
+                                newState { copy(selectedContact = contact) }
+                                val action = view.phoneNumberActionIntent.awaitFirst()
+                                newState { copy(selectedContact = null) }
+                                val numberId = view.phoneNumberSelectedIntent.awaitFirst().value
+                                val number = contact.numbers.find { number -> number.id == numberId }
+
+                                if (action == PhoneNumberAction.CANCEL || number == null) {
+                                    return@runBlocking null
+                                }
+
+                                if (action == PhoneNumberAction.ALWAYS) {
+                                    val params = SetDefaultPhoneNumber.Params(contact.lookupKey, number.id)
+                                    setDefaultPhoneNumber.execute(params)
+                                }
+
+                                number.address to contact.lookupKey
+                            } ?: return@map hashMapOf<String, String?>()
+                        }
+                    })
+                }
+                .filter { result -> result.isNotEmpty() }
+                .observeOn(AndroidSchedulers.mainThread())
+                .autoDisposable(view.scope())
+                .subscribe { result -> view.finish(result) }
+    }
+
+}

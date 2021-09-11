@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+
+    <!-- On Marshmallow, explicitly don't use the light status bar -->
+    <style name="AppTheme" parent="AppBaseTheme">
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
+</resources>

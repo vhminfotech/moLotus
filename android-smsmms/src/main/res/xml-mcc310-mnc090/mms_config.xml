@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mms_config version="3">
+    <!-- Maximum message size in bytes for a MMS message -->
+    <int name="maxMessageSize">614400</int>
+
+    <!-- Maximum height for an attached image -->
+    <int name="maxImageHeight">1944</int>
+
+    <!-- Maximum width for an attached image -->
+    <int name="maxImageWidth">2592</int>
+</mms_config>

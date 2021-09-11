@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+
+    <!-- On Oreo, explicitly don't use the light status and navigation bars -->
+    <style name="AppTheme" parent="AppBaseTheme">
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
+</resources>
