@@ -238,6 +238,7 @@ class MainActivity : QkThemedActivity(), MainView {
         searchAdapter.emptyView = empty.takeIf { state.page is Searching }
 
         when (state.page) {
+            
             is Inbox -> {
                 showBackButton(state.page.selected > 0)
                 title = getString(R.string.main_title_selected, state.page.selected)

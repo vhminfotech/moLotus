@@ -24,17 +24,17 @@ interface ComposeView : QkView<ComposeState> {
     val attachmentDeletedIntent: Subject<Attachment>
     val textChangedIntent: Observable<CharSequence>
     val attachIntent: Observable<Unit>
-    val cameraIntent: Observable<*>
-    val galleryIntent: Observable<*>
-    val scheduleIntent: Observable<*>
-    val attachContactIntent: Observable<*>
+    val cameraIntent: Unit
+    val galleryIntent: Unit
+    val scheduleIntent: Unit
+    val attachContactIntent: Unit
     val attachmentSelectedIntent: Observable<Uri>
     val contactSelectedIntent: Observable<Uri>
     val inputContentIntent: Observable<InputContentInfoCompat>
     val scheduleSelectedIntent: Observable<Long>
     val scheduleCancelIntent: Observable<*>
     val changeSimIntent: Observable<*>
-    val sendIntent: Observable<Unit>
+    val sendIntent: Unit
     val viewQksmsPlusIntent: Subject<Unit>
     val backPressedIntent: Observable<Unit>
 

@@ -474,32 +474,32 @@ class ComposeViewModel @Inject constructor(
                 .subscribe { newState { copy(attaching = !attaching) } }
 
         // Attach a photo from camera
-        view.cameraIntent
-                .autoDisposable(view.scope())
-                .subscribe {
-                    if (permissionManager.hasStorage()) {
-                        newState { copy(attaching = false) }
-                        view.requestCamera()
-                    } else {
-                        view.requestStoragePermission()
-                    }
-                }
+//        view.cameraIntent
+//                .autoDisposable(view.scope())
+//                .subscribe {
+//                    if (permissionManager.hasStorage()) {
+//                        newState { copy(attaching = false) }
+//                        view.requestCamera()
+//                    } else {
+//                        view.requestStoragePermission()
+//                    }
+//                }
 
         // Attach a photo from gallery
-        view.galleryIntent
-                .doOnNext { newState { copy(attaching = false) } }
-                .autoDisposable(view.scope())
-                .subscribe { view.requestGallery() }
+//        view.galleryIntent
+//                .doOnNext { newState { copy(attaching = false) } }
+//                .autoDisposable(view.scope())
+//                .subscribe { view.requestGallery() }
 
         // Choose a time to schedule the message
-        view.scheduleIntent
-                .doOnNext { newState { copy(attaching = false) } }
-                .withLatestFrom(billingManager.upgradeStatus) { _, upgraded -> upgraded }
-                .filter { upgraded ->
-                    upgraded.also { if (!upgraded) view.showQksmsPlusSnackbar(R.string.compose_scheduled_plus) }
-                }
-                .autoDisposable(view.scope())
-                .subscribe { view.requestDatePicker() }
+//        view.scheduleIntent
+//                .doOnNext { newState { copy(attaching = false) } }
+//                .withLatestFrom(billingManager.upgradeStatus) { _, upgraded -> upgraded }
+//                .filter { upgraded ->
+//                    upgraded.also { if (!upgraded) view.showQksmsPlusSnackbar(R.string.compose_scheduled_plus) }
+//                }
+//                .autoDisposable(view.scope())
+//                .subscribe { view.requestDatePicker() }
 
         // A photo was selected
         Observable.merge(
@@ -521,10 +521,10 @@ class ComposeViewModel @Inject constructor(
                 .subscribe { scheduled -> newState { copy(scheduled = scheduled) } }
 
         // Attach a contact
-        view.attachContactIntent
-                .doOnNext { newState { copy(attaching = false) } }
-                .autoDisposable(view.scope())
-                .subscribe { view.requestContact() }
+//        view.attachContactIntent
+//                .doOnNext { newState { copy(attaching = false) } }
+//                .autoDisposable(view.scope())
+//                .subscribe { view.requestContact() }
 
         // Contact was selected for attachment
         view.contactSelectedIntent
@@ -615,81 +615,81 @@ class ComposeViewModel @Inject constructor(
                 .subscribe()
 
         // Send a message when the send button is clicked, and disable editing mode if it's enabled
-        view.sendIntent
-                .filter { permissionManager.isDefaultSms().also { if (!it) view.requestDefaultSms() } }
-                .filter { permissionManager.hasSendSms().also { if (!it) view.requestSmsPermission() } }
-                .withLatestFrom(view.textChangedIntent) { _, body -> body }
-                .map { body -> body.toString() }
-                .withLatestFrom(state, attachments, conversation, selectedChips) { body, state, attachments,
-                                                                                   conversation, chips ->
-                    val subId = state.subscription?.subscriptionId ?: -1
-                    val addresses = when (conversation.recipients.isNotEmpty()) {
-                        true -> conversation.recipients.map { it.address }
-                        false -> chips.map { chip -> chip.address }
-                    }
-                    val delay = when (prefs.sendDelay.get()) {
-                        Preferences.SEND_DELAY_SHORT -> 3000
-                        Preferences.SEND_DELAY_MEDIUM -> 5000
-                        Preferences.SEND_DELAY_LONG -> 10000
-                        else -> 0
-                    }
-                    val sendAsGroup = !state.editingMode || state.sendAsGroup
-
-                    when {
-                        // Scheduling a message
-                        state.scheduled != 0L -> {
-                            newState { copy(scheduled = 0) }
-                            val uris = attachments
-                                    .mapNotNull { it as? Attachment.Image }
-                                    .map { it.getUri() }
-                                    .map { it.toString() }
-                            val params = AddScheduledMessage
-                                    .Params(state.scheduled, subId, addresses, sendAsGroup, body, uris)
-                            addScheduledMessage.execute(params)
-                            context.makeToast(R.string.compose_scheduled_toast)
-                        }
-
-                        // Sending a group message
-                        sendAsGroup -> {
-                            sendMessage.execute(SendMessage
-                                    .Params(subId, conversation.id, addresses, body, attachments, delay))
-                        }
-
-                        // Sending a message to an existing conversation with one recipient
-                        conversation.recipients.size == 1 -> {
-                            val address = conversation.recipients.map { it.address }
-                            sendMessage.execute(SendMessage.Params(subId, threadId, address, body, attachments, delay))
-                        }
-
-                        // Create a new conversation with one address
-                        addresses.size == 1 -> {
-                            sendMessage.execute(SendMessage
-                                    .Params(subId, threadId, addresses, body, attachments, delay))
-                        }
-
-                        // Send a message to multiple addresses
-                        else -> {
-                            addresses.forEach { addr ->
-                                val threadId = tryOrNull(false) {
-                                    TelephonyCompat.getOrCreateThreadId(context, addr)
-                                } ?: 0
-                                val address = listOf(conversationRepo
-                                        .getConversation(threadId)?.recipients?.firstOrNull()?.address ?: addr)
-                                sendMessage.execute(SendMessage
-                                        .Params(subId, threadId, address, body, attachments, delay))
-                            }
-                        }
-                    }
-
-                    view.setDraft("")
-                    this.attachments.onNext(ArrayList())
-
-                    if (state.editingMode) {
-                        newState { copy(editingMode = false, hasError = !sendAsGroup) }
-                    }
-                }
-                .autoDisposable(view.scope())
-                .subscribe()
+//        view.sendIntent
+//                .filter { permissionManager.isDefaultSms().also { if (!it) view.requestDefaultSms() } }
+//                .filter { permissionManager.hasSendSms().also { if (!it) view.requestSmsPermission() } }
+//                .withLatestFrom(view.textChangedIntent) { _, body -> body }
+//                .map { body -> body.toString() }
+//                .withLatestFrom(state, attachments, conversation, selectedChips) { body, state, attachments,
+//                                                                                   conversation, chips ->
+//                    val subId = state.subscription?.subscriptionId ?: -1
+//                    val addresses = when (conversation.recipients.isNotEmpty()) {
+//                        true -> conversation.recipients.map { it.address }
+//                        false -> chips.map { chip -> chip.address }
+//                    }
+//                    val delay = when (prefs.sendDelay.get()) {
+//                        Preferences.SEND_DELAY_SHORT -> 3000
+//                        Preferences.SEND_DELAY_MEDIUM -> 5000
+//                        Preferences.SEND_DELAY_LONG -> 10000
+//                        else -> 0
+//                    }
+//                    val sendAsGroup = !state.editingMode || state.sendAsGroup
+//
+//                    when {
+//                        // Scheduling a message
+//                        state.scheduled != 0L -> {
+//                            newState { copy(scheduled = 0) }
+//                            val uris = attachments
+//                                    .mapNotNull { it as? Attachment.Image }
+//                                    .map { it.getUri() }
+//                                    .map { it.toString() }
+//                            val params = AddScheduledMessage
+//                                    .Params(state.scheduled, subId, addresses, sendAsGroup, body, uris)
+//                            addScheduledMessage.execute(params)
+//                            context.makeToast(R.string.compose_scheduled_toast)
+//                        }
+//
+//                        // Sending a group message
+//                        sendAsGroup -> {
+//                            sendMessage.execute(SendMessage
+//                                    .Params(subId, conversation.id, addresses, body, attachments, delay))
+//                        }
+//
+//                        // Sending a message to an existing conversation with one recipient
+//                        conversation.recipients.size == 1 -> {
+//                            val address = conversation.recipients.map { it.address }
+//                            sendMessage.execute(SendMessage.Params(subId, threadId, address, body, attachments, delay))
+//                        }
+//
+//                        // Create a new conversation with one address
+//                        addresses.size == 1 -> {
+//                            sendMessage.execute(SendMessage
+//                                    .Params(subId, threadId, addresses, body, attachments, delay))
+//                        }
+//
+//                        // Send a message to multiple addresses
+//                        else -> {
+//                            addresses.forEach { addr ->
+//                                val threadId = tryOrNull(false) {
+//                                    TelephonyCompat.getOrCreateThreadId(context, addr)
+//                                } ?: 0
+//                                val address = listOf(conversationRepo
+//                                        .getConversation(threadId)?.recipients?.firstOrNull()?.address ?: addr)
+//                                sendMessage.execute(SendMessage
+//                                        .Params(subId, threadId, address, body, attachments, delay))
+//                            }
+//                        }
+//                    }
+//
+//                    view.setDraft("")
+//                    this.attachments.onNext(ArrayList())
+//
+//                    if (state.editingMode) {
+//                        newState { copy(editingMode = false, hasError = !sendAsGroup) }
+//                    }
+//                }
+//                .autoDisposable(view.scope())
+//                .subscribe()
 
         // View QKSMS+
         view.viewQksmsPlusIntent

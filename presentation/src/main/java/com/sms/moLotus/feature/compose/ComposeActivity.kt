@@ -83,17 +83,27 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
     override val attachmentDeletedIntent: Subject<Attachment> by lazy { attachmentAdapter.attachmentDeleted }
     override val textChangedIntent by lazy { message.textChanges() }
     override val attachIntent by lazy { Observable.merge(attach.clicks(), attachingBackground.clicks()) }
-    override val cameraIntent by lazy { Observable.merge(camera.clicks(), cameraLabel.clicks()) }
-    override val galleryIntent by lazy { Observable.merge(gallery.clicks(), galleryLabel.clicks()) }
-    override val scheduleIntent by lazy { Observable.merge(schedule.clicks(), scheduleLabel.clicks()) }
-    override val attachContactIntent by lazy { Observable.merge(contact.clicks(), contactLabel.clicks()) }
+    override val cameraIntent by lazy {
+//        Observable.merge(camera.clicks(), cameraLabel.clicks())
+    }
+    override val galleryIntent by lazy {
+//        Observable.merge(gallery.clicks(), galleryLabel.clicks())
+    }
+    override val scheduleIntent by lazy {
+//        Observable.merge(schedule.clicks(), scheduleLabel.clicks())
+    }
+    override val attachContactIntent by lazy {
+//        Observable.merge(contact.clicks(), contactLabel.clicks())
+    }
     override val attachmentSelectedIntent: Subject<Uri> = PublishSubject.create()
     override val contactSelectedIntent: Subject<Uri> = PublishSubject.create()
     override val inputContentIntent by lazy { message.inputContentSelected }
     override val scheduleSelectedIntent: Subject<Long> = PublishSubject.create()
     override val changeSimIntent by lazy { sim.clicks() }
     override val scheduleCancelIntent by lazy { scheduledCancel.clicks() }
-    override val sendIntent by lazy { send.clicks() }
+    override val sendIntent by lazy {
+//        send.clicks()
+    }
     override val viewQksmsPlusIntent: Subject<Unit> = PublishSubject.create()
     override val backPressedIntent: Subject<Unit> = PublishSubject.create()
 
@@ -218,8 +228,8 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         sim.contentDescription = getString(R.string.compose_sim_cd, state.subscription?.displayName)
         simIndex.text = state.subscription?.simSlotIndex?.plus(1)?.toString()
 
-        send.isEnabled = state.canSend
-        send.imageAlpha = if (state.canSend) 255 else 128
+//        send.isEnabled = state.canSend
+//        send.imageAlpha = if (state.canSend) 255 else 128
     }
 
     override fun clearSelection() = messageAdapter.clearSelection()

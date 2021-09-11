@@ -10,19 +10,19 @@
         android:visible="false"
         app:showAsAction="always" />
 
-    <item
-        android:id="@+id/call"
-        android:icon="@drawable/ic_call_white_24dp"
-        android:title="@string/menu_call"
-        android:visible="false"
-        app:showAsAction="always" />
+<!--    <item-->
+<!--        android:id="@+id/call"-->
+<!--        android:icon="@drawable/ic_call_white_24dp"-->
+<!--        android:title="@string/menu_call"-->
+<!--        android:visible="false"-->
+<!--        app:showAsAction="always" />-->
 
-    <item
-        android:id="@+id/info"
-        android:icon="@drawable/ic_more_vert_black_24dp"
-        android:title="@string/menu_info"
-        android:visible="false"
-        app:showAsAction="always" />
+<!--    <item-->
+<!--        android:id="@+id/info"-->
+<!--        android:icon="@drawable/ic_more_vert_black_24dp"-->
+<!--        android:title="@string/menu_info"-->
+<!--        android:visible="false"-->
+<!--        app:showAsAction="always" />-->
 
     <item
         android:id="@+id/details"
