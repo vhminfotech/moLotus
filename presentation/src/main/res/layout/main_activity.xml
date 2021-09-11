@@ -13,6 +13,7 @@
         android:animateLayoutChanges="true">
 
         <androidx.appcompat.widget.Toolbar
+            android:visibility="gone"
             android:id="@+id/toolbar"
             style="@style/Toolbar"
             android:animateLayoutChanges="true"
@@ -75,6 +76,7 @@
             tools:listitem="@layout/conversation_list_item" />
 
         <ImageView
+            android:visibility="gone"
             android:id="@+id/compose"
             android:layout_width="56dp"
             android:layout_height="56dp"

@@ -206,9 +206,9 @@ class MainViewModel @Inject constructor(
                 .autoDisposable(view.scope())
                 .subscribe()
 
-        view.composeIntent
-                .autoDisposable(view.scope())
-                .subscribe { navigator.showCompose() }
+//        view.composeIntent
+//                .autoDisposable(view.scope())
+//                .subscribe { navigator.showCompose() }
 
         view.homeIntent
                 .withLatestFrom(state) { _, state ->
@@ -403,24 +403,24 @@ class MainViewModel @Inject constructor(
                     view.clearSelection()
                 }
 
-        view.swipeConversationIntent
-                .autoDisposable(view.scope())
-                .subscribe { (threadId, direction) ->
-                    val action = if (direction == ItemTouchHelper.RIGHT) prefs.swipeRight.get() else prefs.swipeLeft.get()
-                    when (action) {
-                        Preferences.SWIPE_ACTION_ARCHIVE -> markArchived.execute(listOf(threadId)) { view.showArchivedSnackbar() }
-                        Preferences.SWIPE_ACTION_DELETE -> view.showDeleteDialog(listOf(threadId))
-                        Preferences.SWIPE_ACTION_BLOCK -> view.showBlockingDialog(listOf(threadId), true)
-                        Preferences.SWIPE_ACTION_CALL -> conversationRepo.getConversation(threadId)?.recipients?.firstOrNull()?.address?.let(navigator::makePhoneCall)
-                        Preferences.SWIPE_ACTION_READ -> markRead.execute(listOf(threadId))
-                        Preferences.SWIPE_ACTION_UNREAD -> markUnread.execute(listOf(threadId))
-                    }
-                }
+//        view.swipeConversationIntent
+//                .autoDisposable(view.scope())
+//                .subscribe { (threadId, direction) ->
+//                    val action = if (direction == ItemTouchHelper.RIGHT) prefs.swipeRight.get() else prefs.swipeLeft.get()
+//                    when (action) {
+//                        Preferences.SWIPE_ACTION_ARCHIVE -> markArchived.execute(listOf(threadId)) { view.showArchivedSnackbar() }
+//                        Preferences.SWIPE_ACTION_DELETE -> view.showDeleteDialog(listOf(threadId))
+//                        Preferences.SWIPE_ACTION_BLOCK -> view.showBlockingDialog(listOf(threadId), true)
+//                        Preferences.SWIPE_ACTION_CALL -> conversationRepo.getConversation(threadId)?.recipients?.firstOrNull()?.address?.let(navigator::makePhoneCall)
+//                        Preferences.SWIPE_ACTION_READ -> markRead.execute(listOf(threadId))
+//                        Preferences.SWIPE_ACTION_UNREAD -> markUnread.execute(listOf(threadId))
+//                    }
+//                }
 
-        view.undoArchiveIntent
-                .withLatestFrom(view.swipeConversationIntent) { _, pair -> pair.first }
-                .autoDisposable(view.scope())
-                .subscribe { threadId -> markUnarchived.execute(listOf(threadId)) }
+//        view.undoArchiveIntent
+//                .withLatestFrom(view.swipeConversationIntent) { _, pair -> pair.first }
+//                .autoDisposable(view.scope())
+//                .subscribe { threadId -> markUnarchived.execute(listOf(threadId)) }
 
         view.snackbarButtonIntent
                 .withLatestFrom(state) { _, state ->

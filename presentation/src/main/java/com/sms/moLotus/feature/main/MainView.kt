@@ -4,13 +4,14 @@ import android.content.Intent
 import com.sms.moLotus.common.base.QkView
 import com.sms.moLotus.manager.ChangelogManager
 import io.reactivex.Observable
+import io.reactivex.subjects.Subject
 
 interface MainView : QkView<MainState> {
 
     val onNewIntentIntent: Observable<Intent>
     val activityResumedIntent: Observable<Boolean>
     val queryChangedIntent: Observable<CharSequence>
-    val composeIntent: Observable<Unit>
+    val composeIntent: Unit
     val drawerOpenIntent: Observable<Boolean>
     val homeIntent: Observable<*>
     val navigationIntent: Observable<NavItem>
@@ -20,7 +21,7 @@ interface MainView : QkView<MainState> {
     val rateIntent: Observable<*>
     val conversationsSelectedIntent: Observable<List<Long>>
     val confirmDeleteIntent: Observable<List<Long>>
-    val swipeConversationIntent: Observable<Pair<Long, Int>>
+    val swipeConversationIntent: Unit
     val changelogMoreIntent: Observable<*>
     val undoArchiveIntent: Observable<Unit>
     val snackbarButtonIntent: Observable<Unit>
