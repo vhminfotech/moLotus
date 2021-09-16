@@ -48,14 +48,20 @@
     <!-- This colour should only ever be used for attrs with the tools tag -->
     <color name="tools_theme">#00838F</color>
 
+<!--    <array name="random_colors">-->
+<!--        <item>#06C9AF</item>-->
+<!--        <item>#6DC966</item>-->
+<!--        <item>#F1AF28</item>-->
+<!--        <item>#FF8963</item>-->
+<!--        <item>#FF6969</item>-->
+<!--        <item>#5D99FF</item>-->
+<!--        <item>#8899EC</item>-->
+<!--    </array>-->
+
+
     <array name="random_colors">
-        <item>#06C9AF</item>
-        <item>#6DC966</item>
-        <item>#F1AF28</item>
-        <item>#FF8963</item>
-        <item>#FF6969</item>
-        <item>#5D99FF</item>
-        <item>#8899EC</item>
+        <item>#59C2F1</item>
+        <item>#59C2F1</item>
     </array>
 
     <array name="material_red">
