@@ -292,87 +292,87 @@ class ComposeViewModel @Inject constructor(
                 .subscribe { conversation -> navigator.showConversationInfo(conversation.id) }
 
         // Copy the message contents
-        view.optionsItemIntent
-                .filter { it == R.id.copy }
-                .withLatestFrom(view.messagesSelectedIntent) { _, messageIds ->
-                    val messages = messageIds.mapNotNull(messageRepo::getMessage).sortedBy { it.date }
-                    val text = when (messages.size) {
-                        1 -> messages.first().getText()
-                        else -> messages.foldIndexed("") { index, acc, message ->
-                            when {
-                                index == 0 -> message.getText()
-                                messages[index - 1].compareSender(message) -> "$acc\n${message.getText()}"
-                                else -> "$acc\n\n${message.getText()}"
-                            }
-                        }
-                    }
-
-                    ClipboardUtils.copy(context, text)
-                }
-                .autoDisposable(view.scope())
-                .subscribe { view.clearSelection() }
+//        view.optionsItemIntent
+//                .filter { it == R.id.copy }
+//                .withLatestFrom(view.messagesSelectedIntent) { _, messageIds ->
+//                    val messages = messageIds.mapNotNull(messageRepo::getMessage).sortedBy { it.date }
+//                    val text = when (messages.size) {
+//                        1 -> messages.first().getText()
+//                        else -> messages.foldIndexed("") { index, acc, message ->
+//                            when {
+//                                index == 0 -> message.getText()
+//                                messages[index - 1].compareSender(message) -> "$acc\n${message.getText()}"
+//                                else -> "$acc\n\n${message.getText()}"
+//                            }
+//                        }
+//                    }
+//
+//                    ClipboardUtils.copy(context, text)
+//                }
+//                .autoDisposable(view.scope())
+//                .subscribe { view.clearSelection() }
 
         // Show the message details
-        view.optionsItemIntent
-                .filter { it == R.id.details }
-                .withLatestFrom(view.messagesSelectedIntent) { _, messages -> messages }
-                .mapNotNull { messages -> messages.firstOrNull().also { view.clearSelection() } }
-                .mapNotNull(messageRepo::getMessage)
-                .map(messageDetailsFormatter::format)
-                .autoDisposable(view.scope())
-                .subscribe { view.showDetails(it) }
+//        view.optionsItemIntent
+//                .filter { it == R.id.details }
+//                .withLatestFrom(view.messagesSelectedIntent) { _, messages -> messages }
+//                .mapNotNull { messages -> messages.firstOrNull().also { view.clearSelection() } }
+//                .mapNotNull(messageRepo::getMessage)
+//                .map(messageDetailsFormatter::format)
+//                .autoDisposable(view.scope())
+//                .subscribe { view.showDetails(it) }
 
         // Delete the messages
-        view.optionsItemIntent
-                .filter { it == R.id.delete }
-                .filter { permissionManager.isDefaultSms().also { if (!it) view.requestDefaultSms() } }
-                .withLatestFrom(view.messagesSelectedIntent, conversation) { _, messages, conversation ->
-                    deleteMessages.execute(DeleteMessages.Params(messages, conversation.id))
-                }
-                .autoDisposable(view.scope())
-                .subscribe { view.clearSelection() }
+//        view.optionsItemIntent
+//                .filter { it == R.id.delete }
+//                .filter { permissionManager.isDefaultSms().also { if (!it) view.requestDefaultSms() } }
+//                .withLatestFrom(view.messagesSelectedIntent, conversation) { _, messages, conversation ->
+//                    deleteMessages.execute(DeleteMessages.Params(messages, conversation.id))
+//                }
+//                .autoDisposable(view.scope())
+//                .subscribe { view.clearSelection() }
 
         // Forward the message
-        view.optionsItemIntent
-                .filter { it == R.id.forward }
-                .withLatestFrom(view.messagesSelectedIntent) { _, messages ->
-                    messages?.firstOrNull()?.let { messageRepo.getMessage(it) }?.let { message ->
-                        val images = message.parts.filter { it.isImage() }.mapNotNull { it.getUri() }
-                        navigator.showCompose(message.getText(), images)
-                    }
-                }
-                .autoDisposable(view.scope())
-                .subscribe { view.clearSelection() }
+//        view.optionsItemIntent
+//                .filter { it == R.id.forward }
+//                .withLatestFrom(view.messagesSelectedIntent) { _, messages ->
+//                    messages?.firstOrNull()?.let { messageRepo.getMessage(it) }?.let { message ->
+//                        val images = message.parts.filter { it.isImage() }.mapNotNull { it.getUri() }
+//                        navigator.showCompose(message.getText(), images)
+//                    }
+//                }
+//                .autoDisposable(view.scope())
+//                .subscribe { view.clearSelection() }
 
         // Show the previous search result
-        view.optionsItemIntent
-                .filter { it == R.id.previous }
-                .withLatestFrom(searchSelection, searchResults) { _, selection, messages ->
-                    val currentPosition = messages.indexOfFirst { it.id == selection }
-                    if (currentPosition <= 0L) messages.lastOrNull()?.id ?: -1
-                    else messages.getOrNull(currentPosition - 1)?.id ?: -1
-                }
-                .filter { id -> id != -1L }
-                .autoDisposable(view.scope())
-                .subscribe(searchSelection)
+//        view.optionsItemIntent
+//                .filter { it == R.id.previous }
+//                .withLatestFrom(searchSelection, searchResults) { _, selection, messages ->
+//                    val currentPosition = messages.indexOfFirst { it.id == selection }
+//                    if (currentPosition <= 0L) messages.lastOrNull()?.id ?: -1
+//                    else messages.getOrNull(currentPosition - 1)?.id ?: -1
+//                }
+//                .filter { id -> id != -1L }
+//                .autoDisposable(view.scope())
+//                .subscribe(searchSelection)
 
         // Show the next search result
-        view.optionsItemIntent
-                .filter { it == R.id.next }
-                .withLatestFrom(searchSelection, searchResults) { _, selection, messages ->
-                    val currentPosition = messages.indexOfFirst { it.id == selection }
-                    if (currentPosition >= messages.size - 1) messages.firstOrNull()?.id ?: -1
-                    else messages.getOrNull(currentPosition + 1)?.id ?: -1
-                }
-                .filter { id -> id != -1L }
-                .autoDisposable(view.scope())
-                .subscribe(searchSelection)
+//        view.optionsItemIntent
+//                .filter { it == R.id.next }
+//                .withLatestFrom(searchSelection, searchResults) { _, selection, messages ->
+//                    val currentPosition = messages.indexOfFirst { it.id == selection }
+//                    if (currentPosition >= messages.size - 1) messages.firstOrNull()?.id ?: -1
+//                    else messages.getOrNull(currentPosition + 1)?.id ?: -1
+//                }
+//                .filter { id -> id != -1L }
+//                .autoDisposable(view.scope())
+//                .subscribe(searchSelection)
 
         // Clear the search
-        view.optionsItemIntent
-                .filter { it == R.id.clear }
-                .autoDisposable(view.scope())
-                .subscribe { newState { copy(query = "", searchSelectionId = -1) } }
+//        view.optionsItemIntent
+//                .filter { it == R.id.clear }
+//                .autoDisposable(view.scope())
+//                .subscribe { newState { copy(query = "", searchSelectionId = -1) } }
 
         // Toggle the group sending mode
         view.sendAsGroupIntent
