@@ -76,7 +76,6 @@
             tools:listitem="@layout/conversation_list_item" />
 
         <ImageView
-            android:visibility="gone"
             android:id="@+id/compose"
             android:layout_width="56dp"
             android:layout_height="56dp"

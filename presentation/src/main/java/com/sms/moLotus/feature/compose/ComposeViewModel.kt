@@ -292,87 +292,87 @@ class ComposeViewModel @Inject constructor(
                 .subscribe { conversation -> navigator.showConversationInfo(conversation.id) }
 
         // Copy the message contents
-//        view.optionsItemIntent
-//                .filter { it == R.id.copy }
-//                .withLatestFrom(view.messagesSelectedIntent) { _, messageIds ->
-//                    val messages = messageIds.mapNotNull(messageRepo::getMessage).sortedBy { it.date }
-//                    val text = when (messages.size) {
-//                        1 -> messages.first().getText()
-//                        else -> messages.foldIndexed("") { index, acc, message ->
-//                            when {
-//                                index == 0 -> message.getText()
-//                                messages[index - 1].compareSender(message) -> "$acc\n${message.getText()}"
-//                                else -> "$acc\n\n${message.getText()}"
-//                            }
-//                        }
-//                    }
-//
-//                    ClipboardUtils.copy(context, text)
-//                }
-//                .autoDisposable(view.scope())
-//                .subscribe { view.clearSelection() }
+        view.optionsItemIntent
+                .filter { it == R.id.copy }
+                .withLatestFrom(view.messagesSelectedIntent) { _, messageIds ->
+                    val messages = messageIds.mapNotNull(messageRepo::getMessage).sortedBy { it.date }
+                    val text = when (messages.size) {
+                        1 -> messages.first().getText()
+                        else -> messages.foldIndexed("") { index, acc, message ->
+                            when {
+                                index == 0 -> message.getText()
+                                messages[index - 1].compareSender(message) -> "$acc\n${message.getText()}"
+                                else -> "$acc\n\n${message.getText()}"
+                            }
+                        }
+                    }
+
+                    ClipboardUtils.copy(context, text)
+                }
+                .autoDisposable(view.scope())
+                .subscribe { view.clearSelection() }
 
         // Show the message details
-//        view.optionsItemIntent
-//                .filter { it == R.id.details }
-//                .withLatestFrom(view.messagesSelectedIntent) { _, messages -> messages }
-//                .mapNotNull { messages -> messages.firstOrNull().also { view.clearSelection() } }
-//                .mapNotNull(messageRepo::getMessage)
-//                .map(messageDetailsFormatter::format)
-//                .autoDisposable(view.scope())
-//                .subscribe { view.showDetails(it) }
+        view.optionsItemIntent
+                .filter { it == R.id.details }
+                .withLatestFrom(view.messagesSelectedIntent) { _, messages -> messages }
+                .mapNotNull { messages -> messages.firstOrNull().also { view.clearSelection() } }
+                .mapNotNull(messageRepo::getMessage)
+                .map(messageDetailsFormatter::format)
+                .autoDisposable(view.scope())
+                .subscribe { view.showDetails(it) }
 
         // Delete the messages
-//        view.optionsItemIntent
-//                .filter { it == R.id.delete }
-//                .filter { permissionManager.isDefaultSms().also { if (!it) view.requestDefaultSms() } }
-//                .withLatestFrom(view.messagesSelectedIntent, conversation) { _, messages, conversation ->
-//                    deleteMessages.execute(DeleteMessages.Params(messages, conversation.id))
-//                }
-//                .autoDisposable(view.scope())
-//                .subscribe { view.clearSelection() }
+        view.optionsItemIntent
+                .filter { it == R.id.delete }
+                .filter { permissionManager.isDefaultSms().also { if (!it) view.requestDefaultSms() } }
+                .withLatestFrom(view.messagesSelectedIntent, conversation) { _, messages, conversation ->
+                    deleteMessages.execute(DeleteMessages.Params(messages, conversation.id))
+                }
+                .autoDisposable(view.scope())
+                .subscribe { view.clearSelection() }
 
         // Forward the message
-//        view.optionsItemIntent
-//                .filter { it == R.id.forward }
-//                .withLatestFrom(view.messagesSelectedIntent) { _, messages ->
-//                    messages?.firstOrNull()?.let { messageRepo.getMessage(it) }?.let { message ->
-//                        val images = message.parts.filter { it.isImage() }.mapNotNull { it.getUri() }
-//                        navigator.showCompose(message.getText(), images)
-//                    }
-//                }
-//                .autoDisposable(view.scope())
-//                .subscribe { view.clearSelection() }
+        view.optionsItemIntent
+                .filter { it == R.id.forward }
+                .withLatestFrom(view.messagesSelectedIntent) { _, messages ->
+                    messages?.firstOrNull()?.let { messageRepo.getMessage(it) }?.let { message ->
+                        val images = message.parts.filter { it.isImage() }.mapNotNull { it.getUri() }
+                        navigator.showCompose(message.getText(), images)
+                    }
+                }
+                .autoDisposable(view.scope())
+                .subscribe { view.clearSelection() }
 
         // Show the previous search result
-//        view.optionsItemIntent
-//                .filter { it == R.id.previous }
-//                .withLatestFrom(searchSelection, searchResults) { _, selection, messages ->
-//                    val currentPosition = messages.indexOfFirst { it.id == selection }
-//                    if (currentPosition <= 0L) messages.lastOrNull()?.id ?: -1
-//                    else messages.getOrNull(currentPosition - 1)?.id ?: -1
-//                }
-//                .filter { id -> id != -1L }
-//                .autoDisposable(view.scope())
-//                .subscribe(searchSelection)
+        view.optionsItemIntent
+                .filter { it == R.id.previous }
+                .withLatestFrom(searchSelection, searchResults) { _, selection, messages ->
+                    val currentPosition = messages.indexOfFirst { it.id == selection }
+                    if (currentPosition <= 0L) messages.lastOrNull()?.id ?: -1
+                    else messages.getOrNull(currentPosition - 1)?.id ?: -1
+                }
+                .filter { id -> id != -1L }
+                .autoDisposable(view.scope())
+                .subscribe(searchSelection)
 
         // Show the next search result
-//        view.optionsItemIntent
-//                .filter { it == R.id.next }
-//                .withLatestFrom(searchSelection, searchResults) { _, selection, messages ->
-//                    val currentPosition = messages.indexOfFirst { it.id == selection }
-//                    if (currentPosition >= messages.size - 1) messages.firstOrNull()?.id ?: -1
-//                    else messages.getOrNull(currentPosition + 1)?.id ?: -1
-//                }
-//                .filter { id -> id != -1L }
-//                .autoDisposable(view.scope())
-//                .subscribe(searchSelection)
+        view.optionsItemIntent
+                .filter { it == R.id.next }
+                .withLatestFrom(searchSelection, searchResults) { _, selection, messages ->
+                    val currentPosition = messages.indexOfFirst { it.id == selection }
+                    if (currentPosition >= messages.size - 1) messages.firstOrNull()?.id ?: -1
+                    else messages.getOrNull(currentPosition + 1)?.id ?: -1
+                }
+                .filter { id -> id != -1L }
+                .autoDisposable(view.scope())
+                .subscribe(searchSelection)
 
         // Clear the search
-//        view.optionsItemIntent
-//                .filter { it == R.id.clear }
-//                .autoDisposable(view.scope())
-//                .subscribe { newState { copy(query = "", searchSelectionId = -1) } }
+        view.optionsItemIntent
+                .filter { it == R.id.clear }
+                .autoDisposable(view.scope())
+                .subscribe { newState { copy(query = "", searchSelectionId = -1) } }
 
         // Toggle the group sending mode
         view.sendAsGroupIntent
@@ -474,22 +474,22 @@ class ComposeViewModel @Inject constructor(
                 .subscribe { newState { copy(attaching = !attaching) } }
 
         // Attach a photo from camera
-//        view.cameraIntent
-//                .autoDisposable(view.scope())
-//                .subscribe {
-//                    if (permissionManager.hasStorage()) {
-//                        newState { copy(attaching = false) }
-//                        view.requestCamera()
-//                    } else {
-//                        view.requestStoragePermission()
-//                    }
-//                }
+        view.cameraIntent
+                .autoDisposable(view.scope())
+                .subscribe {
+                    if (permissionManager.hasStorage()) {
+                        newState { copy(attaching = false) }
+                        view.requestCamera()
+                    } else {
+                        view.requestStoragePermission()
+                    }
+                }
 
         // Attach a photo from gallery
-//        view.galleryIntent
-//                .doOnNext { newState { copy(attaching = false) } }
-//                .autoDisposable(view.scope())
-//                .subscribe { view.requestGallery() }
+        view.galleryIntent
+                .doOnNext { newState { copy(attaching = false) } }
+                .autoDisposable(view.scope())
+                .subscribe { view.requestGallery() }
 
         // Choose a time to schedule the message
 //        view.scheduleIntent
@@ -521,10 +521,10 @@ class ComposeViewModel @Inject constructor(
                 .subscribe { scheduled -> newState { copy(scheduled = scheduled) } }
 
         // Attach a contact
-//        view.attachContactIntent
-//                .doOnNext { newState { copy(attaching = false) } }
-//                .autoDisposable(view.scope())
-//                .subscribe { view.requestContact() }
+        view.attachContactIntent
+                .doOnNext { newState { copy(attaching = false) } }
+                .autoDisposable(view.scope())
+                .subscribe { view.requestContact() }
 
         // Contact was selected for attachment
         view.contactSelectedIntent
@@ -615,81 +615,81 @@ class ComposeViewModel @Inject constructor(
                 .subscribe()
 
         // Send a message when the send button is clicked, and disable editing mode if it's enabled
-//        view.sendIntent
-//                .filter { permissionManager.isDefaultSms().also { if (!it) view.requestDefaultSms() } }
-//                .filter { permissionManager.hasSendSms().also { if (!it) view.requestSmsPermission() } }
-//                .withLatestFrom(view.textChangedIntent) { _, body -> body }
-//                .map { body -> body.toString() }
-//                .withLatestFrom(state, attachments, conversation, selectedChips) { body, state, attachments,
-//                                                                                   conversation, chips ->
-//                    val subId = state.subscription?.subscriptionId ?: -1
-//                    val addresses = when (conversation.recipients.isNotEmpty()) {
-//                        true -> conversation.recipients.map { it.address }
-//                        false -> chips.map { chip -> chip.address }
-//                    }
-//                    val delay = when (prefs.sendDelay.get()) {
-//                        Preferences.SEND_DELAY_SHORT -> 3000
-//                        Preferences.SEND_DELAY_MEDIUM -> 5000
-//                        Preferences.SEND_DELAY_LONG -> 10000
-//                        else -> 0
-//                    }
-//                    val sendAsGroup = !state.editingMode || state.sendAsGroup
-//
-//                    when {
-//                        // Scheduling a message
-//                        state.scheduled != 0L -> {
-//                            newState { copy(scheduled = 0) }
-//                            val uris = attachments
-//                                    .mapNotNull { it as? Attachment.Image }
-//                                    .map { it.getUri() }
-//                                    .map { it.toString() }
-//                            val params = AddScheduledMessage
-//                                    .Params(state.scheduled, subId, addresses, sendAsGroup, body, uris)
-//                            addScheduledMessage.execute(params)
-//                            context.makeToast(R.string.compose_scheduled_toast)
-//                        }
-//
-//                        // Sending a group message
-//                        sendAsGroup -> {
-//                            sendMessage.execute(SendMessage
-//                                    .Params(subId, conversation.id, addresses, body, attachments, delay))
-//                        }
-//
-//                        // Sending a message to an existing conversation with one recipient
-//                        conversation.recipients.size == 1 -> {
-//                            val address = conversation.recipients.map { it.address }
-//                            sendMessage.execute(SendMessage.Params(subId, threadId, address, body, attachments, delay))
-//                        }
-//
-//                        // Create a new conversation with one address
-//                        addresses.size == 1 -> {
-//                            sendMessage.execute(SendMessage
-//                                    .Params(subId, threadId, addresses, body, attachments, delay))
-//                        }
-//
-//                        // Send a message to multiple addresses
-//                        else -> {
-//                            addresses.forEach { addr ->
-//                                val threadId = tryOrNull(false) {
-//                                    TelephonyCompat.getOrCreateThreadId(context, addr)
-//                                } ?: 0
-//                                val address = listOf(conversationRepo
-//                                        .getConversation(threadId)?.recipients?.firstOrNull()?.address ?: addr)
-//                                sendMessage.execute(SendMessage
-//                                        .Params(subId, threadId, address, body, attachments, delay))
-//                            }
-//                        }
-//                    }
-//
-//                    view.setDraft("")
-//                    this.attachments.onNext(ArrayList())
-//
-//                    if (state.editingMode) {
-//                        newState { copy(editingMode = false, hasError = !sendAsGroup) }
-//                    }
-//                }
-//                .autoDisposable(view.scope())
-//                .subscribe()
+        view.sendIntent
+                .filter { permissionManager.isDefaultSms().also { if (!it) view.requestDefaultSms() } }
+                .filter { permissionManager.hasSendSms().also { if (!it) view.requestSmsPermission() } }
+                .withLatestFrom(view.textChangedIntent) { _, body -> body }
+                .map { body -> body.toString() }
+                .withLatestFrom(state, attachments, conversation, selectedChips) { body, state, attachments,
+                                                                                   conversation, chips ->
+                    val subId = state.subscription?.subscriptionId ?: -1
+                    val addresses = when (conversation.recipients.isNotEmpty()) {
+                        true -> conversation.recipients.map { it.address }
+                        false -> chips.map { chip -> chip.address }
+                    }
+                    val delay = when (prefs.sendDelay.get()) {
+                        Preferences.SEND_DELAY_SHORT -> 3000
+                        Preferences.SEND_DELAY_MEDIUM -> 5000
+                        Preferences.SEND_DELAY_LONG -> 10000
+                        else -> 0
+                    }
+                    val sendAsGroup = !state.editingMode || state.sendAsGroup
+
+                    when {
+                        // Scheduling a message
+                        state.scheduled != 0L -> {
+                            newState { copy(scheduled = 0) }
+                            val uris = attachments
+                                    .mapNotNull { it as? Attachment.Image }
+                                    .map { it.getUri() }
+                                    .map { it.toString() }
+                            val params = AddScheduledMessage
+                                    .Params(state.scheduled, subId, addresses, sendAsGroup, body, uris)
+                            addScheduledMessage.execute(params)
+                            context.makeToast(R.string.compose_scheduled_toast)
+                        }
+
+                        // Sending a group message
+                        sendAsGroup -> {
+                            sendMessage.execute(SendMessage
+                                    .Params(subId, conversation.id, addresses, body, attachments, delay))
+                        }
+
+                        // Sending a message to an existing conversation with one recipient
+                        conversation.recipients.size == 1 -> {
+                            val address = conversation.recipients.map { it.address }
+                            sendMessage.execute(SendMessage.Params(subId, threadId, address, body, attachments, delay))
+                        }
+
+                        // Create a new conversation with one address
+                        addresses.size == 1 -> {
+                            sendMessage.execute(SendMessage
+                                    .Params(subId, threadId, addresses, body, attachments, delay))
+                        }
+
+                        // Send a message to multiple addresses
+                        else -> {
+                            addresses.forEach { addr ->
+                                val threadId = tryOrNull(false) {
+                                    TelephonyCompat.getOrCreateThreadId(context, addr)
+                                } ?: 0
+                                val address = listOf(conversationRepo
+                                        .getConversation(threadId)?.recipients?.firstOrNull()?.address ?: addr)
+                                sendMessage.execute(SendMessage
+                                        .Params(subId, threadId, address, body, attachments, delay))
+                            }
+                        }
+                    }
+
+                    view.setDraft("")
+                    this.attachments.onNext(ArrayList())
+
+                    if (state.editingMode) {
+                        newState { copy(editingMode = false, hasError = !sendAsGroup) }
+                    }
+                }
+                .autoDisposable(view.scope())
+                .subscribe()
 
         // View QKSMS+
         view.viewQksmsPlusIntent

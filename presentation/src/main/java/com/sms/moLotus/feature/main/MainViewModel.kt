@@ -206,9 +206,9 @@ class MainViewModel @Inject constructor(
                 .autoDisposable(view.scope())
                 .subscribe()
 
-//        view.composeIntent
-//                .autoDisposable(view.scope())
-//                .subscribe { navigator.showCompose() }
+        view.composeIntent
+                .autoDisposable(view.scope())
+                .subscribe { navigator.showCompose() }
 
         view.homeIntent
                 .withLatestFrom(state) { _, state ->

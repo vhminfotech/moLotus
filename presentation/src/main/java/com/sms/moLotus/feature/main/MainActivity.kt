@@ -36,7 +36,7 @@ import com.sms.moLotus.common.util.extensions.setTint
 import com.sms.moLotus.common.util.extensions.setVisible
 import com.sms.moLotus.feature.blocking.BlockingDialog
 import com.sms.moLotus.feature.changelog.ChangelogDialog
-//import com.sms.moLotus.feature.conversations.ConversationItemTouchCallback
+import com.sms.moLotus.feature.conversations.ConversationItemTouchCallback
 import com.sms.moLotus.feature.conversations.ConversationsAdapter
 import com.sms.moLotus.manager.ChangelogManager
 import com.sms.moLotus.repository.SyncRepository
@@ -61,14 +61,14 @@ class MainActivity : QkThemedActivity(), MainView {
     @Inject lateinit var conversationsAdapter: ConversationsAdapter
     @Inject lateinit var drawerBadgesExperiment: DrawerBadgesExperiment
     @Inject lateinit var searchAdapter: SearchAdapter
-//    @Inject lateinit var itemTouchCallback: ConversationItemTouchCallback
+    @Inject lateinit var itemTouchCallback: ConversationItemTouchCallback
     @Inject lateinit var viewModelFactory: ViewModelProvider.Factory
 
     override val onNewIntentIntent: Subject<Intent> = PublishSubject.create()
     override val activityResumedIntent: Subject<Boolean> = PublishSubject.create()
     override val queryChangedIntent by lazy { toolbarSearch.textChanges() }
     override val composeIntent by lazy {
-//        compose.clicks()
+        compose.clicks()
     }
     override val drawerOpenIntent: Observable<Boolean> by lazy {
         drawerLayout
@@ -104,7 +104,7 @@ class MainActivity : QkThemedActivity(), MainView {
 
     private val viewModel by lazy { ViewModelProviders.of(this, viewModelFactory)[MainViewModel::class.java] }
     private val toggle by lazy { ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.main_drawer_open_cd, 0) }
-//    private val itemTouchHelper by lazy { ItemTouchHelper(itemTouchCallback) }
+    private val itemTouchHelper by lazy { ItemTouchHelper(itemTouchCallback) }
     private val progressAnimator by lazy { ObjectAnimator.ofInt(syncingProgress, "progress", 0, 0) }
     private val changelogDialog by lazy { ChangelogDialog(this) }
     private val snackbar by lazy { findViewById<View>(R.id.snackbar) }
@@ -135,7 +135,7 @@ class MainActivity : QkThemedActivity(), MainView {
             homeIntent.onNext(Unit)
         }
 
-//        itemTouchCallback.adapter = conversationsAdapter
+        itemTouchCallback.adapter = conversationsAdapter
         conversationsAdapter.autoScrollToStart(recyclerView)
 
         // Don't allow clicks to pass through the drawer layout
@@ -166,10 +166,10 @@ class MainActivity : QkThemedActivity(), MainView {
                     syncingProgress?.indeterminateTintList = ColorStateList.valueOf(theme.theme)
                     plusIcon.setTint(theme.theme)
                     rateIcon.setTint(theme.theme)
-//                    compose.setBackgroundTint(theme.theme)
+                    compose.setBackgroundTint(theme.theme)
 
                     // Set the FAB compose icon color
-//                    compose.setTint(theme.textPrimary)
+                    compose.setTint(theme.textPrimary)
                 }
 
         // These theme attributes don't apply themselves on API 21
@@ -233,7 +233,7 @@ class MainActivity : QkThemedActivity(), MainView {
         plusBanner.isVisible = !state.upgraded
         rateLayout.setVisible(state.showRating)
 
-//        compose.setVisible(state.page is Inbox || state.page is Archived)
+        compose.setVisible(state.page is Inbox || state.page is Archived)
         conversationsAdapter.emptyView = empty.takeIf { state.page is Inbox || state.page is Archived }
         searchAdapter.emptyView = empty.takeIf { state.page is Searching }
 
@@ -244,7 +244,7 @@ class MainActivity : QkThemedActivity(), MainView {
                 title = getString(R.string.main_title_selected, state.page.selected)
                 if (recyclerView.adapter !== conversationsAdapter) recyclerView.adapter = conversationsAdapter
                 conversationsAdapter.updateData(state.page.data)
-//                itemTouchHelper.attachToRecyclerView(recyclerView)
+                itemTouchHelper.attachToRecyclerView(recyclerView)
                 empty.setText(R.string.inbox_empty_text)
             }
 
@@ -252,7 +252,7 @@ class MainActivity : QkThemedActivity(), MainView {
                 showBackButton(true)
                 if (recyclerView.adapter !== searchAdapter) recyclerView.adapter = searchAdapter
                 searchAdapter.data = state.page.data ?: listOf()
-//                itemTouchHelper.attachToRecyclerView(null)
+                itemTouchHelper.attachToRecyclerView(null)
                 empty.setText(R.string.inbox_search_empty_text)
             }
 
@@ -264,7 +264,7 @@ class MainActivity : QkThemedActivity(), MainView {
                 }
                 if (recyclerView.adapter !== conversationsAdapter) recyclerView.adapter = conversationsAdapter
                 conversationsAdapter.updateData(state.page.data)
-//                itemTouchHelper.attachToRecyclerView(null)
+                itemTouchHelper.attachToRecyclerView(null)
                 empty.setText(R.string.archived_empty_text)
             }
         }

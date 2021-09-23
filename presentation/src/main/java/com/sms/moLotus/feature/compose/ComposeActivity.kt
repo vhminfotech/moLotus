@@ -84,16 +84,16 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
     override val textChangedIntent by lazy { message.textChanges() }
     override val attachIntent by lazy { Observable.merge(attach.clicks(), attachingBackground.clicks()) }
     override val cameraIntent by lazy {
-//        Observable.merge(camera.clicks(), cameraLabel.clicks())
+        Observable.merge(camera.clicks(), cameraLabel.clicks())
     }
     override val galleryIntent by lazy {
-//        Observable.merge(gallery.clicks(), galleryLabel.clicks())
+        Observable.merge(gallery.clicks(), galleryLabel.clicks())
     }
     override val scheduleIntent by lazy {
 //        Observable.merge(schedule.clicks(), scheduleLabel.clicks())
     }
     override val attachContactIntent by lazy {
-//        Observable.merge(contact.clicks(), contactLabel.clicks())
+        Observable.merge(contact.clicks(), contactLabel.clicks())
     }
     override val attachmentSelectedIntent: Subject<Uri> = PublishSubject.create()
     override val contactSelectedIntent: Subject<Uri> = PublishSubject.create()
@@ -102,7 +102,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
     override val changeSimIntent by lazy { sim.clicks() }
     override val scheduleCancelIntent by lazy { scheduledCancel.clicks() }
     override val sendIntent by lazy {
-//        send.clicks()
+        send.clicks()
     }
     override val viewQksmsPlusIntent: Subject<Unit> = PublishSubject.create()
     override val backPressedIntent: Subject<Unit> = PublishSubject.create()
@@ -193,13 +193,13 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                 && state.query.isEmpty()
         toolbar.menu.findItem(R.id.info)?.isVisible = !state.editingMode && state.selectedMessages == 0
                 && state.query.isEmpty()
-//        toolbar.menu.findItem(R.id.copy)?.isVisible = !state.editingMode && state.selectedMessages > 0
-//        toolbar.menu.findItem(R.id.details)?.isVisible = !state.editingMode && state.selectedMessages == 1
-//        toolbar.menu.findItem(R.id.delete)?.isVisible = !state.editingMode && state.selectedMessages > 0
-//        toolbar.menu.findItem(R.id.forward)?.isVisible = !state.editingMode && state.selectedMessages == 1
-//        toolbar.menu.findItem(R.id.previous)?.isVisible = state.selectedMessages == 0 && state.query.isNotEmpty()
-//        toolbar.menu.findItem(R.id.next)?.isVisible = state.selectedMessages == 0 && state.query.isNotEmpty()
-//        toolbar.menu.findItem(R.id.clear)?.isVisible = state.selectedMessages == 0 && state.query.isNotEmpty()
+        toolbar.menu.findItem(R.id.copy)?.isVisible = !state.editingMode && state.selectedMessages > 0
+        toolbar.menu.findItem(R.id.details)?.isVisible = !state.editingMode && state.selectedMessages == 1
+        toolbar.menu.findItem(R.id.delete)?.isVisible = !state.editingMode && state.selectedMessages > 0
+        toolbar.menu.findItem(R.id.forward)?.isVisible = !state.editingMode && state.selectedMessages == 1
+        toolbar.menu.findItem(R.id.previous)?.isVisible = state.selectedMessages == 0 && state.query.isNotEmpty()
+        toolbar.menu.findItem(R.id.next)?.isVisible = state.selectedMessages == 0 && state.query.isNotEmpty()
+        toolbar.menu.findItem(R.id.clear)?.isVisible = state.selectedMessages == 0 && state.query.isNotEmpty()
 
         chipsAdapter.data = state.selectedChips
 
@@ -228,8 +228,8 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         sim.contentDescription = getString(R.string.compose_sim_cd, state.subscription?.displayName)
         simIndex.text = state.subscription?.simSlotIndex?.plus(1)?.toString()
 
-//        send.isEnabled = state.canSend
-//        send.imageAlpha = if (state.canSend) 255 else 128
+        send.isEnabled = state.canSend
+        send.imageAlpha = if (state.canSend) 255 else 128
     }
 
     override fun clearSelection() = messageAdapter.clearSelection()
