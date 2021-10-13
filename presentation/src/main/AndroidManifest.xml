@@ -30,7 +30,7 @@
         android:theme="@style/AppLaunchTheme">
 
         <activity
-            android:name="com.sms.moLotus.feature.main.MainActivity"
+            android:name="com.sms.moLotus.feature.Intro.IntroActivity2"
             android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
