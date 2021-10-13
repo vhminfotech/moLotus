@@ -1,6 +1,7 @@
 package com.sms.moLotus.feature.Intro
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Bundle
@@ -60,6 +61,7 @@ class IntroActivity2 : AppCompatActivity(){
 
                 return view
             }
+
             override fun isEnabled(position: Int): Boolean {
                 // disable first item
                 // first item is display as hint
@@ -94,7 +96,12 @@ class IntroActivity2 : AppCompatActivity(){
             val PhoneNumber = inputPhoneNumber.text
             val CarrierText = carrier_provider.selectedItem.toString()
 
-            Toast.makeText(this, "Number: $PhoneNumber \nCarrier: $CarrierText", Toast.LENGTH_LONG).show()
+            val intent = Intent(this,APNDetailsActivity::class.java);
+            intent.putExtra("PhoneNumber", PhoneNumber.toString())
+            intent.putExtra("CarrierText", CarrierText)
+            startActivity(intent)
+
+//            Toast.makeText(this, "Number: $PhoneNumber \nCarrier: $CarrierText", Toast.LENGTH_LONG).show()
         }
     }
 

@@ -29,6 +29,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppLaunchTheme">
 
+        <activity android:name="com.sms.moLotus.feature.Intro.APNDetailsActivity" />
+
         <activity
             android:name="com.sms.moLotus.feature.Intro.IntroActivity2"
             android:launchMode="singleTask">
