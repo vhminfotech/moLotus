@@ -241,6 +241,7 @@ class MainViewModel @Inject constructor(
                             }
                             else -> newState { copy(hasError = true) }
                         }
+                        NavItem.APN_SETTINGS -> navigator.showAPNsetting()
                         NavItem.BACKUP -> navigator.showBackup()
                         NavItem.SCHEDULED -> navigator.showScheduled()
                         NavItem.BLOCKING -> navigator.showBlockedConversations()
@@ -272,14 +273,14 @@ class MainViewModel @Inject constructor(
                 .autoDisposable(view.scope())
                 .subscribe()
 
-        view.optionsItemIntent
-                .filter { itemId -> itemId == R.id.unarchive }
-                .withLatestFrom(view.conversationsSelectedIntent) { _, conversations ->
-                    markUnarchived.execute(conversations)
-                    view.clearSelection()
-                }
-                .autoDisposable(view.scope())
-                .subscribe()
+//        view.optionsItemIntent
+//                .filter { itemId -> itemId == R.id.unarchive }
+//                .withLatestFrom(view.conversationsSelectedIntent) { _, conversations ->
+//                    markUnarchived.execute(conversations)
+//                    view.clearSelection()
+//                }
+//                .autoDisposable(view.scope())
+//                .subscribe()
 
         view.optionsItemIntent
                 .filter { itemId -> itemId == R.id.delete }
@@ -312,14 +313,14 @@ class MainViewModel @Inject constructor(
                 .autoDisposable(view.scope())
                 .subscribe()
 
-        view.optionsItemIntent
-                .filter { itemId -> itemId == R.id.unpin }
-                .withLatestFrom(view.conversationsSelectedIntent) { _, conversations ->
-                    markUnpinned.execute(conversations)
-                    view.clearSelection()
-                }
-                .autoDisposable(view.scope())
-                .subscribe()
+//        view.optionsItemIntent
+//                .filter { itemId -> itemId == R.id.unpin }
+//                .withLatestFrom(view.conversationsSelectedIntent) { _, conversations ->
+//                    markUnpinned.execute(conversations)
+//                    view.clearSelection()
+//                }
+//                .autoDisposable(view.scope())
+//                .subscribe()
 
         view.optionsItemIntent
                 .filter { itemId -> itemId == R.id.read }
@@ -357,16 +358,16 @@ class MainViewModel @Inject constructor(
                     navigator.showQksmsPlusActivity("main_banner")
                 }
 
-        view.rateIntent
-                .autoDisposable(view.scope())
-                .subscribe {
-                    navigator.showRating()
-                    ratingManager.rate()
-                }
+//        view.rateIntent
+//                .autoDisposable(view.scope())
+//                .subscribe {
+//                    navigator.showRating()
+//                    ratingManager.rate()
+//                }
 
-        view.dismissRatingIntent
-                .autoDisposable(view.scope())
-                .subscribe { ratingManager.dismiss() }
+//        view.dismissRatingIntent
+//                .autoDisposable(view.scope())
+//                .subscribe { ratingManager.dismiss() }
 
         view.conversationsSelectedIntent
                 .withLatestFrom(state) { selection, state ->

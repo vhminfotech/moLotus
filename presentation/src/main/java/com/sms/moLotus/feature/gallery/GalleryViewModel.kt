@@ -60,12 +60,12 @@ class GalleryViewModel @Inject constructor(
                 .subscribe { partId -> saveImage.execute(partId) { context.makeToast(R.string.gallery_toast_saved) } }
 
         // Share image externally
-        view.optionsItemSelected()
-                .filter { itemId -> itemId == R.id.share }
-                .filter { permissions.hasStorage().also { if (!it) view.requestStoragePermission() } }
-                .withLatestFrom(view.pageChanged()) { _, part -> part.id }
-                .autoDisposable(view.scope())
-                .subscribe { partId -> messageRepo.savePart(partId)?.let(navigator::shareFile) }
+//        view.optionsItemSelected()
+//                .filter { itemId -> itemId == R.id.share }
+//                .filter { permissions.hasStorage().also { if (!it) view.requestStoragePermission() } }
+//                .withLatestFrom(view.pageChanged()) { _, part -> part.id }
+//                .autoDisposable(view.scope())
+//                .subscribe { partId -> messageRepo.savePart(partId)?.let(navigator::shareFile) }
     }
 
 }

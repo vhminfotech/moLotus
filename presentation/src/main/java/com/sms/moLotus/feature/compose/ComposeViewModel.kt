@@ -313,14 +313,14 @@ class ComposeViewModel @Inject constructor(
                 .subscribe { view.clearSelection() }
 
         // Show the message details
-        view.optionsItemIntent
-                .filter { it == R.id.details }
-                .withLatestFrom(view.messagesSelectedIntent) { _, messages -> messages }
-                .mapNotNull { messages -> messages.firstOrNull().also { view.clearSelection() } }
-                .mapNotNull(messageRepo::getMessage)
-                .map(messageDetailsFormatter::format)
-                .autoDisposable(view.scope())
-                .subscribe { view.showDetails(it) }
+//        view.optionsItemIntent
+//                .filter { it == R.id.details }
+//                .withLatestFrom(view.messagesSelectedIntent) { _, messages -> messages }
+//                .mapNotNull { messages -> messages.firstOrNull().also { view.clearSelection() } }
+//                .mapNotNull(messageRepo::getMessage)
+//                .map(messageDetailsFormatter::format)
+//                .autoDisposable(view.scope())
+//                .subscribe { view.showDetails(it) }
 
         // Delete the messages
         view.optionsItemIntent
@@ -345,28 +345,28 @@ class ComposeViewModel @Inject constructor(
                 .subscribe { view.clearSelection() }
 
         // Show the previous search result
-        view.optionsItemIntent
-                .filter { it == R.id.previous }
-                .withLatestFrom(searchSelection, searchResults) { _, selection, messages ->
-                    val currentPosition = messages.indexOfFirst { it.id == selection }
-                    if (currentPosition <= 0L) messages.lastOrNull()?.id ?: -1
-                    else messages.getOrNull(currentPosition - 1)?.id ?: -1
-                }
-                .filter { id -> id != -1L }
-                .autoDisposable(view.scope())
-                .subscribe(searchSelection)
+//        view.optionsItemIntent
+//                .filter { it == R.id.previous }
+//                .withLatestFrom(searchSelection, searchResults) { _, selection, messages ->
+//                    val currentPosition = messages.indexOfFirst { it.id == selection }
+//                    if (currentPosition <= 0L) messages.lastOrNull()?.id ?: -1
+//                    else messages.getOrNull(currentPosition - 1)?.id ?: -1
+//                }
+//                .filter { id -> id != -1L }
+//                .autoDisposable(view.scope())
+//                .subscribe(searchSelection)
 
         // Show the next search result
-        view.optionsItemIntent
-                .filter { it == R.id.next }
-                .withLatestFrom(searchSelection, searchResults) { _, selection, messages ->
-                    val currentPosition = messages.indexOfFirst { it.id == selection }
-                    if (currentPosition >= messages.size - 1) messages.firstOrNull()?.id ?: -1
-                    else messages.getOrNull(currentPosition + 1)?.id ?: -1
-                }
-                .filter { id -> id != -1L }
-                .autoDisposable(view.scope())
-                .subscribe(searchSelection)
+//        view.optionsItemIntent
+//                .filter { it == R.id.next }
+//                .withLatestFrom(searchSelection, searchResults) { _, selection, messages ->
+//                    val currentPosition = messages.indexOfFirst { it.id == selection }
+//                    if (currentPosition >= messages.size - 1) messages.firstOrNull()?.id ?: -1
+//                    else messages.getOrNull(currentPosition + 1)?.id ?: -1
+//                }
+//                .filter { id -> id != -1L }
+//                .autoDisposable(view.scope())
+//                .subscribe(searchSelection)
 
         // Clear the search
         view.optionsItemIntent

@@ -31,6 +31,23 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/apn_details"
+            style="@style/DrawerRow">
+
+            <ImageView
+                android:id="@+id/ANP_Icon"
+                style="@style/DrawerIcon"
+                android:src="@drawable/ic_settings_black_24dp"
+                tools:tint="@color/white" />
+
+            <com.sms.moLotus.common.widget.QkTextView
+                style="@style/DrawerText"
+                android:text="APN Settings" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:visibility="gone"
             android:id="@+id/archived"
             style="@style/DrawerRow">
 
@@ -54,13 +71,14 @@
             android:background="?android:attr/divider" />
 
         <LinearLayout
+            android:visibility="gone"
             android:id="@+id/backup"
             style="@style/DrawerRow">
 
             <ImageView
                 style="@style/DrawerIcon"
                 android:src="@drawable/ic_import_export_black_24dp"
-                android:tint="?android:attr/textColorSecondary" />
+                app:tint="?android:attr/textColorSecondary" />
 
             <com.sms.moLotus.common.widget.QkTextView
                 style="@style/DrawerText"
@@ -81,13 +99,14 @@
         </LinearLayout>
 
         <LinearLayout
+            android:visibility="gone"
             android:id="@+id/scheduled"
             style="@style/DrawerRow">
 
             <ImageView
                 style="@style/DrawerIcon"
                 android:src="@drawable/ic_event_black_24dp"
-                android:tint="?android:attr/textColorSecondary" />
+                app:tint="?android:attr/textColorSecondary" />
 
             <com.sms.moLotus.common.widget.QkTextView
                 style="@style/DrawerText"
@@ -108,13 +127,14 @@
         </LinearLayout>
 
         <LinearLayout
+            android:visibility="gone"
             android:id="@+id/blocking"
             style="@style/DrawerRow">
 
             <ImageView
                 style="@style/DrawerIcon"
                 android:src="@drawable/ic_block_white_24dp"
-                android:tint="?android:attr/textColorSecondary" />
+                app:tint="?android:attr/textColorSecondary" />
 
             <com.sms.moLotus.common.widget.QkTextView
                 style="@style/DrawerText"
@@ -123,6 +143,7 @@
         </LinearLayout>
 
         <View
+            android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginTop="8dp"
@@ -130,13 +151,14 @@
             android:background="?android:attr/divider" />
 
         <LinearLayout
+            android:visibility="gone"
             android:id="@+id/settings"
             style="@style/DrawerRow">
 
             <ImageView
                 style="@style/DrawerIcon"
                 android:src="@drawable/ic_settings_black_24dp"
-                android:tint="?android:attr/textColorSecondary" />
+                app:tint="?android:attr/textColorSecondary" />
 
             <com.sms.moLotus.common.widget.QkTextView
                 style="@style/DrawerText"
@@ -144,29 +166,31 @@
 
         </LinearLayout>
 
+<!--        <LinearLayout-->
+<!--            android:visibility="gone"-->
+<!--            android:id="@+id/plus"-->
+<!--            style="@style/DrawerRow">-->
+
+<!--            <ImageView-->
+<!--                style="@style/DrawerIcon"-->
+<!--                android:src="@drawable/ic_star_black_24dp"-->
+<!--                app:tint="?android:attr/textColorSecondary" />-->
+
+<!--            <com.sms.moLotus.common.widget.QkTextView-->
+<!--                style="@style/DrawerText"-->
+<!--                android:text="@string/drawer_plus" />-->
+
+<!--        </LinearLayout>-->
+
         <LinearLayout
-            android:id="@+id/plus"
-            style="@style/DrawerRow">
-
-            <ImageView
-                style="@style/DrawerIcon"
-                android:src="@drawable/ic_star_black_24dp"
-                android:tint="?android:attr/textColorSecondary" />
-
-            <com.sms.moLotus.common.widget.QkTextView
-                style="@style/DrawerText"
-                android:text="@string/drawer_plus" />
-
-        </LinearLayout>
-
-        <LinearLayout
+            android:visibility="gone"
             android:id="@+id/help"
             style="@style/DrawerRow">
 
             <ImageView
                 style="@style/DrawerIcon"
                 android:src="@drawable/ic_help_black_24dp"
-                android:tint="?android:attr/textColorSecondary" />
+                app:tint="?android:attr/textColorSecondary" />
 
             <com.sms.moLotus.common.widget.QkTextView
                 style="@style/DrawerText"
@@ -175,13 +199,14 @@
         </LinearLayout>
 
         <LinearLayout
+            android:visibility="gone"
             android:id="@+id/invite"
             style="@style/DrawerRow">
 
             <ImageView
                 style="@style/DrawerIcon"
                 android:src="@drawable/ic_people_black_24dp"
-                android:tint="?android:attr/textColorSecondary" />
+                app:tint="?android:attr/textColorSecondary" />
 
             <com.sms.moLotus.common.widget.QkTextView
                 style="@style/DrawerText"
@@ -190,6 +215,7 @@
         </LinearLayout>
 
         <androidx.constraintlayout.widget.ConstraintLayout
+            android:visibility="gone"
             android:id="@+id/plusBanner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -242,94 +268,95 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_chevron_right_black_24dp"
-                android:tint="?android:attr/textColorTertiary"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/rateLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:background="@drawable/rounded_rectangle_outline_2dp"
-            android:backgroundTint="?android:attr/divider">
-
-            <ImageView
-                android:id="@+id/rateIcon"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_marginStart="16dp"
-                android:src="@drawable/ic_favorite_black_24dp"
-                app:layout_constraintBottom_toBottomOf="@id/rateSummary"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="@id/rateTitle"
-                tools:tint="@color/tools_theme" />
-
-            <com.sms.moLotus.common.widget.QkTextView
-                android:id="@+id/rateTitle"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="16dp"
-                android:layout_marginEnd="16dp"
-                android:text="@string/rate_title"
-                android:textColor="?android:attr/textColorPrimary"
-                android:textStyle="bold"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@id/rateIcon"
                 app:layout_constraintTop_toTopOf="parent"
-                app:textSize="primary" />
-
-            <com.sms.moLotus.common.widget.QkTextView
-                android:id="@+id/rateSummary"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:layout_marginEnd="16dp"
-                android:text="@string/rate_summary"
-                android:textColor="?android:attr/textColorSecondary"
-                app:layout_constraintEnd_toEndOf="@id/rateTitle"
-                app:layout_constraintStart_toStartOf="@id/rateTitle"
-                app:layout_constraintTop_toBottomOf="@id/rateTitle"
-                app:textSize="secondary" />
-
-            <com.sms.moLotus.common.widget.QkTextView
-                android:id="@+id/rateDismiss"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="8dp"
-                android:paddingStart="16dp"
-                android:paddingTop="16dp"
-                android:paddingBottom="16dp"
-                android:text="@string/rate_dismiss"
-                android:textColor="?android:attr/textColorTertiary"
-                android:textStyle="bold"
-                app:layout_constraintEnd_toStartOf="@id/rateOkay"
-                app:layout_constraintTop_toBottomOf="@id/rateSummary"
-                app:textSize="secondary" />
-
-            <com.sms.moLotus.common.widget.QkTextView
-                android:id="@+id/rateOkay"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="8dp"
-                android:background="?attr/selectableItemBackground"
-                android:padding="16dp"
-                android:text="@string/rate_okay"
-                android:textColor="?android:attr/textColorSecondary"
-                android:textStyle="bold"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/rateSummary"
-                app:textSize="secondary" />
+                app:tint="?android:attr/textColorTertiary" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
+
+<!--        <androidx.constraintlayout.widget.ConstraintLayout-->
+<!--            android:visibility="gone"-->
+<!--            android:id="@+id/rateLayout"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginStart="8dp"-->
+<!--            android:layout_marginTop="8dp"-->
+<!--            android:layout_marginEnd="8dp"-->
+<!--            android:background="@drawable/rounded_rectangle_outline_2dp"-->
+<!--            android:backgroundTint="?android:attr/divider">-->
+
+<!--            <ImageView-->
+<!--                android:id="@+id/rateIcon"-->
+<!--                android:layout_width="24dp"-->
+<!--                android:layout_height="24dp"-->
+<!--                android:layout_marginStart="16dp"-->
+<!--                android:src="@drawable/ic_favorite_black_24dp"-->
+<!--                app:layout_constraintBottom_toBottomOf="@id/rateSummary"-->
+<!--                app:layout_constraintStart_toStartOf="parent"-->
+<!--                app:layout_constraintTop_toTopOf="@id/rateTitle"-->
+<!--                tools:tint="@color/tools_theme" />-->
+
+<!--            <com.sms.moLotus.common.widget.QkTextView-->
+<!--                android:id="@+id/rateTitle"-->
+<!--                android:layout_width="0dp"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_marginStart="16dp"-->
+<!--                android:layout_marginTop="16dp"-->
+<!--                android:layout_marginEnd="16dp"-->
+<!--                android:text="@string/rate_title"-->
+<!--                android:textColor="?android:attr/textColorPrimary"-->
+<!--                android:textStyle="bold"-->
+<!--                app:layout_constraintEnd_toEndOf="parent"-->
+<!--                app:layout_constraintStart_toEndOf="@id/rateIcon"-->
+<!--                app:layout_constraintTop_toTopOf="parent"-->
+<!--                app:textSize="primary" />-->
+
+<!--            <com.sms.moLotus.common.widget.QkTextView-->
+<!--                android:id="@+id/rateSummary"-->
+<!--                android:layout_width="0dp"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_marginTop="2dp"-->
+<!--                android:layout_marginEnd="16dp"-->
+<!--                android:text="@string/rate_summary"-->
+<!--                android:textColor="?android:attr/textColorSecondary"-->
+<!--                app:layout_constraintEnd_toEndOf="@id/rateTitle"-->
+<!--                app:layout_constraintStart_toStartOf="@id/rateTitle"-->
+<!--                app:layout_constraintTop_toBottomOf="@id/rateTitle"-->
+<!--                app:textSize="secondary" />-->
+
+<!--            <com.sms.moLotus.common.widget.QkTextView-->
+<!--                android:id="@+id/rateDismiss"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_marginStart="16dp"-->
+<!--                android:layout_marginTop="8dp"-->
+<!--                android:paddingStart="16dp"-->
+<!--                android:paddingTop="16dp"-->
+<!--                android:paddingBottom="16dp"-->
+<!--                android:text="@string/rate_dismiss"-->
+<!--                android:textColor="?android:attr/textColorTertiary"-->
+<!--                android:textStyle="bold"-->
+<!--                app:layout_constraintEnd_toStartOf="@id/rateOkay"-->
+<!--                app:layout_constraintTop_toBottomOf="@id/rateSummary"-->
+<!--                app:textSize="secondary" />-->
+
+<!--            <com.sms.moLotus.common.widget.QkTextView-->
+<!--                android:id="@+id/rateOkay"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_marginTop="8dp"-->
+<!--                android:layout_marginEnd="8dp"-->
+<!--                android:background="?attr/selectableItemBackground"-->
+<!--                android:padding="16dp"-->
+<!--                android:text="@string/rate_okay"-->
+<!--                android:textColor="?android:attr/textColorSecondary"-->
+<!--                android:textStyle="bold"-->
+<!--                app:layout_constraintEnd_toEndOf="parent"-->
+<!--                app:layout_constraintTop_toBottomOf="@id/rateSummary"-->
+<!--                app:textSize="secondary" />-->
+
+<!--        </androidx.constraintlayout.widget.ConstraintLayout>-->
 
     </LinearLayout>
 

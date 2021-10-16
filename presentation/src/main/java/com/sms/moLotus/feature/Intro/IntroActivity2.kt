@@ -12,6 +12,7 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.sms.moLotus.R
 import kotlinx.android.synthetic.main.intro_activity_main.*
+import kotlinx.android.synthetic.main.main_activity.*
 
 class IntroActivity2 : AppCompatActivity(){
 
@@ -25,7 +26,6 @@ class IntroActivity2 : AppCompatActivity(){
 
         // get reference to all views
         var inputPhoneNumber = findViewById<EditText>(R.id.phone_number)
-        var btnLogin = findViewById<Button>(R.id.btnLogin)
 
         val adapter:ArrayAdapter<String> = object: ArrayAdapter<String>(
             this,
@@ -96,12 +96,20 @@ class IntroActivity2 : AppCompatActivity(){
             val PhoneNumber = inputPhoneNumber.text
             val CarrierText = carrier_provider.selectedItem.toString()
 
-            val intent = Intent(this,APNDetailsActivity::class.java);
-            intent.putExtra("PhoneNumber", PhoneNumber.toString())
-            intent.putExtra("CarrierText", CarrierText)
-            startActivity(intent)
+            if (PhoneNumber.isEmpty()){
+                showToast(message = "Phone number is empty")
+            }
 
-//            Toast.makeText(this, "Number: $PhoneNumber \nCarrier: $CarrierText", Toast.LENGTH_LONG).show()
+            if (CarrierText == "Select carrier provider"){
+                showToast(message = "Please select carrier provider")
+            }
+
+            if (CarrierText != "Select carrier provider" && !PhoneNumber.isEmpty() ){
+                val intent = Intent(this, APNDetailsActivity::class.java);
+                intent.putExtra("PhoneNumber", PhoneNumber.toString())
+                intent.putExtra("CarrierText", CarrierText)
+                startActivity(intent)
+            }
         }
     }
 

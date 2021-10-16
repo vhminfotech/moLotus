@@ -12,6 +12,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.sms.moLotus.R
+import com.sms.moLotus.feature.main.MainActivity
 import kotlinx.android.synthetic.main.apn_details_activity.*
 import kotlinx.android.synthetic.main.intro_activity_main.*
 
@@ -95,11 +96,24 @@ class APNDetailsActivity : AppCompatActivity() {
 
         // set on-click listener
         goto_setting.setOnClickListener {
-
+            val settings = getSharedPreferences("appInfo", 0)
+            val editor = settings.edit()
+            editor.putBoolean("first_time", false)
+            editor.commit()
+            
             intent = Intent(Settings.ACTION_APN_SETTINGS)
             startActivity(intent)
+        }
 
-//            Toast.makeText(this, "Number: $PhoneNumber \nCarrier: $CarrierText", Toast.LENGTH_LONG).show()
+        skip.setOnClickListener {
+            val settings = getSharedPreferences("appInfo", 0)
+            val editor = settings.edit()
+            editor.putBoolean("first_time", false)
+            editor.commit()
+
+            val intent = Intent(this, MainActivity::class.java);
+            startActivity(intent)
+
         }
 
     }

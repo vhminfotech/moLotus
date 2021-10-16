@@ -63,11 +63,11 @@
         android:layout_marginTop="2dp"
         android:paddingStart="4dp"
         android:src="@drawable/ic_baseline_push_pin_24"
-        android:tint="?android:attr/textColorTertiary"
         android:visibility="gone"
         app:layout_constraintEnd_toStartOf="@id/unread"
         app:layout_constraintTop_toTopOf="@id/snippet"
-        tools:visibility="visible" />
+        tools:visibility="visible"
+        app:tint="?android:attr/textColorTertiary" />
 
     <ImageView
         android:id="@+id/unread"

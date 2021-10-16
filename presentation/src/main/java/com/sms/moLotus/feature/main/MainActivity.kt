@@ -4,6 +4,7 @@ import android.Manifest
 import android.animation.ObjectAnimator
 import android.app.AlertDialog
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.res.ColorStateList
 import android.os.Build
 import android.os.Bundle
@@ -12,6 +13,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewStub
+import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.app.ActivityCompat
 import androidx.core.view.GravityCompat
@@ -34,9 +36,11 @@ import com.sms.moLotus.common.util.extensions.scrapViews
 import com.sms.moLotus.common.util.extensions.setBackgroundTint
 import com.sms.moLotus.common.util.extensions.setTint
 import com.sms.moLotus.common.util.extensions.setVisible
+import com.sms.moLotus.feature.Intro.APNDetailsActivity
+import com.sms.moLotus.feature.Intro.IntroActivity2
 import com.sms.moLotus.feature.blocking.BlockingDialog
 import com.sms.moLotus.feature.changelog.ChangelogDialog
-import com.sms.moLotus.feature.conversations.ConversationItemTouchCallback
+//import com.sms.moLotus.feature.conversations.ConversationItemTouchCallback
 import com.sms.moLotus.feature.conversations.ConversationsAdapter
 import com.sms.moLotus.manager.ChangelogManager
 import com.sms.moLotus.repository.SyncRepository
@@ -61,7 +65,7 @@ class MainActivity : QkThemedActivity(), MainView {
     @Inject lateinit var conversationsAdapter: ConversationsAdapter
     @Inject lateinit var drawerBadgesExperiment: DrawerBadgesExperiment
     @Inject lateinit var searchAdapter: SearchAdapter
-    @Inject lateinit var itemTouchCallback: ConversationItemTouchCallback
+//    @Inject lateinit var itemTouchCallback: ConversationItemTouchCallback
     @Inject lateinit var viewModelFactory: ViewModelProvider.Factory
 
     override val onNewIntentIntent: Subject<Intent> = PublishSubject.create()
@@ -80,19 +84,24 @@ class MainActivity : QkThemedActivity(), MainView {
         Observable.merge(listOf(
                 backPressedSubject,
                 inbox.clicks().map { NavItem.INBOX },
+                apn_details.clicks().map { NavItem.APN_SETTINGS },
                 archived.clicks().map { NavItem.ARCHIVED },
                 backup.clicks().map { NavItem.BACKUP },
                 scheduled.clicks().map { NavItem.SCHEDULED },
                 blocking.clicks().map { NavItem.BLOCKING },
                 settings.clicks().map { NavItem.SETTINGS },
-                plus.clicks().map { NavItem.PLUS },
+//                plus.clicks().map { NavItem.PLUS },
                 help.clicks().map { NavItem.HELP },
                 invite.clicks().map { NavItem.INVITE }))
     }
     override val optionsItemIntent: Subject<Int> = PublishSubject.create()
     override val plusBannerIntent by lazy { plusBanner.clicks() }
-    override val dismissRatingIntent by lazy { rateDismiss.clicks() }
-    override val rateIntent by lazy { rateOkay.clicks() }
+    override val dismissRatingIntent by lazy {
+//        rateDismiss.clicks()
+    }
+    override val rateIntent by lazy {
+//        rateOkay.clicks()
+    }
     override val conversationsSelectedIntent by lazy { conversationsAdapter.selectionChanges }
     override val confirmDeleteIntent: Subject<List<Long>> = PublishSubject.create()
     override val swipeConversationIntent by lazy {
@@ -104,7 +113,7 @@ class MainActivity : QkThemedActivity(), MainView {
 
     private val viewModel by lazy { ViewModelProviders.of(this, viewModelFactory)[MainViewModel::class.java] }
     private val toggle by lazy { ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.main_drawer_open_cd, 0) }
-    private val itemTouchHelper by lazy { ItemTouchHelper(itemTouchCallback) }
+//    private val itemTouchHelper by lazy { ItemTouchHelper(itemTouchCallback) }
     private val progressAnimator by lazy { ObjectAnimator.ofInt(syncingProgress, "progress", 0, 0) }
     private val changelogDialog by lazy { ChangelogDialog(this) }
     private val snackbar by lazy { findViewById<View>(R.id.snackbar) }
@@ -115,6 +124,16 @@ class MainActivity : QkThemedActivity(), MainView {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
+
+
+        val settings = getSharedPreferences("appInfo", 0)
+        val firstTime = settings.getBoolean("first_time", true)
+
+        if (firstTime) {
+            val intent = Intent(this, IntroActivity2::class.java);
+            startActivity(intent)
+        }
+
         viewModel.bindView(this)
         onNewIntentIntent.onNext(intent)
 
@@ -135,7 +154,7 @@ class MainActivity : QkThemedActivity(), MainView {
             homeIntent.onNext(Unit)
         }
 
-        itemTouchCallback.adapter = conversationsAdapter
+//        itemTouchCallback.adapter = conversationsAdapter
         conversationsAdapter.autoScrollToStart(recyclerView)
 
         // Don't allow clicks to pass through the drawer layout
@@ -165,7 +184,7 @@ class MainActivity : QkThemedActivity(), MainView {
                     syncingProgress?.progressTintList = ColorStateList.valueOf(theme.theme)
                     syncingProgress?.indeterminateTintList = ColorStateList.valueOf(theme.theme)
                     plusIcon.setTint(theme.theme)
-                    rateIcon.setTint(theme.theme)
+//                    rateIcon.setTint(theme.theme)
                     compose.setBackgroundTint(theme.theme)
 
                     // Set the FAB compose icon color
@@ -216,22 +235,22 @@ class MainActivity : QkThemedActivity(), MainView {
         toolbarSearch.setVisible(state.page is Inbox && state.page.selected == 0 || state.page is Searching)
         toolbarTitle.setVisible(toolbarSearch.visibility != View.VISIBLE)
 
-        toolbar.menu.findItem(R.id.archive)?.isVisible = state.page is Inbox && selectedConversations != 0
-        toolbar.menu.findItem(R.id.unarchive)?.isVisible = state.page is Archived && selectedConversations != 0
+//        toolbar.menu.findItem(R.id.archive)?.isVisible = state.page is Inbox && selectedConversations != 0
+//        toolbar.menu.findItem(R.id.unarchive)?.isVisible = state.page is Archived && selectedConversations != 0
         toolbar.menu.findItem(R.id.delete)?.isVisible = selectedConversations != 0
         toolbar.menu.findItem(R.id.add)?.isVisible = addContact && selectedConversations != 0
-        toolbar.menu.findItem(R.id.pin)?.isVisible = markPinned && selectedConversations != 0
-        toolbar.menu.findItem(R.id.unpin)?.isVisible = !markPinned && selectedConversations != 0
+//        toolbar.menu.findItem(R.id.pin)?.isVisible = markPinned && selectedConversations != 0
+//        toolbar.menu.findItem(R.id.unpin)?.isVisible = !markPinned && selectedConversations != 0
         toolbar.menu.findItem(R.id.read)?.isVisible = markRead && selectedConversations != 0
         toolbar.menu.findItem(R.id.unread)?.isVisible = !markRead && selectedConversations != 0
-        toolbar.menu.findItem(R.id.block)?.isVisible = selectedConversations != 0
+//        toolbar.menu.findItem(R.id.block)?.isVisible = selectedConversations != 0
 
         listOf(plusBadge1, plusBadge2).forEach { badge ->
             badge.isVisible = drawerBadgesExperiment.variant && !state.upgraded
         }
-        plus.isVisible = state.upgraded
+//        plus.isVisible = state.upgraded
         plusBanner.isVisible = !state.upgraded
-        rateLayout.setVisible(state.showRating)
+//        rateLayout.setVisible(state.showRating)
 
         compose.setVisible(state.page is Inbox || state.page is Archived)
         conversationsAdapter.emptyView = empty.takeIf { state.page is Inbox || state.page is Archived }
@@ -244,7 +263,7 @@ class MainActivity : QkThemedActivity(), MainView {
                 title = getString(R.string.main_title_selected, state.page.selected)
                 if (recyclerView.adapter !== conversationsAdapter) recyclerView.adapter = conversationsAdapter
                 conversationsAdapter.updateData(state.page.data)
-                itemTouchHelper.attachToRecyclerView(recyclerView)
+//                itemTouchHelper.attachToRecyclerView(recyclerView)
                 empty.setText(R.string.inbox_empty_text)
             }
 
@@ -252,7 +271,7 @@ class MainActivity : QkThemedActivity(), MainView {
                 showBackButton(true)
                 if (recyclerView.adapter !== searchAdapter) recyclerView.adapter = searchAdapter
                 searchAdapter.data = state.page.data ?: listOf()
-                itemTouchHelper.attachToRecyclerView(null)
+//                itemTouchHelper.attachToRecyclerView(null)
                 empty.setText(R.string.inbox_search_empty_text)
             }
 
@@ -264,7 +283,7 @@ class MainActivity : QkThemedActivity(), MainView {
                 }
                 if (recyclerView.adapter !== conversationsAdapter) recyclerView.adapter = conversationsAdapter
                 conversationsAdapter.updateData(state.page.data)
-                itemTouchHelper.attachToRecyclerView(null)
+//                itemTouchHelper.attachToRecyclerView(null)
                 empty.setText(R.string.archived_empty_text)
             }
         }
