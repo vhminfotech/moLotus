@@ -1,22 +1,168 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
-    android:gravity="center"
-    android:padding="10dp"
-    tools:context=".APNDetailsActivity">
+    android:background="@color/white"
+    android:padding="10dp">
 
-    <TextView
-        android:id="@+id/resultTv"
-        android:text="text"
-        android:textAlignment="center"
-        android:textSize="30sp"
-        android:textStyle="bold"
-        android:textColor="#fff"
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/APN_tf"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        app:endIconMode="custom"
+        android:paddingBottom="10dp"
+        app:endIconDrawable="@drawable/ic_baseline_content_white" >
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/APN_et"
+            android:hint="APN"
+            android:textColor="@color/backgroundDark"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:editable="false"
+            android:text="APN DATA"
+            android:enabled="false"
+            />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/username_tf"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:endIconMode="custom"
+        android:paddingBottom="10dp"
+        app:endIconDrawable="@drawable/ic_baseline_content_white" >
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/username_et"
+            android:hint="Username"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:editable="false"
+            android:text="Username DATA"
+            android:enabled="false"
+            android:textColor="@color/backgroundDark"
+            />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/password_tf"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:endIconMode="custom"
+        android:paddingBottom="10dp"
+        app:endIconDrawable="@drawable/ic_baseline_content_white" >
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/password_et"
+            android:hint="Password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:editable="false"
+            android:text="Password DATA"
+            android:enabled="false"
+            android:textColor="@color/backgroundDark"
+            />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/MMSC_tf"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:endIconMode="custom"
+        android:paddingBottom="10dp"
+        app:endIconDrawable="@drawable/ic_baseline_content_white" >
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/MMSC_et"
+            android:hint="MMSC"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:editable="false"
+            android:text="MMSC DATA"
+            android:enabled="false"
+            android:textColor="@color/backgroundDark"
+            />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/mms_proxy_tf"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:endIconMode="custom"
+        android:paddingBottom="10dp"
+        app:endIconDrawable="@drawable/ic_baseline_content_white"
+
+        >
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/mms_proxy_et"
+            android:hint="MMS Proxy"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:editable="false"
+            android:text="MMS PROXY DATA"
+            android:enabled="false"
+            android:textColor="@color/backgroundDark"
+            />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/compose"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:contentDescription="@string/scheduled_compose_cd"
+        android:src="@drawable/ic_add_black_24dp"
+        android:tint="@color/white"
+        android:visibility="gone"
+        tools:backgroundTint="@color/tools_theme" />
+
+
+
+    <LinearLayout
+        android:id="@+id/goto_setting"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:background="@drawable/rounded_rectangle_24dp"
+        android:elevation="4dp"
+        android:gravity="center"
+        tools:backgroundTint="@color/tools_theme"
+        tools:visibility="visible">
+
+        <ImageView
+            android:id="@+id/upgradeIcon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="12dp"
+            android:src="@drawable/ic_chevron_right_black_24dp"
+            tools:tint="@color/textPrimaryDark" />
+
+        <com.sms.moLotus.common.widget.QkTextView
+            android:id="@+id/upgradeLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:text="Goto APN Setting"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            app:textSize="primary" />
+
+    </LinearLayout>
 
 </LinearLayout>
+
+
