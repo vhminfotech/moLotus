@@ -61,7 +61,7 @@
         app:layout_constraintStart_toEndOf="@id/avatar"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_chainStyle="packed"
-        tools:text="Moez Bhatti" />
+        tools:text="Yash Pawar" />
 
     <com.sms.moLotus.common.widget.QkTextView
         android:id="@+id/subtitle"
@@ -76,7 +76,7 @@
         app:layout_constraintStart_toStartOf="@id/title"
         app:layout_constraintTop_toBottomOf="@id/title"
         app:textSize="secondary"
-        tools:text="Moez Bhatti" />
+        tools:text="Yash Pawar" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/numbers"

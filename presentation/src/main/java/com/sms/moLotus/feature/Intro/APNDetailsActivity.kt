@@ -35,28 +35,28 @@ class APNDetailsActivity : AppCompatActivity() {
         val MMSC_et = findViewById<View>(R.id.MMSC_et) as EditText
         val mms_proxy_et = findViewById<View>(R.id.mms_proxy_et) as EditText
 
-        if(CarrierText == "Airtel") {
-            APN_et.setText("Airtel APN")
-            username_et.setText("Airtel Username")
-            password_et.setText("Airtel Password")
-            MMSC_et.setText("Airtel MMSC")
-            mms_proxy_et.setText("Airtel MMS Proxy")
+        if(CarrierText == "Telkomsel") {
+            APN_et.setText("indosatmms")
+            username_et.setText("indosat")
+            password_et.setText("")
+            MMSC_et.setText("http://mmsc.indosat.com")
+            mms_proxy_et.setText("10.19.19.19:8080")
         }
 
-        if(CarrierText == "VI") {
-            APN_et.setText("VI APN")
-            username_et.setText("VI Username")
-            password_et.setText("VI Password")
-            MMSC_et.setText("VI MMSC")
-            mms_proxy_et.setText("VI MMS Proxy")
+        if(CarrierText == "Indosat") {
+            APN_et.setText("indosatmms")
+            username_et.setText("indosat")
+            password_et.setText("")
+            MMSC_et.setText("http://mmsc.indosat.com")
+            mms_proxy_et.setText("10.19.19.19:8080")
         }
 
-        if(CarrierText == "JIO") {
-            APN_et.setText("JIO APN")
-            username_et.setText("JIO Username")
-            password_et.setText("JIO Password")
-            MMSC_et.setText("JIO MMSC")
-            mms_proxy_et.setText("JIO MMS Proxy")
+        if(CarrierText == "XL Axiata") {
+            APN_et.setText("indosatmms")
+            username_et.setText("indosat")
+            password_et.setText("")
+            MMSC_et.setText("http://mmsc.indosat.com")
+            mms_proxy_et.setText("10.19.19.19:8080")
         }
 
         APN_tf.setEndIconOnClickListener {

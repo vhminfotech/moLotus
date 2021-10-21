@@ -38,7 +38,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_chainStyle="packed"
         app:textSize="primary"
-        tools:text="Moez Bhatti"
+        tools:text="Yash Pawar "
         tools:textColor="@color/textPrimaryDark" />
 
     <com.sms.moLotus.common.widget.QkTextView

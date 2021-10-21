@@ -364,7 +364,8 @@ class MainActivity : QkThemedActivity(), MainView {
         ActivityCompat.requestPermissions(this, arrayOf(
                 Manifest.permission.READ_SMS,
                 Manifest.permission.SEND_SMS,
-                Manifest.permission.READ_CONTACTS), 0)
+                Manifest.permission.READ_CONTACTS
+        ), 0)
     }
 
     override fun clearSearch() {

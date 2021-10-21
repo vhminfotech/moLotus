@@ -31,7 +31,7 @@
             android:textColor="?android:attr/textColorPrimary"
             android:textStyle="bold"
             app:textSize="secondary"
-            tools:text="Moez Bhatti" />
+            tools:text="Yash Pawar" />
 
     </LinearLayout>
 

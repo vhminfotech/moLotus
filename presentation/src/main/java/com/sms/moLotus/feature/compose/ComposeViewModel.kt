@@ -5,6 +5,7 @@ import android.net.Uri
 import android.os.Vibrator
 import android.provider.ContactsContract
 import android.telephony.SmsMessage
+import android.widget.Toast
 import androidx.core.content.getSystemService
 import com.sms.moLotus.R
 import com.sms.moLotus.common.Navigator
@@ -35,6 +36,7 @@ import com.sms.moLotus.model.Recipient
 import com.sms.moLotus.repository.ContactRepository
 import com.sms.moLotus.repository.ConversationRepository
 import com.sms.moLotus.repository.MessageRepository
+import com.sms.moLotus.repository.SyncRepository
 import com.sms.moLotus.util.ActiveSubscriptionObservable
 import com.sms.moLotus.util.PhoneNumberUtils
 import com.sms.moLotus.util.Preferences
@@ -78,7 +80,9 @@ class ComposeViewModel @Inject constructor(
     private val prefs: Preferences,
     private val retrySending: RetrySending,
     private val sendMessage: SendMessage,
-    private val subscriptionManager: SubscriptionManagerCompat
+    private val subscriptionManager: SubscriptionManagerCompat,
+    private val syncManager: SyncRepository,
+    private val syncRepo: SyncRepository
 ) : QkViewModel<ComposeView, ComposeState>(ComposeState(
         editingMode = threadId == 0L && addresses.isEmpty(),
         threadId = threadId,
@@ -620,8 +624,9 @@ class ComposeViewModel @Inject constructor(
                 .filter { permissionManager.hasSendSms().also { if (!it) view.requestSmsPermission() } }
                 .withLatestFrom(view.textChangedIntent) { _, body -> body }
                 .map { body -> body.toString() }
-                .withLatestFrom(state, attachments, conversation, selectedChips) { body, state, attachments,
-                                                                                   conversation, chips ->
+                .withLatestFrom(state, attachments, conversation, selectedChips) {
+                        body, state, attachments, conversation, chips ->
+
                     val subId = state.subscription?.subscriptionId ?: -1
                     val addresses = when (conversation.recipients.isNotEmpty()) {
                         true -> conversation.recipients.map { it.address }
@@ -677,6 +682,8 @@ class ComposeViewModel @Inject constructor(
                                         .getConversation(threadId)?.recipients?.firstOrNull()?.address ?: addr)
                                 sendMessage.execute(SendMessage
                                         .Params(subId, threadId, address, body, attachments, delay))
+                                syncManager.syncMessages()
+
                             }
                         }
                     }
@@ -691,10 +698,10 @@ class ComposeViewModel @Inject constructor(
                 .autoDisposable(view.scope())
                 .subscribe()
 
-        // View QKSMS+
-        view.viewQksmsPlusIntent
-                .autoDisposable(view.scope())
-                .subscribe { navigator.showQksmsPlusActivity("compose_schedule") }
+        // View moLotus+
+//        view.viewQksmsPlusIntent
+//                .autoDisposable(view.scope())
+//                .subscribe { navigator.showQksmsPlusActivity("compose_schedule") }
 
         // Navigate back
         view.optionsItemIntent

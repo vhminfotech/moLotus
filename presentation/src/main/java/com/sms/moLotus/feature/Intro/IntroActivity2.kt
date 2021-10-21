@@ -16,7 +16,7 @@ import kotlinx.android.synthetic.main.main_activity.*
 
 class IntroActivity2 : AppCompatActivity(){
 
-    var languages = mutableListOf("Airtel", "VI", "JIO")
+    var languages = mutableListOf("Telkomsel", "Indosat", "XL Axiata")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

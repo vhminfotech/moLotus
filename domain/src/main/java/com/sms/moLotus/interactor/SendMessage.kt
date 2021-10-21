@@ -24,6 +24,7 @@ import com.sms.moLotus.extensions.mapNotNull
 import com.sms.moLotus.model.Attachment
 import com.sms.moLotus.repository.ConversationRepository
 import com.sms.moLotus.repository.MessageRepository
+import com.sms.moLotus.repository.SyncRepository
 import io.reactivex.Flowable
 import javax.inject.Inject
 
@@ -31,7 +32,9 @@ class SendMessage @Inject constructor(
     private val context: Context,
     private val conversationRepo: ConversationRepository,
     private val messageRepo: MessageRepository,
-    private val updateBadge: UpdateBadge
+    private val updateBadge: UpdateBadge,
+    private val syncManager: SyncRepository,
+    private val syncRepo: SyncRepository
 ) : Interactor<SendMessage.Params>() {
 
     data class Params(
@@ -65,5 +68,6 @@ class SendMessage @Inject constructor(
             .doOnNext { threadId -> conversationRepo.updateConversations(threadId) }
             .doOnNext { threadId -> conversationRepo.markUnarchived(threadId) }
             .flatMap { updateBadge.buildObservable(Unit) } // Update the widget
-
+//            .doOnNext { syncManager.syncMessages() }
+//            .doOnNext { syncRepo.syncMessages() }
 }
