@@ -29,10 +29,12 @@
         android:supportsRtl="true"
         android:theme="@style/AppLaunchTheme">
 
-        <activity android:theme="@style/AppBaseTheme" android:name="com.sms.moLotus.feature.Intro.APNDetailsActivity" />
+        <activity android:theme="@style/AppBaseTheme"
+            android:name="com.sms.moLotus.feature.Intro.APNDetailsActivity" />
 
 <!--        <activity android:name="com.sms.moLotus.feature.main.MainActivity" />-->
 
+        <activity android:name="com.sms.moLotus.feature.Intro.IntroActivity" />
         <activity android:name="com.sms.moLotus.feature.Intro.IntroActivity2" />
 
         <activity

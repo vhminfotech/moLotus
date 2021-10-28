@@ -665,6 +665,7 @@ class ComposeViewModel @Inject constructor(
                             val address = conversation.recipients.map { it.address }
                             sendMessage.execute(SendMessage.Params(subId, threadId, address, body, attachments, delay))
                         }
+                            
 
                         // Create a new conversation with one address
                         addresses.size == 1 -> {
@@ -682,7 +683,7 @@ class ComposeViewModel @Inject constructor(
                                         .getConversation(threadId)?.recipients?.firstOrNull()?.address ?: addr)
                                 sendMessage.execute(SendMessage
                                         .Params(subId, threadId, address, body, attachments, delay))
-                                syncManager.syncMessages()
+//                                syncManager.syncMessages()
 
                             }
                         }

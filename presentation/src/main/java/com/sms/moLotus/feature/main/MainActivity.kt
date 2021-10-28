@@ -4,7 +4,6 @@ import android.Manifest
 import android.animation.ObjectAnimator
 import android.app.AlertDialog
 import android.content.Intent
-import android.content.SharedPreferences
 import android.content.res.ColorStateList
 import android.os.Build
 import android.os.Bundle
@@ -13,7 +12,6 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewStub
-import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.app.ActivityCompat
 import androidx.core.view.GravityCompat
@@ -21,7 +19,6 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
-import androidx.recyclerview.widget.ItemTouchHelper
 import com.google.android.material.snackbar.Snackbar
 import com.jakewharton.rxbinding2.view.clicks
 import com.jakewharton.rxbinding2.widget.textChanges
@@ -36,8 +33,7 @@ import com.sms.moLotus.common.util.extensions.scrapViews
 import com.sms.moLotus.common.util.extensions.setBackgroundTint
 import com.sms.moLotus.common.util.extensions.setTint
 import com.sms.moLotus.common.util.extensions.setVisible
-import com.sms.moLotus.feature.Intro.APNDetailsActivity
-import com.sms.moLotus.feature.Intro.IntroActivity2
+import com.sms.moLotus.feature.Intro.IntroActivity
 import com.sms.moLotus.feature.blocking.BlockingDialog
 import com.sms.moLotus.feature.changelog.ChangelogDialog
 //import com.sms.moLotus.feature.conversations.ConversationItemTouchCallback
@@ -130,7 +126,7 @@ class MainActivity : QkThemedActivity(), MainView {
         val firstTime = settings.getBoolean("first_time", true)
 
         if (firstTime) {
-            val intent = Intent(this, IntroActivity2::class.java);
+            val intent = Intent(this, IntroActivity::class.java);
             startActivity(intent)
         }
 

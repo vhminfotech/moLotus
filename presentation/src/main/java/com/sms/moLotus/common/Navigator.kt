@@ -13,6 +13,7 @@ import android.provider.Telephony
 import android.webkit.MimeTypeMap
 import androidx.core.content.FileProvider
 import com.sms.moLotus.BuildConfig
+import com.sms.moLotus.feature.Intro.IntroActivity
 import com.sms.moLotus.feature.Intro.IntroActivity2
 import com.sms.moLotus.feature.backup.BackupActivity
 import com.sms.moLotus.feature.blocking.BlockingActivity

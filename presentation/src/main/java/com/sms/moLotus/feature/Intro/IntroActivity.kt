@@ -12,16 +12,20 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.sms.moLotus.R
 import kotlinx.android.synthetic.main.intro_activity_main.*
+import kotlinx.android.synthetic.main.main_activity.*
 
-class IntroActivity2 : AppCompatActivity(){
+class IntroActivity : AppCompatActivity(){
 
     var languages = mutableListOf("Telkomsel", "Indosat", "XL Axiata")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.intro_activity_2)
+        setContentView(R.layout.intro_activity_main)
 
         languages.add(0,"Select carrier provider")
+
+        // get reference to all views
+        var inputPhoneNumber = findViewById<EditText>(R.id.phone_number)
 
         val adapter:ArrayAdapter<String> = object: ArrayAdapter<String>(
             this,
@@ -89,14 +93,20 @@ class IntroActivity2 : AppCompatActivity(){
 
         // set on-click listener
         btnLogin.setOnClickListener {
+            val PhoneNumber = inputPhoneNumber.text
             val CarrierText = carrier_provider.selectedItem.toString()
+
+            if (PhoneNumber.isEmpty()){
+                showToast(message = "Phone number is empty")
+            }
 
             if (CarrierText == "Select carrier provider"){
                 showToast(message = "Please select carrier provider")
             }
 
-            if (CarrierText != "Select carrier provider" ){
+            if (CarrierText != "Select carrier provider" && !PhoneNumber.isEmpty() ){
                 val intent = Intent(this, APNDetailsActivity::class.java);
+                intent.putExtra("PhoneNumber", PhoneNumber.toString())
                 intent.putExtra("CarrierText", CarrierText)
                 startActivity(intent)
             }

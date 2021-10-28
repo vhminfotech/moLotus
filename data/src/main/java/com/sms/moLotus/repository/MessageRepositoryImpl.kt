@@ -631,13 +631,13 @@ class MessageRepositoryImpl @Inject constructor(
             message?.let {
                 // Update the message in realm
                 realm.executeTransaction {
-                    message.boxId = Sms.MESSAGE_TYPE_SENT
+//                    message.boxId = Sms.MESSAGE_TYPE_SENT
                 }
 
                 // Update the message in the native ContentProvider
                 val values = ContentValues()
                 values.put(Sms.TYPE, Sms.MESSAGE_TYPE_SENT)
-                context.contentResolver.update(message.getUri(), values, null, null)
+//                context.contentResolver.update(message.getUri(), values, null, null)
             }
         }
     }

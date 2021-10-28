@@ -187,6 +187,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
 
         // Don't set the adapters unless needed
         if (state.editingMode && chips.adapter == null) chips.adapter = chipsAdapter
+        toolbar.setNavigationIcon(R.drawable.ic_baseline_clear_24);
 
         toolbar.menu.findItem(R.id.add)?.isVisible = state.editingMode
         toolbar.menu.findItem(R.id.call)?.isVisible = !state.editingMode && state.selectedMessages == 0
