@@ -114,6 +114,50 @@ class APNDetailsActivity : AppCompatActivity() {
             MVNO_Value_et.setText("Not set")
         }
 
+        if(CarrierText == "Celcom") {
+            NAME_et.setText("Celcom MMS")
+            APN_et.setText("celcom3g")
+            Proxy_et.setText("Not Set")
+            Port_et.setText("Not Set")
+            username_et.setText("Not Set")
+            password_et.setText("Not Set")
+            Server_et.setText("Not Set")
+            MMSC_et.setText("http://mms.celcom.net.my")
+            mms_proxy_et.setText("10.128.1.242")
+            MMS_Port_et.setText("80")
+            MCC_et.setText("502")
+            MNC_et.setText("19")
+            Auth_Type_et.setText("Not Set")
+            APN_Type_et.setText("mms")
+            APN_Protocol_et.setText("IPv4")
+            APN_Roaming_et.setText("IPv4")
+            Bearer_et.setText("unspecified")
+            MVNO_Type_et.setText("none")
+            MVNO_Value_et.setText("Not set")
+        }
+
+        if(CarrierText == "U Mobile") {
+            NAME_et.setText("U Mobile Internet")
+            APN_et.setText("my3g")
+            Proxy_et.setText("Not Set")
+            Port_et.setText("Not Set")
+            username_et.setText("Not Set")
+            password_et.setText("Not Set")
+            Server_et.setText("Not Set")
+            MMSC_et.setText("http://10.30.3.11/servlets/mms")
+            mms_proxy_et.setText("10.30.5.11")
+            MMS_Port_et.setText("8080")
+            MCC_et.setText("502")
+            MNC_et.setText("18")
+            Auth_Type_et.setText("PAP")
+            APN_Type_et.setText("default,supl,mms")
+            APN_Protocol_et.setText("IPv4/IPv6")
+            APN_Roaming_et.setText("IPv4/IPv6")
+            Bearer_et.setText("unspecified")
+            MVNO_Type_et.setText("none")
+            MVNO_Value_et.setText("Not set")
+        }
+
         NAME_tf.setEndIconOnClickListener {
             val text = findViewById<View>(R.id.NAME_et) as EditText
             val value = text.text.toString()
