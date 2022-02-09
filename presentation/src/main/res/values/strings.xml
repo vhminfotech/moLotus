@@ -126,6 +126,7 @@
     <string name="compose_attach_cd">Add an attachment</string>
     <string name="compose_gallery_cd">Attach a photo</string>
     <string name="compose_camera_cd">Take a photo</string>
+    <string name="attach_video">Attach a video</string>
     <string name="compose_schedule_cd">Schedule message</string>
     <string name="compose_contact_cd">Attach a contact</string>
     <string name="compose_contact_error">Error reading contact</string>

@@ -45,6 +45,14 @@ sealed class Attachment {
                 uri?.let(context.contentResolver::getType) == "image/gif"
             }
         }
+
+        fun isVideo(context: Context): Boolean {
+            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1 && inputContent != null) {
+                inputContent.description.hasMimeType("video/mp4")
+            } else {
+                uri?.let(context.contentResolver::getType) == "video/mp4"
+            }
+        }
     }
 
     data class Contact(val vCard: String) : Attachment()

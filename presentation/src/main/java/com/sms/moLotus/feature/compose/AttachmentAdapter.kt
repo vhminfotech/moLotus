@@ -35,9 +35,13 @@ class AttachmentAdapter @Inject constructor(
         val inflater = LayoutInflater.from(parent.context)
         val view = when (viewType) {
             VIEW_TYPE_IMAGE -> inflater.inflate(R.layout.attachment_image_list_item, parent, false)
-                    .apply { thumbnailBounds.clipToOutline = true }
+                .apply { thumbnailBounds.clipToOutline = true }
 
-            VIEW_TYPE_CONTACT -> inflater.inflate(R.layout.attachment_contact_list_item, parent, false)
+            VIEW_TYPE_CONTACT -> inflater.inflate(
+                R.layout.attachment_contact_list_item,
+                parent,
+                false
+            )
 
             else -> null!! // Impossible
         }
@@ -51,18 +55,18 @@ class AttachmentAdapter @Inject constructor(
     }
 
     override fun onBindViewHolder(holder: QkViewHolder, position: Int) {
-        val attachment = getItem(position)
 
-        when (attachment) {
+        when (val attachment = getItem(position)) {
             is Attachment.Image -> Glide.with(context)
-                    .load(attachment.getUri())
-                    .into(holder.thumbnail)
+                .load(attachment.getUri())
+                .into(holder.thumbnail)
 
             is Attachment.Contact -> Observable.just(attachment.vCard)
-                    .mapNotNull { vCard -> Ezvcard.parse(vCard).first() }
-                    .subscribeOn(Schedulers.computation())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe { vcard -> holder.name?.text = vcard.formattedName.value }
+                .mapNotNull { vCard -> Ezvcard.parse(vCard).first() }
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe { vcard -> holder.name?.text = vcard.formattedName.value }
+
         }
     }
 

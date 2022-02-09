@@ -187,7 +187,7 @@
         android:layout_height="56dp"
         android:padding="10dp"
         android:src="@drawable/ic_cancel_black_24dp"
-        android:tint="?android:attr/textColorSecondary"
+        app:tint="?android:attr/textColorSecondary"
         app:layout_constraintBottom_toTopOf="@id/scheduledSeparator"
         app:layout_constraintEnd_toEndOf="@id/messageBackground" />
 
@@ -244,7 +244,7 @@
         android:contentDescription="@string/compose_sim_cd"
         android:padding="8dp"
         android:src="@drawable/ic_sim_card_black_24dp"
-        android:tint="?android:attr/textColorSecondary"
+        app:tint="?android:attr/textColorSecondary"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@id/messageBackground"
         app:layout_constraintEnd_toEndOf="@id/messageBackground" />
@@ -286,7 +286,7 @@
         android:contentDescription="@string/compose_send_cd"
         android:padding="10dp"
         android:src="@drawable/ic_send_black_24dp"
-        android:tint="?android:textColorSecondary"
+        app:tint="?android:textColorSecondary"
         app:layout_constraintBottom_toBottomOf="@id/messageBackground"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -351,7 +351,7 @@
         android:layout_height="wrap_content"
         android:visibility="gone"
         app:constraint_referenced_ids="contact,contactLabel,gallery,galleryLabel,camera,cameraLabel,attachingBackground" />
-<!--    app:constraint_referenced_ids="contact,contactLabel,schedule,scheduleLabel,gallery,galleryLabel,camera,cameraLabel,attachingBackground" />-->
+    <!--    app:constraint_referenced_ids="contact,contactLabel,schedule,scheduleLabel,gallery,galleryLabel,camera,cameraLabel,attachingBackground" />-->
 
     <View
         android:id="@+id/attachingBackground"
@@ -375,7 +375,7 @@
         android:elevation="4dp"
         android:padding="10dp"
         android:src="@drawable/ic_person_black_24dp"
-        android:tint="?android:attr/textColorSecondary"
+        app:tint="?android:attr/textColorSecondary"
         android:visibility="visible"
         app:layout_constraintBottom_toTopOf="@id/gallery"
         app:layout_constraintEnd_toEndOf="@id/attach"
@@ -398,39 +398,39 @@
         app:layout_constraintStart_toEndOf="@id/contact"
         app:layout_constraintTop_toTopOf="@id/contact" />
 
-<!--    <ImageView-->
-<!--        android:id="@+id/schedule"-->
-<!--        android:layout_width="40dp"-->
-<!--        android:layout_height="40dp"-->
-<!--        android:layout_marginBottom="12dp"-->
-<!--        android:background="@drawable/circle"-->
-<!--        android:backgroundTint="?attr/bubbleColor"-->
-<!--        android:contentDescription="@string/compose_schedule_cd"-->
-<!--        android:elevation="4dp"-->
-<!--        android:padding="10dp"-->
-<!--        android:src="@drawable/ic_event_black_24dp"-->
-<!--        android:tint="?android:attr/textColorSecondary"-->
-<!--        android:visibility="visible"-->
-<!--        app:layout_constraintBottom_toTopOf="@id/gallery"-->
-<!--        app:layout_constraintEnd_toEndOf="@id/attach"-->
-<!--        app:layout_constraintStart_toStartOf="@id/attach" />-->
+    <!--    <ImageView-->
+    <!--        android:id="@+id/schedule"-->
+    <!--        android:layout_width="40dp"-->
+    <!--        android:layout_height="40dp"-->
+    <!--        android:layout_marginBottom="12dp"-->
+    <!--        android:background="@drawable/circle"-->
+    <!--        android:backgroundTint="?attr/bubbleColor"-->
+    <!--        android:contentDescription="@string/compose_schedule_cd"-->
+    <!--        android:elevation="4dp"-->
+    <!--        android:padding="10dp"-->
+    <!--        android:src="@drawable/ic_event_black_24dp"-->
+    <!--        android:tint="?android:attr/textColorSecondary"-->
+    <!--        android:visibility="visible"-->
+    <!--        app:layout_constraintBottom_toTopOf="@id/gallery"-->
+    <!--        app:layout_constraintEnd_toEndOf="@id/attach"-->
+    <!--        app:layout_constraintStart_toStartOf="@id/attach" />-->
 
-<!--    <com.sms.moLotus.common.widget.QkTextView-->
-<!--        android:id="@+id/scheduleLabel"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="32dp"-->
-<!--        android:layout_marginStart="8dp"-->
-<!--        android:background="@drawable/rounded_rectangle_4dp"-->
-<!--        android:backgroundTint="?attr/bubbleColor"-->
-<!--        android:elevation="4dp"-->
-<!--        android:gravity="center_vertical"-->
-<!--        android:paddingStart="8dp"-->
-<!--        android:paddingEnd="8dp"-->
-<!--        android:text="@string/compose_schedule_cd"-->
-<!--        android:textColor="?android:attr/textColorPrimary"-->
-<!--        app:layout_constraintBottom_toBottomOf="@id/schedule"-->
-<!--        app:layout_constraintStart_toEndOf="@id/schedule"-->
-<!--        app:layout_constraintTop_toTopOf="@id/schedule" />-->
+    <!--    <com.sms.moLotus.common.widget.QkTextView-->
+    <!--        android:id="@+id/scheduleLabel"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="32dp"-->
+    <!--        android:layout_marginStart="8dp"-->
+    <!--        android:background="@drawable/rounded_rectangle_4dp"-->
+    <!--        android:backgroundTint="?attr/bubbleColor"-->
+    <!--        android:elevation="4dp"-->
+    <!--        android:gravity="center_vertical"-->
+    <!--        android:paddingStart="8dp"-->
+    <!--        android:paddingEnd="8dp"-->
+    <!--        android:text="@string/compose_schedule_cd"-->
+    <!--        android:textColor="?android:attr/textColorPrimary"-->
+    <!--        app:layout_constraintBottom_toBottomOf="@id/schedule"-->
+    <!--        app:layout_constraintStart_toEndOf="@id/schedule"-->
+    <!--        app:layout_constraintTop_toTopOf="@id/schedule" />-->
 
     <ImageView
         android:id="@+id/gallery"
@@ -443,7 +443,7 @@
         android:elevation="4dp"
         android:padding="10dp"
         android:src="@drawable/ic_insert_photo_black_24dp"
-        android:tint="?android:attr/textColorSecondary"
+        app:tint="?android:attr/textColorSecondary"
         android:visibility="visible"
         app:layout_constraintBottom_toTopOf="@id/camera"
         app:layout_constraintEnd_toEndOf="@id/attach"
@@ -477,11 +477,11 @@
         android:elevation="4dp"
         android:padding="10dp"
         android:src="@drawable/ic_camera_alt_black_24dp"
-        android:tint="?android:attr/textColorSecondary"
+        app:tint="?android:attr/textColorSecondary"
         android:visibility="visible"
-        app:layout_constraintBottom_toTopOf="@id/attach"
-        app:layout_constraintEnd_toEndOf="@id/attach"
-        app:layout_constraintStart_toStartOf="@id/attach" />
+        app:layout_constraintBottom_toTopOf="@id/video"
+        app:layout_constraintEnd_toEndOf="@id/video"
+        app:layout_constraintStart_toStartOf="@id/video" />
 
     <com.sms.moLotus.common.widget.QkTextView
         android:id="@+id/cameraLabel"
@@ -499,6 +499,41 @@
         app:layout_constraintBottom_toBottomOf="@id/camera"
         app:layout_constraintStart_toEndOf="@id/gallery"
         app:layout_constraintTop_toTopOf="@id/camera" />
+
+    <ImageView
+        android:id="@+id/video"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/circle"
+        android:backgroundTint="?attr/bubbleColor"
+        android:contentDescription="@string/compose_camera_cd"
+        android:elevation="4dp"
+        android:padding="10dp"
+        android:src="@drawable/ic_baseline_video_library_24"
+        app:tint="?android:attr/textColorSecondary"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@id/attach"
+        app:layout_constraintEnd_toEndOf="@id/attach"
+        app:layout_constraintStart_toStartOf="@id/attach" />
+
+     <com.sms.moLotus.common.widget.QkTextView
+         android:id="@+id/videoLabel"
+         android:layout_width="wrap_content"
+         android:layout_height="32dp"
+         android:layout_marginStart="8dp"
+         android:background="@drawable/rounded_rectangle_4dp"
+         android:backgroundTint="?attr/bubbleColor"
+         android:elevation="4dp"
+         android:gravity="center_vertical"
+         android:paddingStart="8dp"
+         android:paddingEnd="8dp"
+         android:text="@string/attach_video"
+         android:textColor="?android:attr/textColorPrimary"
+         app:layout_constraintBottom_toBottomOf="@id/video"
+         app:layout_constraintStart_toEndOf="@id/video"
+         app:layout_constraintTop_toTopOf="@id/video" />
+
 
     <ImageView
         android:id="@+id/attach"

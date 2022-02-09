@@ -19,8 +19,13 @@
 package com.sms.moLotus.util
 
 import android.content.Context
+import android.media.MediaMetadataRetriever
 import android.net.Uri
-import java.io.ByteArrayOutputStream
+import android.os.Environment
+import android.util.Log
+import android.R.attr.path
+import java.io.*
+
 
 object ImageUtils {
 
@@ -37,6 +42,57 @@ object ImageUtils {
         val outputStream = ByteArrayOutputStream()
         GifEncoder(context, GlideApp.get(context).bitmapPool).encodeTransformedToStream(gif, outputStream)
         return outputStream.toByteArray()
+    }
+
+
+
+    fun getScaledVideo(context: Context, uri: Uri, maxWidth: Int, maxHeight: Int, quality: Int = 90): ByteArray {
+        /*Transcoder.into("")
+            .addDataSource(context, uri)
+            .setListener(object: TranscoderListener {
+                override fun onTranscodeProgress(progress: Double) {
+                    Log.e("ImageUtils","progress::: $progress")
+                }
+
+                override fun onTranscodeCompleted(successCode: Int) {
+                    Log.e("ImageUtils","successCode::: $successCode")
+
+                }
+
+                override fun onTranscodeCanceled() {
+                    Log.e("ImageUtils","onTranscodeCanceled")
+                }
+
+                override fun onTranscodeFailed(exception: Throwable) {
+                    Log.e("ImageUtils","exception:: ${exception.message}")
+
+                }
+            }).transcode()*/
+        /*val file: File = File(path)
+        val size = file.length().toInt()
+        val bytes = ByteArray(size)
+        val buf = BufferedInputStream(FileInputStream(file))
+        buf.read(bytes, 0, bytes.size)
+        buf.close()*/
+
+        val iStream: InputStream? = context.contentResolver.openInputStream(uri)
+        val byteBuffer = ByteArrayOutputStream()
+        val bufferSize = 1024
+        val buffer = ByteArray(bufferSize)
+
+        var len = 0
+        while (iStream?.read(buffer).also {
+                if (it != null) {
+                    len = it
+                }
+            } != -1) {
+            byteBuffer.write(buffer, 0, len)
+        }
+
+        Log.e("ImageUtils","uri:: $uri==== byteBuffer:: $byteBuffer")
+
+       // GifEncoder(context, GlideApp.get(context).bitmapPool).encodeTransformedToStream(gif, outputStream)
+        return byteBuffer.toByteArray()
     }
 
     fun getScaledImage(context: Context, uri: Uri, maxWidth: Int, maxHeight: Int, quality: Int = 90): ByteArray {
