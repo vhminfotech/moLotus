@@ -2,6 +2,7 @@ package com.sms.moLotus.feature.conversations
 
 import android.content.Context
 import android.graphics.Typeface
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.text.buildSpannedString
@@ -94,10 +95,17 @@ class ConversationsAdapter @Inject constructor(
 //                color(theme) { append(" " + context.getString(R.string.main_draft)) }
             }
         }
-        holder.date.text = conversation.date.takeIf { it > 0 }?.let(dateFormatter::getConversationTimestamp)
+        holder.date.text =
+            conversation.date.takeIf { it > 0 }?.let(dateFormatter::getConversationTimestamp)
         holder.snippet.text = when {
 //            conversation.draft.isNotEmpty() -> conversation.draft
-            conversation.me -> context.getString(R.string.main_sender_you, conversation.snippet)
+            conversation.me -> {
+                if (conversation.snippet.isNullOrEmpty()) {
+                    context.getString(R.string.main_sender_you, "Audio")
+                } else {
+                    context.getString(R.string.main_sender_you, conversation.snippet)
+                }
+            }
             else -> conversation.snippet
         }
         holder.pinned.isVisible = conversation.pinned

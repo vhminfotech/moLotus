@@ -65,9 +65,13 @@ class ComposeWindowCallback(
         return localCallback.onCreatePanelMenu(i, menu)
     }
 
-    override fun onPreparePanel(i: Int, view: View, menu: Menu): Boolean {
-        return localCallback.onPreparePanel(i, view, menu)
+    override fun onPreparePanel(p0: Int, p1: View?, p2: Menu): Boolean {
+        return localCallback.onPreparePanel(p0, p1, p2)
     }
+
+    /*override fun onPreparePanel(i: Int, view: View, menu: Menu): Boolean {
+        return localCallback.onPreparePanel(i, view, menu)
+    }*/
 
     override fun onMenuOpened(i: Int, menu: Menu): Boolean {
         return localCallback.onMenuOpened(i, menu)

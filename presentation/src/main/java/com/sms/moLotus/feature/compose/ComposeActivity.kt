@@ -5,19 +5,31 @@ import android.animation.LayoutTransition
 import android.app.Activity
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.ContentResolver
 import android.content.ContentValues
+import android.content.Context
 import android.content.Intent
+import android.database.Cursor
+import android.graphics.Color
+import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.provider.ContactsContract
 import android.provider.MediaStore
+import android.text.Editable
+import android.text.TextWatcher
 import android.text.format.DateFormat
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.core.content.PermissionChecker.PERMISSION_GRANTED
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
@@ -52,6 +64,14 @@ import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
 import kotlin.collections.HashMap
+import java.io.File
+import java.io.IOException
+import com.devlomi.record_view.OnRecordListener
+import com.devlomi.record_view.RecordButton
+
+import com.devlomi.record_view.RecordPermissionHandler
+
+import java.util.concurrent.TimeUnit
 
 class ComposeActivity : QkThemedActivity(), ComposeView {
 
@@ -61,9 +81,17 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         private const val AttachPhotoRequestCode = 2
         private const val AttachContactRequestCode = 3
         private const val AttachVideoRequestCode = 4
+        private const val TakeVideoRequestCode = 5
+        private const val AddAudioRequestCode = 6
 
         private const val CameraDestinationKey = "camera_destination"
+
+        var recordButton : RecordButton ?= null
     }
+
+    private var audioRecorder: AudioRecorder? = null
+
+    private var recordFile: File? = null
 
     @Inject
     lateinit var attachmentAdapter: AttachmentAdapter
@@ -93,7 +121,9 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
     override val messagePartClickIntent: Subject<Long> by lazy { messageAdapter.partClicks }
     override val messagesSelectedIntent by lazy { messageAdapter.selectionChanges }
     override val cancelSendingIntent: Subject<Long> by lazy { messageAdapter.cancelSending }
-    override val attachmentDeletedIntent: Subject<Attachment> by lazy { attachmentAdapter.attachmentDeleted }
+    override val attachmentDeletedIntent: Subject<Attachment> by lazy {
+        attachmentAdapter.attachmentDeleted
+    }
     override val textChangedIntent by lazy { message.textChanges() }
     override val attachIntent by lazy {
         Observable.merge(
@@ -109,6 +139,12 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
     }
     override val videoGalleryIntent by lazy {
         Observable.merge(video.clicks(), videoLabel.clicks())
+    }
+    override val takeVideoIntent by lazy {
+        Observable.merge(takeVideo.clicks(), takeVideoLabel.clicks())
+    }
+    override val addAudioIntent by lazy {
+        Observable.merge(addAudio.clicks(), addAudioLabel.clicks())
     }
     override val scheduleIntent by lazy {
 //        Observable.merge(schedule.clicks(), scheduleLabel.clicks())
@@ -128,6 +164,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
     override val viewQksmsPlusIntent: Subject<Unit> = PublishSubject.create()
     override val backPressedIntent: Subject<Unit> = PublishSubject.create()
 
+
     private val viewModel by lazy {
         ViewModelProviders.of(
             this,
@@ -143,8 +180,39 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         setContentView(R.layout.compose_activity)
         showBackButton(true)
         viewModel.bindView(this)
+        recordButton = record_button
+
+
+        message?.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+
+            }
+
+            override fun afterTextChanged(s: Editable) {
+                if ((s.isNotEmpty() || s.length > 0)) {
+                    record_button?.visibility = View.GONE
+                } else {
+                    record_button?.visibility = View.VISIBLE
+                }
+            }
+
+        })
+
+        audioRecorder = AudioRecorder()
+        record_button.setRecordView(record_view)
+        recordClicked()
+
         video.visibility = View.GONE
         videoLabel.visibility = View.GONE
+        takeVideo.visibility = View.GONE
+        takeVideoLabel.visibility = View.GONE
+        addAudio.visibility = View.GONE
+        addAudioLabel.visibility = View.GONE
+
 
         contentView.layoutTransition = LayoutTransition().apply {
             disableTransitionType(LayoutTransition.CHANGING)
@@ -179,6 +247,211 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         if (Build.VERSION.SDK_INT <= 22) {
             messageBackground.setBackgroundTint(resolveThemeColor(R.attr.bubbleColor))
         }
+    }
+
+
+    private fun recordClicked() {
+        record_button.visibility = View.VISIBLE
+        record_button.setOnRecordClickListener {
+            //  Toast.makeText(this, "RECORD BUTTON CLICKED", Toast.LENGTH_SHORT).show()
+            Log.d("RecordButton", "RECORD BUTTON CLICKED")
+        }
+
+
+        record_view.setSmallMicColor(Color.parseColor("#59C2F1"))
+        record_view.setLessThanSecondAllowed(false)
+        record_view.cancelBounds = 8f
+        record_view.setSlideToCancelText("Slide To Cancel")
+        record_view.setCustomSounds(R.raw.record_start, R.raw.record_finished, 0)
+
+
+        //auto cancelling recording after timeLimit (In millis)
+        record_view.timeLimit = 30000//30 sec
+
+
+        record_view.setOnRecordListener(object : OnRecordListener {
+            override fun onStart() {
+                record_view.visibility = View.VISIBLE
+                record_view?.setBackgroundColor(resources.getColor(R.color.bubbleLight))
+                recordFile = File(
+                    Environment.getExternalStorageDirectory(), /*UUID.randomUUID().toString()*/
+                    "audioTest" + ".aac"
+                )
+                try {
+                    audioRecorder?.start(recordFile?.path)
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                }
+                Log.d("record_view", "onStart")
+                // Toast.makeText(this@ComposeActivity, "OnStartRecord", Toast.LENGTH_SHORT).show()
+            }
+
+            override fun onCancel() {
+                stopRecording(true)
+                record_view.visibility = View.GONE
+                record_view?.setBackgroundColor(resources.getColor(android.R.color.transparent))
+                Toast.makeText(this@ComposeActivity, "Recording cancelled", Toast.LENGTH_SHORT)
+                    .show()
+                Log.d("record_view", "onCancel")
+            }
+
+            override fun onFinish(recordTime: Long, limitReached: Boolean) {
+                record_view.visibility = View.GONE
+                record_button.visibility = View.GONE
+
+                stopRecording(false)
+                val time = getHumanTimeText(recordTime)
+                /*Toast.makeText(
+                    this@ComposeActivity,
+                    "onFinishRecord - Recorded Time is: " + time + " File saved at " + recordFile?.path,
+                    Toast.LENGTH_SHORT
+                ).show()*/
+                var uri: Uri? = null
+                try {
+                    uri = getAudioContentUri(this@ComposeActivity, recordFile?.absoluteFile)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    Log.d("record_view", "error:: ${e.message}")
+                }
+                uri?.let(attachmentSelectedIntent::onNext)
+                Log.d(
+                    "record_view",
+                    "onFinish Limit Reached? $limitReached == recordFile::${recordFile?.path} time:: $time :::: uri::::$uri"
+                )
+            }
+
+            override fun onLessThanSecond() {
+                stopRecording(true)
+                Toast.makeText(this@ComposeActivity, "OnLessThanSecond", Toast.LENGTH_SHORT).show()
+                Log.d("record_view", "onLessThanSecond")
+            }
+        })
+
+
+        record_view.setOnBasketAnimationEndListener {
+
+            Log.d(
+                "record_view",
+                "Basket Animation Finished"
+            )
+        }
+
+        record_view.setRecordPermissionHandler(RecordPermissionHandler {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+                return@RecordPermissionHandler true
+            }
+            val recordPermissionAvailable = ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.RECORD_AUDIO
+            ) === PERMISSION_GRANTED
+            if (recordPermissionAvailable) {
+                return@RecordPermissionHandler true
+            }
+            ActivityCompat.requestPermissions(
+                this, arrayOf(Manifest.permission.RECORD_AUDIO),
+                0
+            )
+            false
+        })
+    }
+
+
+    fun getAudioContentUri(context: Context, audioPath: File?): Uri? {
+        val filePath = audioPath?.absolutePath
+        val cursor: Cursor? = context.contentResolver.query(
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, arrayOf(MediaStore.Audio.Media._ID),
+            MediaStore.Audio.Media.DATA + "=? ", arrayOf(filePath), null
+        )
+        return if (cursor != null && cursor.moveToFirst()) {
+            val id = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns._ID))
+            cursor.close()
+            Uri.withAppendedPath(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, "" + id)
+        } else {
+            if (audioPath?.exists() == true) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    /*val values = ContentValues()
+                    values.put(MediaStore.MediaColumns.DATA, audioPath.absolutePath)
+                    values.put(MediaStore.MediaColumns.TITLE, "TestNotification")
+                    values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/3gpp")
+                    values.put(MediaStore.Audio.Media.ARTIST, "")
+                    values.put(MediaStore.Audio.Media.IS_RINGTONE, false)
+                    values.put(MediaStore.Audio.Media.IS_NOTIFICATION, true)
+                    values.put(MediaStore.Audio.Media.IS_ALARM, false)
+                    values.put(MediaStore.Audio.Media.IS_MUSIC, false)
+
+
+                    val uri = MediaStore.Audio.Media.getContentUriForPath(audioPath.absolutePath)
+                    Log.d("=========","uri::: $uri")
+                    contentResolver.delete(
+                        uri,
+                        MediaStore.MediaColumns.DATA + "=\"" + audioPath.absolutePath + "\"",
+                        null
+                    )
+                    val newUri = contentResolver.insert(uri, values)
+                    newUri*/
+
+
+                    val resolver: ContentResolver = context.contentResolver
+                    val picCollection = MediaStore.Audio.Media
+                        .getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+                    val picDetail = ContentValues()
+                    picDetail.put(MediaStore.Audio.Media.DISPLAY_NAME, audioPath?.name)
+                    picDetail.put(MediaStore.Audio.Media.IS_ALARM, true)
+                    picDetail.put(MediaStore.Audio.Media.MIME_TYPE, "audio/aac")
+                    picDetail.put(
+                        MediaStore.Audio.Media.RELATIVE_PATH,
+                        Environment.DIRECTORY_ALARMS
+                    )
+                    picDetail.put(MediaStore.Audio.Media.IS_PENDING, 0)
+                    val finalUri: Uri? = resolver.insert(picCollection, picDetail)
+
+                    finalUri
+
+
+                    /* picDetail.clear()
+                                       picDetail.put(MediaStore.Audio.Media.IS_PENDING, 0)
+                                       resolver.update(picCollection, picDetail, null, null)*/
+
+
+                    /*val contentValues = ContentValues().apply {
+                        put(MediaStore.MediaColumns.DISPLAY_NAME, audioPath?.name)
+                        put(MediaStore.MediaColumns.MIME_TYPE, "audio/3gpp")
+                        put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+                    }
+                    val resolver = context.contentResolver
+                    val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
+
+                    Log.d("=========","finalUri::: $uri")
+
+                    uri*/
+                } else {
+                    val values = ContentValues()
+                    values.put(MediaStore.Audio.Media.DATA, filePath)
+                    context.contentResolver.insert(
+                        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, values
+                    )
+                }
+            } else {
+                null
+            }
+        }
+    }
+
+    private fun stopRecording(deleteFile: Boolean) {
+        audioRecorder?.stop()
+        if (recordFile != null && deleteFile) {
+            recordFile?.delete()
+        }
+    }
+
+
+    private fun getHumanTimeText(milliseconds: Long): String? {
+        return java.lang.String.format(
+            "%02d:%02d",
+            TimeUnit.MILLISECONDS.toMinutes(milliseconds),
+            TimeUnit.MILLISECONDS.toSeconds(milliseconds) -
+                    TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(milliseconds))
+        )
     }
 
     override fun onStart() {
@@ -262,11 +535,18 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
             if (state.attaching) {
                 video.visibility = View.VISIBLE
                 videoLabel.visibility = View.VISIBLE
+                takeVideo.visibility = View.VISIBLE
+                takeVideoLabel.visibility = View.VISIBLE
+                addAudio.visibility = View.GONE
+                addAudioLabel.visibility = View.GONE
                 135f
-
             } else {
                 video.visibility = View.GONE
                 videoLabel.visibility = View.GONE
+                takeVideo.visibility = View.GONE
+                takeVideoLabel.visibility = View.GONE
+                addAudio.visibility = View.GONE
+                addAudioLabel.visibility = View.GONE
                 0f
             }
         ).start()
@@ -283,7 +563,9 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         send.imageAlpha = if (state.canSend) 255 else 128
     }
 
-    override fun clearSelection() = messageAdapter.clearSelection()
+    override fun clearSelection() {
+        messageAdapter.clearSelection()
+    }
 
     override fun showDetails(details: String) {
         AlertDialog.Builder(this)
@@ -376,12 +658,12 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
             .let { timestamp ->
                 ContentValues().apply {
                     put(
-                        MediaStore.Images.Media.TITLE,
+                        MediaStore.Audio.Media.TITLE,
                         timestamp
                     )
                 }
             }
-            .let { cv -> contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, cv) }
+            .let { cv -> contentResolver.insert(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, cv) }
 
         val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
             .putExtra(MediaStore.EXTRA_OUTPUT, cameraDestination)
@@ -406,6 +688,55 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
             .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             .setType("video/*")
         startActivityForResult(Intent.createChooser(intent, null), AttachVideoRequestCode)
+    }
+
+    override fun requestTakeVideo() {
+        /*cameraDestination = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+            .let { timestamp ->
+                ContentValues().apply {
+                    put(
+                        MediaStore.Audio.Media.TITLE,
+                        timestamp
+                    )
+                }
+            }
+            .let { cv -> contentResolver.insert(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, cv) }*/
+
+        val intent = Intent(MediaStore.ACTION_VIDEO_CAPTURE)
+        //.putExtra(MediaStore.EXTRA_OUTPUT, cameraDestination)
+        startActivityForResult(Intent.createChooser(intent, null), TakeVideoRequestCode)
+    }
+
+    override fun addAudio() {
+
+
+        val intent = Intent(Intent.ACTION_PICK)
+            .putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+            .addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            .setType("audio/3gp")
+        startActivityForResult(intent, AddAudioRequestCode)
+
+
+        /* AudioRecorder.start()
+
+        Handler().postDelayed({
+            AudioRecorder.stop()
+        }, 5000)*/
+        /*val intent = Intent(MediaStore.Audio.Media.RECORD_SOUND_ACTION) */
+        // intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(imageToStore))
+        /*startActivityForResult(intent, AddAudioRequestCode)*/
+
+
+    }
+
+
+    fun getRealPathFromURI(contentUri: Uri?): String? {
+        val proj = arrayOf(MediaStore.Audio.Media.DATA)
+        val cursor: Cursor = managedQuery(contentUri, proj, null, null, null)
+        val column_index: Int = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
+        cursor.moveToFirst()
+        return cursor.getString(column_index)
     }
 
     override fun setDraft(draft: String) {
@@ -452,6 +783,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
             requestCode == TakePhotoRequestCode && resultCode == Activity.RESULT_OK -> {
                 cameraDestination?.let(attachmentSelectedIntent::onNext)
             }
+
             requestCode == AttachPhotoRequestCode && resultCode == Activity.RESULT_OK -> {
                 data?.clipData?.itemCount
                     ?.let { count -> 0 until count }
@@ -459,16 +791,53 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                     ?.forEach(attachmentSelectedIntent::onNext)
                     ?: data?.data?.let(attachmentSelectedIntent::onNext)
             }
+
             requestCode == AttachContactRequestCode && resultCode == Activity.RESULT_OK -> {
                 data?.data?.let(contactSelectedIntent::onNext)
             }
+
             requestCode == AttachVideoRequestCode && resultCode == Activity.RESULT_OK -> {
+
+
                 data?.clipData?.itemCount
                     ?.let { count -> 0 until count }
-                    ?.mapNotNull { i -> data.clipData?.getItemAt(i)?.uri }
+                    ?.mapNotNull { i ->
+
+                        val mp: MediaPlayer = MediaPlayer.create(
+                            this,
+                            Uri.parse(data.clipData?.getItemAt(i)?.uri.toString())
+                        )
+                        val duration: Int = mp.duration
+                        mp.release()
+
+                        Log.e("COMPOSEActivity", "duration:: $duration")
+                        var uri: Uri? = null
+                        if (duration > 30000) {
+                            Toast.makeText(
+                                this,
+                                "Please select video of 30 seconds or less",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        } else {
+                            uri = data.clipData?.getItemAt(i)?.uri
+                        }
+
+                        uri
+
+                    }
                     ?.forEach(attachmentSelectedIntent::onNext)
                     ?: data?.data?.let(attachmentSelectedIntent::onNext)
             }
+
+            requestCode == TakeVideoRequestCode && resultCode == Activity.RESULT_OK -> {
+                data?.data?.let(attachmentSelectedIntent::onNext)
+            }
+
+            requestCode == AddAudioRequestCode && resultCode == Activity.RESULT_OK -> {
+                Log.e("COMPOSITEACTIVITY", "audio uri:: ${data?.data}")
+                data?.data?.let(attachmentSelectedIntent::onNext)
+            }
+
             else -> super.onActivityResult(requestCode, resultCode, data)
         }
     }
@@ -478,8 +847,13 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         super.onSaveInstanceState(outState)
     }
 
-    override fun onRestoreInstanceState(savedInstanceState: Bundle?) {
+    /*override fun onRestoreInstanceState(savedInstanceState: Bundle?) {
         cameraDestination = savedInstanceState?.getParcelable(CameraDestinationKey)
+        super.onRestoreInstanceState(savedInstanceState)
+    }*/
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        cameraDestination = savedInstanceState.getParcelable(CameraDestinationKey)
         super.onRestoreInstanceState(savedInstanceState)
     }
 

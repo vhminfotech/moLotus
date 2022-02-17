@@ -53,6 +53,14 @@ sealed class Attachment {
                 uri?.let(context.contentResolver::getType) == "video/mp4"
             }
         }
+
+        fun isAudio(context: Context): Boolean {
+            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1 && inputContent != null) {
+                inputContent.description.hasMimeType("audio/aac")
+            } else {
+                uri?.let(context.contentResolver::getType) == "audio/aac"
+            }
+        }
     }
 
     data class Contact(val vCard: String) : Attachment()

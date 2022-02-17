@@ -5,6 +5,8 @@ import android.net.Uri
 import android.os.Vibrator
 import android.provider.ContactsContract
 import android.telephony.SmsMessage
+import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.core.content.getSystemService
 import com.sms.moLotus.R
@@ -52,6 +54,7 @@ import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
+import kotlinx.android.synthetic.main.compose_activity.*
 import timber.log.Timber
 import java.util.*
 import javax.inject.Inject
@@ -537,6 +540,18 @@ class ComposeViewModel @Inject constructor(
             .autoDisposable(view.scope())
             .subscribe { view.requestVideoGallery() }
 
+        // Take a video
+        view.takeVideoIntent
+            .doOnNext { newState { copy(attaching = false) } }
+            .autoDisposable(view.scope())
+            .subscribe { view.requestTakeVideo() }
+
+        view.addAudioIntent
+            .doOnNext { newState { copy(attaching = false) } }
+            .autoDisposable(view.scope())
+            .subscribe { view.addAudio() }
+
+
         // Choose a time to schedule the message
 //        view.scheduleIntent
 //                .doOnNext { newState { copy(attaching = false) } }
@@ -554,7 +569,10 @@ class ComposeViewModel @Inject constructor(
             .withLatestFrom(attachments) { attachment, attachments -> attachments + attachment }
             .doOnNext(attachments::onNext)
             .autoDisposable(view.scope())
-            .subscribe { newState { copy(attaching = false) } }
+            .subscribe {
+                ComposeActivity.recordButton?.visibility = View.GONE
+                newState { copy(attaching = false) }
+            }
 
         // Set the scheduled time
         view.scheduleSelectedIntent
@@ -570,24 +588,43 @@ class ComposeViewModel @Inject constructor(
         view.attachContactIntent
             .doOnNext { newState { copy(attaching = false) } }
             .autoDisposable(view.scope())
-            .subscribe { view.requestContact() }
+            .subscribe {
+                view.requestContact()
+
+            }
 
         // Contact was selected for attachment
         view.contactSelectedIntent
             .map { uri -> Attachment.Contact(getVCard(uri)!!) }
-            .withLatestFrom(attachments) { attachment, attachments -> attachments + attachment }
+            .withLatestFrom(attachments) { attachment, attachments ->
+                ComposeActivity.recordButton?.visibility = View.GONE
+                attachments + attachment }
             .subscribeOn(Schedulers.io())
             .autoDisposable(view.scope())
-            .subscribe(attachments::onNext) { error ->
+            .subscribe(attachments::onNext) {
+                error ->
                 context.makeToast(R.string.compose_contact_error)
                 Timber.w(error)
             }
 
         // Detach a photo
         view.attachmentDeletedIntent
-            .withLatestFrom(attachments) { bitmap, attachments -> attachments.filter { it !== bitmap } }
+            .withLatestFrom(attachments) { bitmap, attachments ->
+                attachments.filter {
+                    Log.e("attachments::::","== $attachments")
+                    if (attachments.size == 1){
+                        ComposeActivity.recordButton?.visibility = View.VISIBLE
+                    }
+                    it !== bitmap
+                }
+            }
             .autoDisposable(view.scope())
-            .subscribe { attachments.onNext(it) }
+            .subscribe {
+
+                attachments.onNext(it)
+
+
+            }
 
         conversation
             .map { conversation -> conversation.draft }

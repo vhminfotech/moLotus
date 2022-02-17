@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.sms.moLotus">
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.CALL_PHONE" />
-    <!-- Used for starting foreground service for backup/restore on Android P+ -->
+    <uses-permission android:name="android.permission.CALL_PHONE" /> <!-- Used for starting foreground service for backup/restore on Android P+ -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
@@ -19,38 +18,56 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_SMS" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission
+        android:name="android.permission.WRITE_SETTINGS"
+        tools:ignore="ProtectedPermissions" />
+    <uses-permission
+        android:name="android.permission.CHANGE_CONFIGURATION"
+        tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
 
     <application
-        android:name="com.sms.moLotus.common.QKApplication"
+        android:name=".common.QKApplication"
         android:allowBackup="true"
         android:icon="@drawable/ic_baseline_sms_24"
         android:label="@string/app_name"
         android:requestLegacyExternalStorage="true"
         android:supportsRtl="true"
         android:theme="@style/AppLaunchTheme">
-
-        <activity android:theme="@style/AppBaseTheme"
-            android:name="com.sms.moLotus.feature.Intro.APNDetailsActivity" />
-
-<!--        <activity android:name="com.sms.moLotus.feature.main.MainActivity" />-->
-
-        <activity android:name="com.sms.moLotus.feature.Intro.IntroActivity" />
-        <activity android:name="com.sms.moLotus.feature.Intro.IntroActivity2" />
-
         <activity
-            android:name="com.sms.moLotus.feature.main.MainActivity"
+            android:name=".feature.splash.SplashActivity"
+            android:exported="true"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+        <intent-filter>
+            <action android:name="android.intent.action.MAIN" />
+
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent-filter>
+        </activity>
+        <activity
+            android:name=".feature.Intro.APNDetailsActivity"
+            android:theme="@style/AppBaseTheme" /> <!-- <activity android:name="com.sms.moLotus.feature.main.MainActivity" /> -->
+        <activity android:name=".feature.Intro.IntroActivity" />
+        <activity android:name=".feature.Intro.IntroActivity2" />
+        <activity
+            android:name=".feature.main.MainActivity"
+            android:exported="true"
             android:launchMode="singleTask">
-            <intent-filter>
+          <!--  <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+            </intent-filter>-->
+
             <meta-data
                 android:name="android.app.shortcuts"
                 android:resource="@xml/shortcuts" />
         </activity>
         <activity
-            android:name="com.sms.moLotus.feature.compose.ComposeActivity"
-            android:parentActivityName="com.sms.moLotus.feature.main.MainActivity">
+            android:name=".feature.compose.ComposeActivity"
+            android:exported="true"
+            android:parentActivityName=".feature.main.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <action android:name="android.intent.action.MAIN" />
@@ -68,22 +85,30 @@
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
+
                 <category android:name="android.intent.category.DEFAULT" />
+
                 <data android:mimeType="text/plain" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
+
                 <category android:name="android.intent.category.DEFAULT" />
+
                 <data android:mimeType="image/*" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.SEND_MULTIPLE" />
+
                 <category android:name="android.intent.category.DEFAULT" />
+
                 <data android:mimeType="image/*" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
+
                 <category android:name="android.intent.category.DEFAULT" />
+
                 <data android:mimeType="text/x-vcard" />
             </intent-filter>
 
@@ -91,74 +116,85 @@
                 android:name="android.service.chooser.chooser_target_service"
                 android:value=".common.util.QkChooserTargetService" />
         </activity>
-        <activity android:name="com.sms.moLotus.feature.settings.SettingsActivity" />
-        <activity android:name="com.sms.moLotus.feature.plus.PlusActivity" />
+        <activity android:name=".feature.settings.SettingsActivity" />
+        <activity android:name=".feature.plus.PlusActivity" />
         <activity
-            android:name="com.sms.moLotus.feature.gallery.GalleryActivity"
+            android:name=".feature.gallery.GalleryActivity"
             android:theme="@style/AppTheme.Black" />
-        <activity android:name="com.sms.moLotus.feature.conversationinfo.ConversationInfoActivity" />
-        <activity android:name="com.sms.moLotus.feature.notificationprefs.NotificationPrefsActivity" />
-        <activity android:name="com.sms.moLotus.feature.blocking.BlockingActivity" />
+        <activity android:name=".feature.conversationinfo.ConversationInfoActivity" />
+        <activity android:name=".feature.notificationprefs.NotificationPrefsActivity" />
+        <activity android:name=".feature.blocking.BlockingActivity" />
         <activity
-            android:name="com.sms.moLotus.feature.qkreply.QkReplyActivity"
+            android:name=".feature.qkreply.QkReplyActivity"
             android:excludeFromRecents="true"
             android:taskAffinity=""
             android:theme="@style/AppThemeDialog"
             android:windowSoftInputMode="adjustResize" />
-        <activity android:name="com.sms.moLotus.feature.scheduled.ScheduledActivity" />
-        <activity android:name="com.sms.moLotus.feature.backup.BackupActivity" />
-        <activity android:name="com.sms.moLotus.feature.contacts.ContactsActivity" />
+        <activity android:name=".feature.scheduled.ScheduledActivity" />
+        <activity android:name=".feature.backup.BackupActivity" />
+        <activity android:name=".feature.contacts.ContactsActivity" />
 
-        <receiver android:name="com.sms.moLotus.receiver.BootReceiver">
+        <receiver
+            android:name=".receiver.BootReceiver"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
-        <receiver android:name="com.sms.moLotus.receiver.DefaultSmsChangedReceiver">
+        <receiver
+            android:name=".receiver.DefaultSmsChangedReceiver"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.provider.action.DEFAULT_SMS_PACKAGE_CHANGED" />
             </intent-filter>
         </receiver>
-        <receiver android:name="com.sms.moLotus.receiver.DeleteMessagesReceiver" />
+        <receiver android:name=".receiver.DeleteMessagesReceiver" />
         <receiver
-            android:name="com.sms.moLotus.receiver.SmsReceiver"
+            android:name=".receiver.SmsReceiver"
+            android:exported="true"
             android:permission="android.permission.BROADCAST_SMS">
             <intent-filter>
                 <action android:name="android.provider.Telephony.SMS_DELIVER" />
             </intent-filter>
         </receiver>
         <receiver
-            android:name="com.sms.moLotus.receiver.MmsReceiver"
+            android:name=".receiver.MmsReceiver"
+            android:exported="true"
             android:permission="android.permission.BROADCAST_WAP_PUSH">
             <intent-filter>
                 <action android:name="android.provider.Telephony.WAP_PUSH_DELIVER" />
+
                 <data android:mimeType="application/vnd.wap.mms-message" />
             </intent-filter>
         </receiver>
-        <receiver android:name="com.sms.moLotus.receiver.SmsSentReceiver" />
-        <receiver android:name="com.sms.moLotus.receiver.SmsDeliveredReceiver" />
+        <receiver android:name=".receiver.SmsSentReceiver" />
+        <receiver android:name=".receiver.SmsDeliveredReceiver" />
         <receiver
-            android:name="com.sms.moLotus.receiver.MmsSentReceiver"
+            android:name=".receiver.MmsSentReceiver"
             android:taskAffinity="com.sms.moLotus.MMS_SENT" />
         <receiver
-            android:name="com.sms.moLotus.receiver.MmsUpdatedReceiver"
+            android:name=".receiver.MmsUpdatedReceiver"
             android:taskAffinity="com.sms.moLotus.MMS_UPDATED" />
         <receiver
-            android:name="com.sms.moLotus.receiver.MmsReceivedReceiver"
+            android:name=".receiver.MmsReceivedReceiver"
             android:taskAffinity="com.klinker.android.messaging.MMS_RECEIVED" />
-        <receiver android:name="com.sms.moLotus.receiver.MarkArchivedReceiver" />
-        <receiver android:name="com.sms.moLotus.receiver.BlockThreadReceiver" />
-        <receiver android:name="com.sms.moLotus.receiver.MarkSeenReceiver" />
-        <receiver android:name="com.sms.moLotus.receiver.MarkReadReceiver" />
-        <receiver android:name="com.sms.moLotus.receiver.RemoteMessagingReceiver" />
-        <receiver android:name="com.sms.moLotus.receiver.NightModeReceiver" />
-        <receiver android:name="com.sms.moLotus.receiver.SmsProviderChangedReceiver">
+        <receiver android:name=".receiver.MarkArchivedReceiver" />
+        <receiver android:name=".receiver.BlockThreadReceiver" />
+        <receiver android:name=".receiver.MarkSeenReceiver" />
+        <receiver android:name=".receiver.MarkReadReceiver" />
+        <receiver android:name=".receiver.RemoteMessagingReceiver" />
+        <receiver android:name=".receiver.NightModeReceiver" />
+        <receiver
+            android:name=".receiver.SmsProviderChangedReceiver"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.provider.action.EXTERNAL_PROVIDER_CHANGE" />
             </intent-filter>
         </receiver>
-        <receiver android:name="com.sms.moLotus.receiver.SendScheduledMessageReceiver" />
-        <receiver android:name="com.sms.moLotus.feature.widget.WidgetProvider">
+        <receiver android:name=".receiver.SendScheduledMessageReceiver" />
+        <receiver
+            android:name=".feature.widget.WidgetProvider"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="com.sms.moLotus.intent.action.ACTION_NOTIFY_DATASET_CHANGED" />
@@ -168,22 +204,23 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_info" />
         </receiver>
-        <receiver android:name="com.sms.moLotus.receiver.SendSmsReceiver" />
+        <receiver android:name=".receiver.SendSmsReceiver" />
 
         <service android:name="com.android.mms.transaction.TransactionService" />
-        <service android:name="com.sms.moLotus.feature.backup.RestoreBackupService" />
+        <service android:name=".feature.backup.RestoreBackupService" />
         <service
-            android:name="com.sms.moLotus.feature.widget.WidgetService"
+            android:name=".feature.widget.WidgetService"
             android:permission="android.permission.BIND_REMOTEVIEWS" />
         <service
-            android:name="com.sms.moLotus.service.AutoDeleteService"
+            android:name=".service.AutoDeleteService"
             android:permission="android.permission.BIND_JOB_SERVICE" />
         <service
-            android:name="com.sms.moLotus.service.HeadlessSmsSendService"
+            android:name=".service.HeadlessSmsSendService"
             android:exported="true"
             android:permission="android.permission.SEND_RESPOND_VIA_MESSAGE">
             <intent-filter>
                 <action android:name="android.intent.action.RESPOND_VIA_MESSAGE" />
+
                 <category android:name="android.intent.category.DEFAULT" />
 
                 <data android:scheme="sms" />
@@ -193,7 +230,8 @@
             </intent-filter>
         </service>
         <service
-            android:name="com.sms.moLotus.common.util.QkChooserTargetService"
+            android:name=".common.util.QkChooserTargetService"
+            android:exported="true"
             android:label="@string/app_name"
             android:permission="android.permission.BIND_CHOOSER_TARGET_SERVICE">
             <intent-filter>
@@ -217,7 +255,6 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/provider_paths" />
         </provider>
-
     </application>
 
 </manifest>

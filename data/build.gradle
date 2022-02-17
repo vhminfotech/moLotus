@@ -24,14 +24,22 @@ android {
         withAnalytics { dimension "analytics" }
         noAnalytics { dimension "analytics" }
     }
+
+    /*configurations.all {
+        resolutionStrategy { force 'androidx.core:core-ktx:1.6.0' }
+    }*/
 }
 
 dependencies {
 
     // androidx
     implementation "androidx.appcompat:appcompat:$androidx_appcompat_version"
-    implementation "androidx.core:core-ktx:$androidx_core_version"
+    implementation 'androidx.core:core-ktx:1.1.0'
     implementation "androidx.exifinterface:exifinterface:$androidx_exifinterface_version"
+
+
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
+
 
     // glide
     implementation "com.github.bumptech.glide:glide:$glide_version"
@@ -76,6 +84,8 @@ dependencies {
 
     withAnalyticsImplementation 'com.android.installreferrer:installreferrer:1.1'
     withAnalyticsImplementation "com.amplitude:android-sdk:2.16.0"
+
+    implementation "com.github.AbedElazizShe:LightCompressor:1.1.1"
 
 //    implementation 'com.otaliastudios:transcoder:0.10.4'
 

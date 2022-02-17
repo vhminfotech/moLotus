@@ -3,6 +3,7 @@ package com.sms.moLotus.feature.compose
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.ImageView
 import com.bumptech.glide.Glide
 import com.sms.moLotus.R
 import com.sms.moLotus.common.base.QkAdapter
@@ -57,9 +58,18 @@ class AttachmentAdapter @Inject constructor(
     override fun onBindViewHolder(holder: QkViewHolder, position: Int) {
 
         when (val attachment = getItem(position)) {
-            is Attachment.Image -> Glide.with(context)
-                .load(attachment.getUri())
-                .into(holder.thumbnail)
+            is Attachment.Image -> {
+                if (attachment.isAudio(context)){
+                    Glide.with(context)
+                        .load(R.drawable.ic_baseline_mic_24)
+                        .into(holder.thumbnail)
+
+                }else {
+                    Glide.with(context)
+                        .load(attachment.getUri())
+                        .into(holder.thumbnail)
+                }
+            }
 
             is Attachment.Contact -> Observable.just(attachment.vCard)
                 .mapNotNull { vCard -> Ezvcard.parse(vCard).first() }

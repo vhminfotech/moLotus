@@ -187,9 +187,9 @@
         android:layout_height="56dp"
         android:padding="10dp"
         android:src="@drawable/ic_cancel_black_24dp"
-        app:tint="?android:attr/textColorSecondary"
         app:layout_constraintBottom_toTopOf="@id/scheduledSeparator"
-        app:layout_constraintEnd_toEndOf="@id/messageBackground" />
+        app:layout_constraintEnd_toEndOf="@id/messageBackground"
+        app:tint="?android:attr/textColorSecondary" />
 
     <View
         android:id="@+id/scheduledSeparator"
@@ -244,10 +244,10 @@
         android:contentDescription="@string/compose_sim_cd"
         android:padding="8dp"
         android:src="@drawable/ic_sim_card_black_24dp"
-        app:tint="?android:attr/textColorSecondary"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@id/messageBackground"
-        app:layout_constraintEnd_toEndOf="@id/messageBackground" />
+        app:layout_constraintEnd_toEndOf="@id/messageBackground"
+        app:tint="?android:attr/textColorSecondary" />
 
     <com.sms.moLotus.common.widget.QkTextView
         android:id="@+id/simIndex"
@@ -286,9 +286,47 @@
         android:contentDescription="@string/compose_send_cd"
         android:padding="10dp"
         android:src="@drawable/ic_send_black_24dp"
-        app:tint="?android:textColorSecondary"
         app:layout_constraintBottom_toBottomOf="@id/messageBackground"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:tint="?android:textColorSecondary" />
+
+    <RelativeLayout
+        android:id="@+id/parent_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_marginEnd="8dp"
+        android:elevation="7dp"
+        app:layout_constraintBottom_toBottomOf="@id/messageBackground"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <com.devlomi.record_view.RecordView
+            android:id="@+id/record_view"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:visibility="gone"
+            android:layout_marginStart="10dp"
+            android:layout_centerInParent="true"
+            android:layout_toStartOf="@id/record_button"
+            android:background="@drawable/rounded_rectangle_22dp"
+            android:backgroundTint="?attr/bubbleColor"
+            app:counter_time_color="#ff0000"
+            app:slide_to_cancel_arrow="@drawable/recv_ic_arrow"
+            app:slide_to_cancel_arrow_color="#000000"
+            app:slide_to_cancel_text="Slide To Cancel" />
+
+        <com.devlomi.record_view.RecordButton
+            android:id="@+id/record_button"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:background="@drawable/recv_bg_mic"
+            android:backgroundTint="@color/tools_theme"
+            android:scaleType="centerInside"
+            app:mic_icon="@drawable/recv_ic_mic_white" />
+
+
+    </RelativeLayout>
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
@@ -375,11 +413,11 @@
         android:elevation="4dp"
         android:padding="10dp"
         android:src="@drawable/ic_person_black_24dp"
-        app:tint="?android:attr/textColorSecondary"
         android:visibility="visible"
         app:layout_constraintBottom_toTopOf="@id/gallery"
         app:layout_constraintEnd_toEndOf="@id/attach"
-        app:layout_constraintStart_toStartOf="@id/attach" />
+        app:layout_constraintStart_toStartOf="@id/attach"
+        app:tint="?android:attr/textColorSecondary" />
 
     <com.sms.moLotus.common.widget.QkTextView
         android:id="@+id/contactLabel"
@@ -443,11 +481,11 @@
         android:elevation="4dp"
         android:padding="10dp"
         android:src="@drawable/ic_insert_photo_black_24dp"
-        app:tint="?android:attr/textColorSecondary"
         android:visibility="visible"
         app:layout_constraintBottom_toTopOf="@id/camera"
         app:layout_constraintEnd_toEndOf="@id/attach"
-        app:layout_constraintStart_toStartOf="@id/attach" />
+        app:layout_constraintStart_toStartOf="@id/attach"
+        app:tint="?android:attr/textColorSecondary" />
 
     <com.sms.moLotus.common.widget.QkTextView
         android:id="@+id/galleryLabel"
@@ -477,11 +515,11 @@
         android:elevation="4dp"
         android:padding="10dp"
         android:src="@drawable/ic_camera_alt_black_24dp"
-        app:tint="?android:attr/textColorSecondary"
         android:visibility="visible"
         app:layout_constraintBottom_toTopOf="@id/video"
         app:layout_constraintEnd_toEndOf="@id/video"
-        app:layout_constraintStart_toStartOf="@id/video" />
+        app:layout_constraintStart_toStartOf="@id/video"
+        app:tint="?android:attr/textColorSecondary" />
 
     <com.sms.moLotus.common.widget.QkTextView
         android:id="@+id/cameraLabel"
@@ -511,29 +549,98 @@
         android:elevation="4dp"
         android:padding="10dp"
         android:src="@drawable/ic_baseline_video_library_24"
-        app:tint="?android:attr/textColorSecondary"
         android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@id/takeVideo"
+        app:layout_constraintEnd_toEndOf="@id/takeVideo"
+        app:layout_constraintStart_toStartOf="@id/takeVideo"
+        app:tint="?android:attr/textColorSecondary" />
+
+    <com.sms.moLotus.common.widget.QkTextView
+        android:id="@+id/videoLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="32dp"
+        android:layout_marginStart="8dp"
+        android:background="@drawable/rounded_rectangle_4dp"
+        android:backgroundTint="?attr/bubbleColor"
+        android:elevation="4dp"
+        android:gravity="center_vertical"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:text="@string/attach_video"
+        android:textColor="?android:attr/textColorPrimary"
+        app:layout_constraintBottom_toBottomOf="@id/video"
+        app:layout_constraintStart_toEndOf="@id/video"
+        app:layout_constraintTop_toTopOf="@id/video" />
+
+
+    <ImageView
+        android:id="@+id/takeVideo"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/circle"
+        android:backgroundTint="?attr/bubbleColor"
+        android:contentDescription="@string/compose_camera_cd"
+        android:elevation="4dp"
+        android:padding="10dp"
+        android:src="@drawable/ic_baseline_videocam_24"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@id/addAudio"
+        app:layout_constraintEnd_toEndOf="@id/addAudio"
+        app:layout_constraintStart_toStartOf="@id/addAudio"
+        app:tint="?android:attr/textColorSecondary" />
+
+    <com.sms.moLotus.common.widget.QkTextView
+        android:id="@+id/takeVideoLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="32dp"
+        android:layout_marginStart="8dp"
+        android:background="@drawable/rounded_rectangle_4dp"
+        android:backgroundTint="?attr/bubbleColor"
+        android:elevation="4dp"
+        android:gravity="center_vertical"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:text="@string/take_a_video"
+        android:textColor="?android:attr/textColorPrimary"
+        app:layout_constraintBottom_toBottomOf="@id/takeVideo"
+        app:layout_constraintStart_toEndOf="@id/takeVideo"
+        app:layout_constraintTop_toTopOf="@id/takeVideo" />
+
+    <ImageView
+        android:id="@+id/addAudio"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/circle"
+        android:backgroundTint="?attr/bubbleColor"
+        android:contentDescription="@string/compose_camera_cd"
+        android:elevation="4dp"
+        android:padding="5dp"
+        android:src="@drawable/ic_baseline_mic_24"
+        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@id/attach"
         app:layout_constraintEnd_toEndOf="@id/attach"
-        app:layout_constraintStart_toStartOf="@id/attach" />
+        app:layout_constraintStart_toStartOf="@id/attach"
+        app:tint="?android:attr/textColorSecondary" />
 
-     <com.sms.moLotus.common.widget.QkTextView
-         android:id="@+id/videoLabel"
-         android:layout_width="wrap_content"
-         android:layout_height="32dp"
-         android:layout_marginStart="8dp"
-         android:background="@drawable/rounded_rectangle_4dp"
-         android:backgroundTint="?attr/bubbleColor"
-         android:elevation="4dp"
-         android:gravity="center_vertical"
-         android:paddingStart="8dp"
-         android:paddingEnd="8dp"
-         android:text="@string/attach_video"
-         android:textColor="?android:attr/textColorPrimary"
-         app:layout_constraintBottom_toBottomOf="@id/video"
-         app:layout_constraintStart_toEndOf="@id/video"
-         app:layout_constraintTop_toTopOf="@id/video" />
-
+    <com.sms.moLotus.common.widget.QkTextView
+        android:id="@+id/addAudioLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="32dp"
+        android:layout_marginStart="8dp"
+        android:background="@drawable/rounded_rectangle_4dp"
+        android:backgroundTint="?attr/bubbleColor"
+        android:elevation="4dp"
+        android:gravity="center_vertical"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:text="@string/add_audio"
+        android:textColor="?android:attr/textColorPrimary"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/addAudio"
+        app:layout_constraintStart_toEndOf="@id/addAudio"
+        app:layout_constraintTop_toTopOf="@id/addAudio" />
 
     <ImageView
         android:id="@+id/attach"

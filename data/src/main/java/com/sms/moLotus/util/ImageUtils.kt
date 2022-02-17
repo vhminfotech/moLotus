@@ -24,29 +24,58 @@ import android.net.Uri
 import android.os.Environment
 import android.util.Log
 import android.R.attr.path
+import android.content.ContentResolver
+import android.content.ContentValues
+import android.database.Cursor
+import android.os.Handler
+import android.provider.MediaStore
+import com.abedelazizshe.lightcompressorlibrary.CompressionListener
+import com.abedelazizshe.lightcompressorlibrary.VideoCompressor
+import com.abedelazizshe.lightcompressorlibrary.VideoQuality
 import java.io.*
+import com.abedelazizshe.lightcompressorlibrary.VideoCompressor.start
+import com.abedelazizshe.lightcompressorlibrary.config.Configuration
+import kotlinx.coroutines.*
+import okhttp3.internal.notifyAll
+import android.R.attr.data
+import android.R.attr.data
+import java.lang.Exception
 
 
 object ImageUtils {
 
-    fun getScaledGif(context: Context, uri: Uri, maxWidth: Int, maxHeight: Int, quality: Int = 90): ByteArray {
+    fun getScaledGif(
+        context: Context,
+        uri: Uri,
+        maxWidth: Int,
+        maxHeight: Int,
+        quality: Int = 90
+    ): ByteArray {
         val gif = GlideApp
-                .with(context)
-                .asGif()
-                .load(uri)
-                .centerInside()
-                .encodeQuality(quality)
-                .submit(maxWidth, maxHeight)
-                .get()
+            .with(context)
+            .asGif()
+            .load(uri)
+            .centerInside()
+            .encodeQuality(quality)
+            .submit(maxWidth, maxHeight)
+            .get()
 
         val outputStream = ByteArrayOutputStream()
-        GifEncoder(context, GlideApp.get(context).bitmapPool).encodeTransformedToStream(gif, outputStream)
+        GifEncoder(context, GlideApp.get(context).bitmapPool).encodeTransformedToStream(
+            gif,
+            outputStream
+        )
         return outputStream.toByteArray()
     }
 
 
-
-    fun getScaledVideo(context: Context, uri: Uri, maxWidth: Int, maxHeight: Int, quality: Int = 90): ByteArray {
+    fun getScaledVideo(
+        context: Context,
+        uri: Uri,
+        maxWidth: Int,
+        maxHeight: Int,
+        quality: Int = 90
+    ): ByteArray {
         /*Transcoder.into("")
             .addDataSource(context, uri)
             .setListener(object: TranscoderListener {
@@ -75,12 +104,19 @@ object ImageUtils {
         buf.read(bytes, 0, bytes.size)
         buf.close()*/
 
-        val iStream: InputStream? = context.contentResolver.openInputStream(uri)
-        val byteBuffer = ByteArrayOutputStream()
+
+        //val newUri = VideoCompressor(context, uri).compress()
+        // val deferredResult = GlobalScope.async {
+
+//        val newUri = VideoCompressor(context, uri).compress()!!
+//        Log.e("ImageUtils", "newUri ::$newUri")
+        val iStream: InputStream? = uri.let { context.contentResolver.openInputStream(it) }
         val bufferSize = 1024
         val buffer = ByteArray(bufferSize)
-
         var len = 0
+
+        val byteBuffer = ByteArrayOutputStream()
+
         while (iStream?.read(buffer).also {
                 if (it != null) {
                     len = it
@@ -88,22 +124,92 @@ object ImageUtils {
             } != -1) {
             byteBuffer.write(buffer, 0, len)
         }
+        // }, 5000)
 
-        Log.e("ImageUtils","uri:: $uri==== byteBuffer:: $byteBuffer")
-
-       // GifEncoder(context, GlideApp.get(context).bitmapPool).encodeTransformedToStream(gif, outputStream)
+//        Log.e("ImageUtils", "byteBuffer ::${byteBuffer?.toByteArray()}")
         return byteBuffer.toByteArray()
     }
 
-    fun getScaledImage(context: Context, uri: Uri, maxWidth: Int, maxHeight: Int, quality: Int = 90): ByteArray {
+
+    fun getAudio(
+        context: Context,
+        uri: Uri
+    ): ByteArray {
+        Log.e("ImageUtils", "getAudio ::$uri")
+
+        /*val byteBuffer = ByteArrayOutputStream()
+        val iStream: InputStream? = uri.let { context.contentResolver.openInputStream(it) }
+        val bufferSize = 1024
+        val buffer = ByteArray(bufferSize)
+        var len = 0
+        while (iStream?.read(buffer).also {
+                if (it != null) {
+                    len = it
+                }
+            } != -1) {
+            byteBuffer.write(buffer, 0, len)
+        }*/
+//        Log.e("ImageUtils", "byteBuffer ::${byteBuffer.toByteArray()}")
+
+
+        val baos = ByteArrayOutputStream()
+        var fis: InputStream? = null
+        try {
+            fis = context.contentResolver.openInputStream(uri)
+            val bufferSize = 1024
+            val buffer = ByteArray(bufferSize)
+            var len = 0
+            while (fis?.read(buffer).also {
+                    if (it != null) {
+                        len = it
+                    }
+                } != -1) {
+                baos.write(buffer, 0, len)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Log.e("ImageUtils", "error::: ${e.message}")
+
+        }
+        val bbytes = baos.toByteArray()
+        Log.e("ImageUtils", "byteBuffer ::$bbytes")
+
+        return bbytes
+    }
+
+    fun readData(callback: (ByteArray) -> Unit, uri: Uri, context: Context) {
+        val byteBuffer = ByteArrayOutputStream()
+        GlobalScope.async {
+            val iStream: InputStream? = uri.let { context.contentResolver.openInputStream(it) }
+            val bufferSize = 1024
+            val buffer = ByteArray(bufferSize)
+            var len = 0
+            while (iStream?.read(buffer).also {
+                    if (it != null) {
+                        len = it
+                    }
+                } != -1) {
+                byteBuffer.write(buffer, 0, len)
+            }
+            callback(byteBuffer.toByteArray())
+        }
+    }
+
+    fun getScaledImage(
+        context: Context,
+        uri: Uri,
+        maxWidth: Int,
+        maxHeight: Int,
+        quality: Int = 90
+    ): ByteArray {
         return GlideApp
-                .with(context)
-                .`as`(ByteArray::class.java)
-                .load(uri)
-                .centerInside()
-                .encodeQuality(quality)
-                .submit(maxWidth, maxHeight)
-                .get()
+            .with(context)
+            .`as`(ByteArray::class.java)
+            .load(uri)
+            .centerInside()
+            .encodeQuality(quality)
+            .submit(maxWidth, maxHeight)
+            .get()
     }
 
 }

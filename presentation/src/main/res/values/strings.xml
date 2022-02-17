@@ -126,6 +126,7 @@
     <string name="compose_attach_cd">Add an attachment</string>
     <string name="compose_gallery_cd">Attach a photo</string>
     <string name="compose_camera_cd">Take a photo</string>
+    <string name="take_a_video">Take a video</string>
     <string name="attach_video">Attach a video</string>
     <string name="compose_schedule_cd">Schedule message</string>
     <string name="compose_contact_cd">Attach a contact</string>
@@ -135,7 +136,7 @@
     <string name="compose_sim_cd">%s selected, change SIM card</string>
     <string name="compose_send_cd">Send message</string>
 
-<!--    <string name="message_status_sending">Sending…</string>-->
+    <!--    <string name="message_status_sending">Sending…</string>-->
     <string name="message_status_delivered">Delivered %s</string>
     <string name="message_status_failed">Failed to send. Tap to try again</string>
 
@@ -415,6 +416,8 @@
     </plurals>
     <string name="notification_message_failed_title">Message not sent</string>
     <string name="notification_message_failed_text">The message to %s failed to send</string>
+    <string name="add_audio">Add Audio</string>
+    <string name="splash_name">mChat</string>
 
     <string-array name="night_modes">
         <item>System</item>
