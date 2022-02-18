@@ -60,4 +60,9 @@
     <style name="AppThemeDialog.Black" />
     <style name="PopupTheme.Black" />
 
+
+    <style name="CustomDialogTheme">
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
+
 </resources>

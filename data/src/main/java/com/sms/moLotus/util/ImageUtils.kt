@@ -71,87 +71,35 @@ object ImageUtils {
 
     fun getScaledVideo(
         context: Context,
-        uri: Uri,
-        maxWidth: Int,
-        maxHeight: Int,
-        quality: Int = 90
-    ): ByteArray {
-        /*Transcoder.into("")
-            .addDataSource(context, uri)
-            .setListener(object: TranscoderListener {
-                override fun onTranscodeProgress(progress: Double) {
-                    Log.e("ImageUtils","progress::: $progress")
-                }
+        uri: Uri
+    ): ByteArray = runBlocking {
+        val baos = ByteArrayOutputStream()
+        var fis: InputStream? = null
+        try {
+            fis = context.contentResolver.openInputStream(uri)
+            val bufferSize = 1024
+            val buffer = ByteArray(bufferSize)
+            var len = 0
+            while (fis?.read(buffer).also {
+                    if (it != null) {
+                        len = it
+                    }
+                } != -1) {
+                baos.write(buffer, 0, len)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Log.e("ImageUtils", "error::: ${e.message}")
 
-                override fun onTranscodeCompleted(successCode: Int) {
-                    Log.e("ImageUtils","successCode::: $successCode")
-
-                }
-
-                override fun onTranscodeCanceled() {
-                    Log.e("ImageUtils","onTranscodeCanceled")
-                }
-
-                override fun onTranscodeFailed(exception: Throwable) {
-                    Log.e("ImageUtils","exception:: ${exception.message}")
-
-                }
-            }).transcode()*/
-        /*val file: File = File(path)
-        val size = file.length().toInt()
-        val bytes = ByteArray(size)
-        val buf = BufferedInputStream(FileInputStream(file))
-        buf.read(bytes, 0, bytes.size)
-        buf.close()*/
-
-
-        //val newUri = VideoCompressor(context, uri).compress()
-        // val deferredResult = GlobalScope.async {
-
-//        val newUri = VideoCompressor(context, uri).compress()!!
-//        Log.e("ImageUtils", "newUri ::$newUri")
-        val iStream: InputStream? = uri.let { context.contentResolver.openInputStream(it) }
-        val bufferSize = 1024
-        val buffer = ByteArray(bufferSize)
-        var len = 0
-
-        val byteBuffer = ByteArrayOutputStream()
-
-        while (iStream?.read(buffer).also {
-                if (it != null) {
-                    len = it
-                }
-            } != -1) {
-            byteBuffer.write(buffer, 0, len)
         }
-        // }, 5000)
-
-//        Log.e("ImageUtils", "byteBuffer ::${byteBuffer?.toByteArray()}")
-        return byteBuffer.toByteArray()
+        return@runBlocking baos.toByteArray()
     }
 
 
     fun getAudio(
         context: Context,
         uri: Uri
-    ): ByteArray {
-        Log.e("ImageUtils", "getAudio ::$uri")
-
-        /*val byteBuffer = ByteArrayOutputStream()
-        val iStream: InputStream? = uri.let { context.contentResolver.openInputStream(it) }
-        val bufferSize = 1024
-        val buffer = ByteArray(bufferSize)
-        var len = 0
-        while (iStream?.read(buffer).also {
-                if (it != null) {
-                    len = it
-                }
-            } != -1) {
-            byteBuffer.write(buffer, 0, len)
-        }*/
-//        Log.e("ImageUtils", "byteBuffer ::${byteBuffer.toByteArray()}")
-
-
+    ): ByteArray= runBlocking {
         val baos = ByteArrayOutputStream()
         var fis: InputStream? = null
         try {
@@ -174,7 +122,7 @@ object ImageUtils {
         val bbytes = baos.toByteArray()
         Log.e("ImageUtils", "byteBuffer ::$bbytes")
 
-        return bbytes
+        return@runBlocking bbytes
     }
 
     fun readData(callback: (ByteArray) -> Unit, uri: Uri, context: Context) {

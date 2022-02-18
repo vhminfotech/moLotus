@@ -465,7 +465,7 @@ class MessageRepositoryImpl @Inject constructor(
                            return Handler().postDelayed({*/
                             //GlobalScope.launch {
 
-                                ImageUtils.getScaledVideo(context, uri, maxWidth, maxHeight)
+                                ImageUtils.getScaledVideo(context, uri/*, maxWidth, maxHeight*/)
                           //  }
                       //   },5000).notifyAll()
 
@@ -616,7 +616,7 @@ class MessageRepositoryImpl @Inject constructor(
 
                             val handler =  Handler().postDelayed({
                                 Log.e("TAG","delay")*/
-                                ImageUtils.getScaledVideo(context, uri, width, height, 80)
+                                ImageUtils.getScaledVideo(context, uri/*, width, height, 80*/)
                            /* },5000)
                             Log.e("TAG","handler:: $handler")
 

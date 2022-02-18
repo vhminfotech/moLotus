@@ -598,11 +598,11 @@ class ComposeViewModel @Inject constructor(
             .map { uri -> Attachment.Contact(getVCard(uri)!!) }
             .withLatestFrom(attachments) { attachment, attachments ->
                 ComposeActivity.recordButton?.visibility = View.GONE
-                attachments + attachment }
+                attachments + attachment
+            }
             .subscribeOn(Schedulers.io())
             .autoDisposable(view.scope())
-            .subscribe(attachments::onNext) {
-                error ->
+            .subscribe(attachments::onNext) { error ->
                 context.makeToast(R.string.compose_contact_error)
                 Timber.w(error)
             }
@@ -611,8 +611,8 @@ class ComposeViewModel @Inject constructor(
         view.attachmentDeletedIntent
             .withLatestFrom(attachments) { bitmap, attachments ->
                 attachments.filter {
-                    Log.e("attachments::::","== $attachments")
-                    if (attachments.size == 1){
+                    //    Log.e("attachments::::", "== $attachments")
+                    if (attachments.size == 1) {
                         ComposeActivity.recordButton?.visibility = View.VISIBLE
                     }
                     it !== bitmap
@@ -620,10 +620,7 @@ class ComposeViewModel @Inject constructor(
             }
             .autoDisposable(view.scope())
             .subscribe {
-
                 attachments.onNext(it)
-
-
             }
 
         conversation
