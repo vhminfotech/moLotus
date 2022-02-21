@@ -85,7 +85,7 @@ dependencies {
     withAnalyticsImplementation 'com.android.installreferrer:installreferrer:1.1'
     withAnalyticsImplementation "com.amplitude:android-sdk:2.16.0"
 
-    implementation "com.github.AbedElazizShe:LightCompressor:1.1.1"
+    //implementation "com.github.AbedElazizShe:LightCompressor:1.1.1"
 
 //    implementation 'com.otaliastudios:transcoder:0.10.4'
 

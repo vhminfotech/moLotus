@@ -5,18 +5,11 @@ import android.animation.LayoutTransition
 import android.app.Activity
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
-import android.content.ContentResolver
 import android.content.ContentValues
-import android.content.Context
 import android.content.Intent
-import android.database.Cursor
 import android.graphics.Color
-import android.media.MediaPlayer
 import android.net.Uri
-import android.os.Build
-import android.os.Bundle
-import android.os.Environment
-import android.os.Handler
+import android.os.*
 import android.provider.ContactsContract
 import android.provider.MediaStore
 import android.text.Editable
@@ -34,6 +27,9 @@ import androidx.core.content.PermissionChecker.PERMISSION_GRANTED
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import com.devlomi.record_view.OnRecordListener
+import com.devlomi.record_view.RecordButton
+import com.devlomi.record_view.RecordPermissionHandler
 import com.google.android.flexbox.FlexboxLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.jakewharton.rxbinding2.view.clicks
@@ -42,40 +38,33 @@ import com.sms.moLotus.R
 import com.sms.moLotus.common.Navigator
 import com.sms.moLotus.common.base.QkThemedActivity
 import com.sms.moLotus.common.util.DateFormatter
-import com.sms.moLotus.common.util.extensions.autoScrollToStart
-import com.sms.moLotus.common.util.extensions.hideKeyboard
-import com.sms.moLotus.common.util.extensions.resolveThemeColor
-import com.sms.moLotus.common.util.extensions.scrapViews
-import com.sms.moLotus.common.util.extensions.setBackgroundTint
-import com.sms.moLotus.common.util.extensions.setTint
-import com.sms.moLotus.common.util.extensions.setVisible
-import com.sms.moLotus.common.util.extensions.showKeyboard
+import com.sms.moLotus.common.util.extensions.*
+import com.sms.moLotus.customview.CustomProgressDialog
+import com.sms.moLotus.feature.Utils.getAudioContentUri
+import com.sms.moLotus.feature.Utils.getVideoContentUri
+import com.sms.moLotus.feature.Utils.getVideoDuration
 import com.sms.moLotus.feature.compose.editing.ChipsAdapter
 import com.sms.moLotus.feature.contacts.ContactsActivity
 import com.sms.moLotus.model.Attachment
 import com.sms.moLotus.model.Recipient
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
+import com.videotrimmer.library.utils.CompressOption
+import com.videotrimmer.library.utils.TrimType
+import com.videotrimmer.library.utils.TrimVideo
 import dagger.android.AndroidInjection
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
 import kotlinx.android.synthetic.main.compose_activity.*
-import java.text.SimpleDateFormat
-import java.util.*
-import javax.inject.Inject
-import kotlin.collections.HashMap
+import kotlinx.coroutines.*
 import java.io.File
 import java.io.IOException
-import com.devlomi.record_view.OnRecordListener
-import com.devlomi.record_view.RecordButton
-
-import com.devlomi.record_view.RecordPermissionHandler
-import com.sms.moLotus.customview.CustomProgressDialog
-import com.sms.moLotus.util.VideoCompressor
-import kotlinx.coroutines.*
-
+import java.text.SimpleDateFormat
+import java.util.*
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
+import kotlin.collections.HashMap
 
 class ComposeActivity : QkThemedActivity(), ComposeView {
 
@@ -120,7 +109,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
     override val activityVisibleIntent: Subject<Boolean> = PublishSubject.create()
     override val chipsSelectedIntent: Subject<HashMap<String, String?>> = PublishSubject.create()
     override val chipDeletedIntent: Subject<Recipient> by lazy { chipsAdapter.chipDeleted }
-    override val menuReadyIntent: Observable<Unit> = menu.map { Unit }
+    override val menuReadyIntent: Observable<Unit> = menu.map { }
     override val optionsItemIntent: Subject<Int> = PublishSubject.create()
     override val sendAsGroupIntent by lazy { sendAsGroupBackground.clicks() }
     override val messageClickIntent: Subject<Long> by lazy { messageAdapter.clicks }
@@ -266,7 +255,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         record_button.visibility = View.VISIBLE
         record_button.setOnRecordClickListener {
             //  Toast.makeText(this, "RECORD BUTTON CLICKED", Toast.LENGTH_SHORT).show()
-            Log.d("RecordButton", "RECORD BUTTON CLICKED")
+            //Log.d("RecordButton", "RECORD BUTTON CLICKED")
         }
 
         record_view.setSmallMicColor(Color.parseColor("#59C2F1"))
@@ -288,12 +277,18 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                     Environment.getExternalStorageDirectory(), /*UUID.randomUUID().toString()*/
                     "audioTest" + ".aac"
                 )
+                if (recordFile?.exists() == true) {
+                    recordFile?.delete()
+                    recordFile?.createNewFile()
+                } else {
+                    recordFile?.createNewFile()
+                }
                 try {
                     audioRecorder?.start(recordFile?.path)
                 } catch (e: IOException) {
                     e.printStackTrace()
                 }
-                Log.d("record_view", "onStart")
+                //Log.d("record_view", "onStart")
                 // Toast.makeText(this@ComposeActivity, "OnStartRecord", Toast.LENGTH_SHORT).show()
             }
 
@@ -303,7 +298,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                 record_view?.setBackgroundColor(resources.getColor(android.R.color.transparent))
                 Toast.makeText(this@ComposeActivity, "Recording cancelled", Toast.LENGTH_SHORT)
                     .show()
-                Log.d("record_view", "onCancel")
+                //Log.d("record_view", "onCancel")
             }
 
             override fun onFinish(recordTime: Long, limitReached: Boolean) {
@@ -317,17 +312,19 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                     "onFinishRecord - Recorded Time is: " + time + " File saved at " + recordFile?.path,
                     Toast.LENGTH_SHORT
                 ).show()*/
-                var uri:Uri?=null
+                var uri: Uri? = null
                 try {
-                     uri = getAudioContentUri(this@ComposeActivity, recordFile?.absoluteFile)
-                    Log.d(
-                        "record_view",
-                        "onFinish Limit Reached? $limitReached == recordFile::${recordFile?.path} time:: $time :::: uri::::$uri"
-                    )
+                    uri = recordFile?.absoluteFile?.let {
+                        getAudioContentUri(
+                            it,
+                            this@ComposeActivity
+                        )
+                    }
+                    //Log.d( "record_view", "onFinish Limit Reached? $limitReached == recordFile::${recordFile?.path} time:: $time :::: uri::::$uri" )
 
                 } catch (e: Exception) {
                     e.printStackTrace()
-                    Log.d("record_view", "error:: ${e.message}")
+                    //Log.d("record_view", "error:: ${e.message}")
                 }
                 uri?.let(attachmentSelectedIntent::onNext)
 
@@ -336,17 +333,13 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
             override fun onLessThanSecond() {
                 stopRecording(true)
                 Toast.makeText(this@ComposeActivity, "OnLessThanSecond", Toast.LENGTH_SHORT).show()
-                Log.d("record_view", "onLessThanSecond")
+                //Log.d("record_view", "onLessThanSecond")
             }
         })
 
 
         record_view.setOnBasketAnimationEndListener {
-
-            Log.d(
-                "record_view",
-                "Basket Animation Finished"
-            )
+            //Log.d("record_view", "Basket Animation Finished")
         }
 
         record_view.setRecordPermissionHandler(RecordPermissionHandler {
@@ -368,7 +361,11 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         })
     }
 
-    fun getAudioContentUri(context: Context, audioPath: File?): Uri? {
+
+
+
+
+    /*fun getAudioContentUri(context: Context, audioPath: File?): Uri? {
         val filePath = audioPath?.absolutePath
         val cursor: Cursor? = context.contentResolver.query(
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, arrayOf(MediaStore.Audio.Media._ID),
@@ -381,7 +378,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         } else {
             if (audioPath?.exists() == true) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    /*val values = ContentValues()
+                    *//*val values = ContentValues()
                     values.put(MediaStore.MediaColumns.DATA, audioPath.absolutePath)
                     values.put(MediaStore.MediaColumns.TITLE, "TestNotification")
                     values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/3gpp")
@@ -400,7 +397,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                         null
                     )
                     val newUri = contentResolver.insert(uri, values)
-                    newUri*/
+                    newUri*//*
 
 
                     val resolver: ContentResolver = context.contentResolver
@@ -420,12 +417,12 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                     finalUri
 
 
-                    /* picDetail.clear()
+                    *//* picDetail.clear()
                                        picDetail.put(MediaStore.Audio.Media.IS_PENDING, 0)
-                                       resolver.update(picCollection, picDetail, null, null)*/
+                                       resolver.update(picCollection, picDetail, null, null)*//*
 
 
-                    /*val contentValues = ContentValues().apply {
+                    *//*val contentValues = ContentValues().apply {
                         put(MediaStore.MediaColumns.DISPLAY_NAME, audioPath?.name)
                         put(MediaStore.MediaColumns.MIME_TYPE, "audio/3gpp")
                         put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
@@ -435,7 +432,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
 
                     Log.d("=========","finalUri::: $uri")
 
-                    uri*/
+                    uri*//*
                 } else {
                     val values = ContentValues()
                     values.put(MediaStore.Audio.Media.DATA, filePath)
@@ -447,7 +444,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                 null
             }
         }
-    }
+    }*/
     /*fun getAudioContentUri(context: Context, audioPath: File?): Uri? {
         val filePath = audioPath?.absolutePath
         val cursor: Cursor? = context.contentResolver.query(
@@ -652,7 +649,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         val calendar = Calendar.getInstance()
         DatePickerDialog(
             this,
-            DatePickerDialog.OnDateSetListener { _, year, month, day ->
+            { _, year, month, day ->
                 TimePickerDialog(
                     this,
                     TimePickerDialog.OnTimeSetListener { _, hour, minute ->
@@ -715,7 +712,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                     )
                 }
             }
-            .let { cv -> contentResolver.insert(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, cv) }
+            .let { cv -> contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, cv) }
 
         val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
             .putExtra(MediaStore.EXTRA_OUTPUT, cameraDestination)
@@ -743,52 +740,17 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
     }
 
     override fun requestTakeVideo() {
-        /*cameraDestination = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-            .let { timestamp ->
-                ContentValues().apply {
-                    put(
-                        MediaStore.Audio.Media.TITLE,
-                        timestamp
-                    )
-                }
-            }
-            .let { cv -> contentResolver.insert(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, cv) }*/
-
         val intent = Intent(MediaStore.ACTION_VIDEO_CAPTURE)
-        //.putExtra(MediaStore.EXTRA_OUTPUT, cameraDestination)
         startActivityForResult(Intent.createChooser(intent, null), TakeVideoRequestCode)
     }
 
     override fun addAudio() {
-
-
-        val intent = Intent(Intent.ACTION_PICK)
+     val intent = Intent(Intent.ACTION_PICK)
             .putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
             .addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
             .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             .setType("audio/3gp")
         startActivityForResult(intent, AddAudioRequestCode)
-
-
-        /* AudioRecorder.start()
-
-        Handler().postDelayed({
-            AudioRecorder.stop()
-        }, 5000)*/
-        /*val intent = Intent(MediaStore.Audio.Media.RECORD_SOUND_ACTION) */
-        // intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(imageToStore))
-        /*startActivityForResult(intent, AddAudioRequestCode)*/
-
-
-    }
-
-
-    fun getRealPathFromURI(contentUri: Uri?): String? {
-        val proj = arrayOf(MediaStore.Audio.Media.DATA)
-        val cursor: Cursor = managedQuery(contentUri, proj, null, null, null)
-        val column_index: Int = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
-        cursor.moveToFirst()
-        return cursor.getString(column_index)
     }
 
     override fun setDraft(draft: String) {
@@ -849,84 +811,59 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
             }
 
             requestCode == AttachVideoRequestCode && resultCode == Activity.RESULT_OK -> {
-                /*progressDialog.show(this)
-
-                data?.clipData?.itemCount
-                    ?.let { count -> 0 until count }
-                    ?.mapNotNull { i ->
-
-                        GlobalScope.launch(Dispatchers.IO) {
-                            data.clipData?.getItemAt(i)?.uri?.let {
-                                VideoCompressor.compress(
-                                    this@ComposeActivity,
-                                    it
-                                )
-                            }
-                        }
-                    }*/
-
-//                Handler().postDelayed({
+                val duration = getVideoDuration(data?.data.toString(),this)
+                Log.e("COMPOSEActivity", "duration:: $duration")
+                if (duration > 30000) {
+                    TrimVideo.activity(data?.data.toString())
+                        .setCompressOption(CompressOption(1))
+                        .setTrimType(TrimType.FIXED_DURATION)
+                        .setFixedDuration(30)
+                        .start(this)
+                } else {
                     data?.clipData?.itemCount
                         ?.let { count -> 0 until count }
                         ?.mapNotNull { i ->
-                            val mp: MediaPlayer = MediaPlayer.create(
-                                this,
-                                Uri.parse(data.clipData?.getItemAt(i)?.uri.toString())
-                            )
-                            val duration: Int = mp.duration
-                            mp.release()
-                            progressDialog.dialog.dismiss()
-                            Log.e("COMPOSEActivity", "duration:: $duration")
-                            var uri: Uri? = null
-                            if (duration > 30000) {
-                                Toast.makeText(
-                                    this,
-                                    "Please select video of 30 seconds or less",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            } else {
-//                                uri = VideoCompressor.newUri
-
-                            uri = data.clipData?.getItemAt(i)?.uri
-                            }
-                            Log.e("COMPOSEActivity", "uri:: $uri")
-
-                            uri
-                        }
-                        ?.forEach(attachmentSelectedIntent::onNext)
+                            data.clipData?.getItemAt(i)?.uri
+                        }?.forEach(attachmentSelectedIntent::onNext)
                         ?: data?.data?.let(attachmentSelectedIntent::onNext)
-//                }, 12000)
+                }
+            }
 
+            requestCode == TrimVideo.VIDEO_TRIMMER_REQ_CODE && data != null -> {
+                val uri = getVideoContentUri(
+                    File(Uri.parse(TrimVideo.getTrimmedVideoPath(data)).toString()),
+                    this
+                )
+                uri?.let(attachmentSelectedIntent::onNext)
             }
 
             requestCode == TakeVideoRequestCode && resultCode == Activity.RESULT_OK -> {
-//                progressDialog.show(this@ComposeActivity)
 
-/*              GlobalScope.launch(Dispatchers.IO) {
-
-                    data?.data?.let {
-                        VideoCompressor.compress(
-                            this@ComposeActivity,
-                            it
-                        )
-                    }
-
+                val duration: Int = getVideoDuration(data?.data.toString(),this)
+                Log.e("COMPOSEActivity", "duration:: $duration")
+                if (duration > 30000) {
+                    TrimVideo.activity(data?.data.toString())
+                        .setCompressOption(CompressOption(1))
+                        .setTrimType(TrimType.FIXED_DURATION)
+                        .setFixedDuration(30)
+                        .start(this)
+                } else {
+                    data?.data?.let(attachmentSelectedIntent::onNext)
                 }
-                Handler().postDelayed({*/
-//                    progressDialog.dialog.dismiss()
-                   data?.data?.let(attachmentSelectedIntent::onNext)
-//                }, 12000)
 
             }
 
             requestCode == AddAudioRequestCode && resultCode == Activity.RESULT_OK -> {
-                Log.e("COMPOSITEACTIVITY", "audio uri:: ${data?.data}")
+                //Log.e("COMPOSITEACTIVITY", "audio uri:: ${data?.data}")
                 data?.data?.let(attachmentSelectedIntent::onNext)
             }
 
             else -> super.onActivityResult(requestCode, resultCode, data)
         }
     }
+
+
+
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putParcelable(CameraDestinationKey, cameraDestination)

@@ -19,28 +19,10 @@
 package com.sms.moLotus.util
 
 import android.content.Context
-import android.media.MediaMetadataRetriever
 import android.net.Uri
-import android.os.Environment
 import android.util.Log
-import android.R.attr.path
-import android.content.ContentResolver
-import android.content.ContentValues
-import android.database.Cursor
-import android.os.Handler
-import android.provider.MediaStore
-import com.abedelazizshe.lightcompressorlibrary.CompressionListener
-import com.abedelazizshe.lightcompressorlibrary.VideoCompressor
-import com.abedelazizshe.lightcompressorlibrary.VideoQuality
-import java.io.*
-import com.abedelazizshe.lightcompressorlibrary.VideoCompressor.start
-import com.abedelazizshe.lightcompressorlibrary.config.Configuration
 import kotlinx.coroutines.*
-import okhttp3.internal.notifyAll
-import android.R.attr.data
-import android.R.attr.data
-import java.lang.Exception
-
+import java.io.*
 
 object ImageUtils {
 

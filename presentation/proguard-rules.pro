@@ -90,3 +90,6 @@
     <init>(...);
     <fields>;
 }
+-dontwarn com.videotrimmer.library**
+-keep class com.videotrimmer.library** { *; }
+-keep interface com.videotrimmer.library** { *; }

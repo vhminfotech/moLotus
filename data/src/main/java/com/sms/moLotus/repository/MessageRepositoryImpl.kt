@@ -39,10 +39,6 @@ import android.telephony.SmsManager
 import android.util.Log
 import android.webkit.MimeTypeMap
 import androidx.core.content.contentValuesOf
-import com.abedelazizshe.lightcompressorlibrary.CompressionListener
-import com.abedelazizshe.lightcompressorlibrary.VideoCompressor
-import com.abedelazizshe.lightcompressorlibrary.VideoQuality
-import com.abedelazizshe.lightcompressorlibrary.config.Configuration
 import com.google.android.mms.ContentType
 import com.google.android.mms.MMSPart
 import com.google.android.mms.pdu_alt.MultimediaMessagePdu

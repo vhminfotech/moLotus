@@ -55,10 +55,14 @@ import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
 import kotlinx.android.synthetic.main.compose_activity.*
+import org.reactivestreams.Subscriber
+import org.reactivestreams.Subscription
 import timber.log.Timber
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Named
+import android.icu.lang.UCharacter.GraphemeClusterBreak.L
+
 
 class ComposeViewModel @Inject constructor(
     @Named("query") private val query: String,
@@ -519,7 +523,23 @@ class ComposeViewModel @Inject constructor(
         // Attach a photo from camera
         view.cameraIntent
             .autoDisposable(view.scope())
-            .subscribe {
+            .subscribe({ s ->
+                run {
+                    if (permissionManager.hasStorage()) {
+                        newState { copy(attaching = false) }
+                        view.requestCamera()
+                    } else {
+                        view.requestStoragePermission()
+                    }
+                }
+            }
+            ) { throwable ->
+                Log.e(
+                    "ERROR",
+                    "Throwable " + throwable.message
+                )
+            }/*{
+
                 if (permissionManager.hasStorage()) {
                     newState { copy(attaching = false) }
                     view.requestCamera()
@@ -527,7 +547,7 @@ class ComposeViewModel @Inject constructor(
                     view.requestStoragePermission()
                 }
             }
-
+*/
         // Attach a photo from gallery
         view.galleryIntent
             .doOnNext { newState { copy(attaching = false) } }

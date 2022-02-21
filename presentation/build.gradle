@@ -188,6 +188,9 @@ dependencies {
 
     //for AndroidX use:
     implementation 'com.github.3llomi:RecordView:3.0.2'
+
+    //for video trimming and compression
+    implementation 'com.github.a914-gowtham:android-video-trimmer-litr:1.5.11'
 }
 
 if (getGradle().getStartParameter().getTaskRequests().toString().contains("WithAnalytics")) {
