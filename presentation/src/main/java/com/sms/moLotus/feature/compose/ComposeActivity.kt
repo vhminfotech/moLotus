@@ -362,9 +362,6 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
     }
 
 
-
-
-
     /*fun getAudioContentUri(context: Context, audioPath: File?): Uri? {
         val filePath = audioPath?.absolutePath
         val cursor: Cursor? = context.contentResolver.query(
@@ -745,7 +742,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
     }
 
     override fun addAudio() {
-     val intent = Intent(Intent.ACTION_PICK)
+        val intent = Intent(Intent.ACTION_PICK)
             .putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
             .addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
             .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
@@ -811,7 +808,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
             }
 
             requestCode == AttachVideoRequestCode && resultCode == Activity.RESULT_OK -> {
-                val duration = getVideoDuration(data?.data.toString(),this)
+                val duration = getVideoDuration(data?.data.toString(), this)
                 Log.e("COMPOSEActivity", "duration:: $duration")
                 if (duration > 30000) {
                     TrimVideo.activity(data?.data.toString())
@@ -839,7 +836,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
 
             requestCode == TakeVideoRequestCode && resultCode == Activity.RESULT_OK -> {
 
-                val duration: Int = getVideoDuration(data?.data.toString(),this)
+                val duration: Int = getVideoDuration(data?.data.toString(), this)
                 Log.e("COMPOSEActivity", "duration:: $duration")
                 if (duration > 30000) {
                     TrimVideo.activity(data?.data.toString())
@@ -861,8 +858,6 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
             else -> super.onActivityResult(requestCode, resultCode, data)
         }
     }
-
-
 
 
     override fun onSaveInstanceState(outState: Bundle) {
