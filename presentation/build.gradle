@@ -176,6 +176,7 @@ dependencies {
     implementation project(":common")
     implementation project(':data')
     implementation project(':domain')
+    implementation project(':library')
 
     withAnalyticsImplementation 'com.google.firebase:firebase-crashlytics:17.3.0'
     withAnalyticsImplementation "com.android.billingclient:billing:$billing_version"
@@ -190,7 +191,7 @@ dependencies {
     implementation 'com.github.3llomi:RecordView:3.0.2'
 
     //for video trimming and compression
-    implementation 'com.github.a914-gowtham:android-video-trimmer-litr:1.5.11'
+    //implementation 'com.github.a914-gowtham:android-video-trimmer-litr:1.5.11'
 }
 
 if (getGradle().getStartParameter().getTaskRequests().toString().contains("WithAnalytics")) {

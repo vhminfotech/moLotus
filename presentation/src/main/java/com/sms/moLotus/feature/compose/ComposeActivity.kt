@@ -47,6 +47,7 @@ import com.sms.moLotus.feature.compose.editing.ChipsAdapter
 import com.sms.moLotus.feature.contacts.ContactsActivity
 import com.sms.moLotus.model.Attachment
 import com.sms.moLotus.model.Recipient
+import com.sms.moLotus.util.VideoCompressor
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
 import com.videotrimmer.library.utils.CompressOption
@@ -810,11 +811,11 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
             requestCode == AttachVideoRequestCode && resultCode == Activity.RESULT_OK -> {
                 val duration = getVideoDuration(data?.data.toString(), this)
                 Log.e("COMPOSEActivity", "duration:: $duration")
-                if (duration > 30000) {
+                if (duration > 15000) {
                     TrimVideo.activity(data?.data.toString())
-                        .setCompressOption(CompressOption(1))
+                        .setCompressOption(CompressOption(24,1600))
                         .setTrimType(TrimType.FIXED_DURATION)
-                        .setFixedDuration(30)
+                        .setFixedDuration(15)
                         .start(this)
                 } else {
                     data?.clipData?.itemCount
@@ -831,6 +832,13 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                     File(Uri.parse(TrimVideo.getTrimmedVideoPath(data)).toString()),
                     this
                 )
+                /*GlobalScope.launch(Dispatchers.IO){
+                    uri?.let { VideoCompressor.compress(this@ComposeActivity, it) }
+                }
+
+                val newUri = VideoCompressor.newUri
+
+                Log.e("========","final uri:::: $newUri")*/
                 uri?.let(attachmentSelectedIntent::onNext)
             }
 
@@ -838,11 +846,11 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
 
                 val duration: Int = getVideoDuration(data?.data.toString(), this)
                 Log.e("COMPOSEActivity", "duration:: $duration")
-                if (duration > 30000) {
+                if (duration > 15000) {
                     TrimVideo.activity(data?.data.toString())
                         .setCompressOption(CompressOption(1))
                         .setTrimType(TrimType.FIXED_DURATION)
-                        .setFixedDuration(30)
+                        .setFixedDuration(15)
                         .start(this)
                 } else {
                     data?.data?.let(attachmentSelectedIntent::onNext)
