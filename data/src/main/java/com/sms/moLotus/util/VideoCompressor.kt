@@ -69,10 +69,10 @@ object VideoCompressor {
 
             },
             configureWith = Configuration(
-                quality = VideoQuality.MEDIUM,
+                quality = VideoQuality.LOW,
                 frameRate = 24, /*Int, ignore, or null*/
                 isMinBitrateCheckEnabled = false,
-                videoBitrate = 3677198, /*Int, ignore, or null*/
+                videoBitrate = 160000, /*Int, ignore, or null*/
                 disableAudio = false, /*Boolean, or ignore*/
                 keepOriginalResolution = false, /*Boolean, or ignore*/
                 null, /*Double, ignore, or null*/
@@ -114,6 +114,7 @@ object VideoCompressor {
                 } else {
                     val values = ContentValues()
                     values.put(MediaStore.Video.Media.DATA, filePath)
+                    values.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
                     context.contentResolver.insert(
                         MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values
                     )
