@@ -13,6 +13,7 @@ import com.sms.moLotus.R
 import com.sms.moLotus.feature.main.MainActivity
 import kotlinx.android.synthetic.main.activity_splash.*
 
+
 class SplashActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,8 +48,14 @@ class SplashActivity : AppCompatActivity() {
         Handler().postDelayed({
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
-            overridePendingTransition(0,0)
+            overridePendingTransition(0, 0)
             finish()
         }, 2000)
+
+
+        /*val appSignatureHelper = AppSignatureHelper(this)
+        appSignatureHelper.appSignatures
+
+        Log.e("===========", "HASH key:::::: ${appSignatureHelper.appSignatures}")*/
     }
 }

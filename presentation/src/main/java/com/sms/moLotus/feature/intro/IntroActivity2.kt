@@ -1,4 +1,4 @@
-package com.sms.moLotus.feature.Intro
+package com.sms.moLotus.feature.intro
 
 import android.content.Context
 import android.content.Intent

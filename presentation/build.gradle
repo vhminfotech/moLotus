@@ -192,6 +192,14 @@ dependencies {
 
     //for video trimming and compression
     //implementation 'com.github.a914-gowtham:android-video-trimmer-litr:1.5.11'
+
+    //for auto fetch otp
+    implementation("com.android.volley:volley:1.2.0")
+    implementation 'com.google.android.gms:play-services-auth:19.0.0'
+    implementation 'com.google.android.gms:play-services-auth-api-phone:17.5.0'
+    implementation 'com.google.android.gms:play-services-base:11.0.1'
+    implementation 'com.google.android.gms:play-services-identity:11.0.1'
+
 }
 
 if (getGradle().getStartParameter().getTaskRequests().toString().contains("WithAnalytics")) {

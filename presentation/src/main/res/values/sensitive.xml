@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="server_client_secret">OKCVofivJYE</string>
+    <string name="server_client_secret_v8">OKCVofivJYE</string>
+    <string name="url_verify">http://192.168.1.27:3000/api/verify</string>
+    <string name="url_request">http://192.168.1.27:3000/api/request</string>
+    <string name="url_reset">http://192.168.1.27:3000/api/reset</string>
+</resources>

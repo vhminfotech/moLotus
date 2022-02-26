@@ -1,4 +1,4 @@
-package com.sms.moLotus.feature.Intro
+package com.sms.moLotus.feature.intro
 
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -8,13 +8,11 @@ import android.os.Bundle
 import android.provider.Settings
 import android.view.View
 import android.widget.EditText
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.sms.moLotus.R
 import com.sms.moLotus.feature.main.MainActivity
 import kotlinx.android.synthetic.main.apn_details_activity.*
-import kotlinx.android.synthetic.main.intro_activity_main.*
 
 class APNDetailsActivity : AppCompatActivity() {
 

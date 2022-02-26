@@ -33,7 +33,7 @@ import com.sms.moLotus.common.util.extensions.scrapViews
 import com.sms.moLotus.common.util.extensions.setBackgroundTint
 import com.sms.moLotus.common.util.extensions.setTint
 import com.sms.moLotus.common.util.extensions.setVisible
-import com.sms.moLotus.feature.Intro.IntroActivity
+import com.sms.moLotus.feature.intro.IntroActivity
 import com.sms.moLotus.feature.blocking.BlockingDialog
 import com.sms.moLotus.feature.changelog.ChangelogDialog
 //import com.sms.moLotus.feature.conversations.ConversationItemTouchCallback

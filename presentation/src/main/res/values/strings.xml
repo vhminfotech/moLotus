@@ -418,6 +418,7 @@
     <string name="notification_message_failed_text">The message to %s failed to send</string>
     <string name="add_audio">Add Audio</string>
     <string name="splash_name">mChat</string>
+    <string name="enter_otp">Enter OTP</string>
 
     <string-array name="night_modes">
         <item>System</item>
