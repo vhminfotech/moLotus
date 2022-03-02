@@ -419,6 +419,12 @@
     <string name="add_audio">Add Audio</string>
     <string name="splash_name">mChat</string>
     <string name="enter_otp">Enter OTP</string>
+    <string name="verify_otp">Verify OTP</string>
+    <string name="apn_setting">APN Setting</string>
+    <string name="apn_configuration">APN Configuration</string>
+    <string name="text_apn_name">APN Name</string>
+    <string name="get_started">Get Started</string>
+    <string name="intro_message">Enjoy the better way on messaging just on your phone</string>
 
     <string-array name="night_modes">
         <item>System</item>

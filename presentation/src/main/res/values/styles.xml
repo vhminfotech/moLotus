@@ -26,18 +26,30 @@
         <item name="textSize">secondary</item>
     </style>
 
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
+        <item name="android:textColorPrimary">@color/white</item>
+        <item name="android:textColorSecondary">@color/white</item>
+    </style>
+
+    <style name="AppTheme.PopupOverlay">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
     <style name="Toolbar">
         <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">56dp</item>
+        <item name="android:layout_height">?actionBarSize</item>
 
         <!-- This needs to be set so that we can tint the toolbar and not change the background
          resource. This is mainly so that QkReplyActivity can call setClipToOutline -->
-        <item name="android:background">?attr/colorPrimary</item>
+        <item name="android:background">@color/tools_theme</item>
         <item name="android:gravity">center_vertical</item>
     </style>
 
     <style name="ToolbarText">
-        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">match_parent</item>
         <item name="android:background">@null</item>
         <item name="android:ellipsize">end</item>

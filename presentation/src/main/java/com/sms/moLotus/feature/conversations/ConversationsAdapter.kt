@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Typeface
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.core.text.buildSpannedString
 import androidx.core.text.color
@@ -16,6 +17,7 @@ import com.sms.moLotus.common.util.Colors
 import com.sms.moLotus.common.util.DateFormatter
 import com.sms.moLotus.common.util.extensions.resolveThemeColor
 import com.sms.moLotus.common.util.extensions.setTint
+import com.sms.moLotus.feature.main.MainActivity
 import com.sms.moLotus.model.Conversation
 import com.sms.moLotus.util.PhoneNumberUtils
 import kotlinx.android.synthetic.main.conversation_list_item.*
@@ -63,6 +65,7 @@ class ConversationsAdapter @Inject constructor(
                 }
             }
             view.setOnLongClickListener {
+                MainActivity.toolbarVisible?.visibility = View.VISIBLE
                 val conversation = getItem(adapterPosition) ?: return@setOnLongClickListener true
                 toggleSelection(conversation.id)
                 view.isActivated = isSelected(conversation.id)

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.appbar.MaterialToolbar xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/mainToolbar"
+    android:layout_width="match_parent"
+    android:layout_height="?actionBarSize"
+    android:background="@color/tools_theme"
+    app:popupTheme="@style/AppTheme.PopupOverlay">
+
+    <com.sms.moLotus.common.widget.QkTextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="mChat"
+        android:textColor="@color/white"
+        android:textSize="18sp" />
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:paddingEnd="10dp">
+
+        <ImageView
+            android:id="@+id/imgSearch"
+            android:layout_width="40dp"
+            android:layout_height="match_parent"
+            android:layout_marginEnd="5dp"
+            android:padding="10dp"
+            android:src="@drawable/ic_baseline_search_24" />
+
+        <ImageView
+            android:id="@+id/imgMenu"
+            android:layout_width="40dp"
+            android:layout_height="match_parent"
+            android:layout_toEndOf="@+id/imgSearch"
+            android:padding="10dp"
+            android:src="@drawable/ic_baseline_menu_24" />
+    </RelativeLayout>
+
+</com.google.android.material.appbar.MaterialToolbar>

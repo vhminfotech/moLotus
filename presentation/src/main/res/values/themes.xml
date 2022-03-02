@@ -57,7 +57,9 @@
 
     <!-- Black mode. No changes needed when not in night theme -->
     <style name="AppTheme.Black" />
+
     <style name="AppThemeDialog.Black" />
+
     <style name="PopupTheme.Black" />
 
 
@@ -65,4 +67,13 @@
         <item name="android:windowBackground">@android:color/transparent</item>
     </style>
 
+    <style name="MyDialogTheme" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <!-- Full width -->
+        <!--        <item name="android:layout_width">fill_parent</item>-->
+
+        <!-- Null window background kills surrounding padding -->
+        <item name="android:windowBackground">@null</item>
+        <item name="android:windowNoTitle">true</item>
+
+    </style>
 </resources>

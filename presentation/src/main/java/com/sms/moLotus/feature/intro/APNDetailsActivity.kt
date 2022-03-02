@@ -10,6 +10,7 @@ import android.view.View
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
 import com.sms.moLotus.feature.main.MainActivity
 import kotlinx.android.synthetic.main.apn_details_activity.*
@@ -22,7 +23,7 @@ class APNDetailsActivity : AppCompatActivity() {
 
         //get data from intent
         var intent = intent
-        val PhoneNumber = intent.getStringExtra("PhoneNumber")
+        val phoneNumber = intent.getStringExtra("PhoneNumber")
         val CarrierText = intent.getStringExtra("CarrierText")
 
 //        Toast.makeText(this, "Number: $PhoneNumber \nCarrier: $CarrierText", Toast.LENGTH_LONG).show()
@@ -46,7 +47,7 @@ class APNDetailsActivity : AppCompatActivity() {
         val MVNO_Type_et = findViewById<View>(R.id.MVNO_Type_et) as EditText
         val MVNO_Value_et = findViewById<View>(R.id.MVNO_Value_et) as EditText
 
-        if(CarrierText == "Telkomsel") {
+        if (CarrierText == "Telkomsel") {
             NAME_et.setText("Telkomsel MMS")
             APN_et.setText("indosatmms")
             Proxy_et.setText("Not Set")
@@ -68,7 +69,7 @@ class APNDetailsActivity : AppCompatActivity() {
             MVNO_Value_et.setText("Not set")
         }
 
-        if(CarrierText == "Indosat") {
+        if (CarrierText == "Indosat") {
             NAME_et.setText("Indosat MMS")
             APN_et.setText("indosatmms")
             Proxy_et.setText("Not Set")
@@ -90,7 +91,7 @@ class APNDetailsActivity : AppCompatActivity() {
             MVNO_Value_et.setText("Not set")
         }
 
-        if(CarrierText == "XL Axiata") {
+        if (CarrierText == "XL Axiata") {
             NAME_et.setText("XL Axiata MMS")
             APN_et.setText("indosatmms")
             Proxy_et.setText("Not Set")
@@ -112,7 +113,7 @@ class APNDetailsActivity : AppCompatActivity() {
             MVNO_Value_et.setText("Not set")
         }
 
-        if(CarrierText == "Celcom") {
+        if (CarrierText == "Celcom") {
             NAME_et.setText("Celcom MMS")
             APN_et.setText("celcom3g")
             Proxy_et.setText("Not Set")
@@ -134,7 +135,7 @@ class APNDetailsActivity : AppCompatActivity() {
             MVNO_Value_et.setText("Not set")
         }
 
-        if(CarrierText == "U Mobile") {
+        if (CarrierText == "U Mobile") {
             NAME_et.setText("U Mobile Internet")
             APN_et.setText("my3g")
             Proxy_et.setText("Not Set")
@@ -244,7 +245,8 @@ class APNDetailsActivity : AppCompatActivity() {
             val text = findViewById<View>(R.id.Auth_Type_et) as EditText
             val value = text.text.toString()
             copy2clipboard(value)
-            Toast.makeText(this, "Authentication Type copied to clipboard", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Authentication Type copied to clipboard", Toast.LENGTH_LONG)
+                .show()
         }
 
         APN_Type_tf.setEndIconOnClickListener {
@@ -295,7 +297,7 @@ class APNDetailsActivity : AppCompatActivity() {
             val editor = settings.edit()
             editor.putBoolean("first_time", false)
             editor.commit()
-            
+
             intent = Intent(Settings.ACTION_APN_SETTINGS)
             startActivity(intent)
         }
@@ -306,6 +308,7 @@ class APNDetailsActivity : AppCompatActivity() {
             editor.putBoolean("first_time", false)
             editor.commit()
 
+            PreferenceHelper.setPreference(this, "INTRO", true)
             val intent = Intent(this, MainActivity::class.java);
             startActivity(intent)
 
@@ -313,7 +316,13 @@ class APNDetailsActivity : AppCompatActivity() {
 
     }
 
-    fun copy2clipboard(text: CharSequence){
+    override fun onBackPressed() {
+        super.onBackPressed()
+        finishAffinity()
+        finish()
+    }
+
+    fun copy2clipboard(text: CharSequence) {
         val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clip = ClipData.newPlainText("text", text.toString())
         clipboard.setPrimaryClip(clip);

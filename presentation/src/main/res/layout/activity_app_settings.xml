@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    tools:context=".feature.settings.AppSettingsActivity">
+
+    <include
+        android:id="@+id/layoutHeader"
+        layout="@layout/layout_header" />
+
+    <com.sms.moLotus.common.widget.QkTextView
+        android:id="@+id/txtAPN"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/layoutHeader"
+        android:drawableRight="@drawable/ic_baseline_navigate_next_24"
+        android:paddingStart="40dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="40dp"
+        android:paddingBottom="10dp"
+        android:text="APN Parameter"
+        android:textColor="@color/black"
+        app:drawableTint="@color/tools_theme" />
+
+    <View
+        android:id="@+id/view1"
+        android:layout_width="match_parent"
+        android:layout_height="0.25dp"
+        android:layout_below="@+id/txtAPN"
+        android:background="@android:color/darker_gray" />
+
+    <LinearLayout
+        android:id="@+id/llAutoDownload"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/view1"
+        android:orientation="horizontal"
+        android:paddingStart="40dp"
+        android:paddingEnd="40dp"
+        android:weightSum="2">
+
+        <com.sms.moLotus.common.widget.QkTextView
+            android:id="@+id/txtAutoDownload"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingTop="10dp"
+            android:paddingEnd="40dp"
+            android:paddingBottom="10dp"
+            android:text="Auto Download"
+            android:textColor="@color/black" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:layout_width="40dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            />
+    </LinearLayout>
+
+
+</RelativeLayout>

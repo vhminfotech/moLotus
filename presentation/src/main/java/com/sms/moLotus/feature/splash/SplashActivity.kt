@@ -9,7 +9,10 @@ import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
+import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
+import com.sms.moLotus.feature.intro.APNDetailsActivity
+import com.sms.moLotus.feature.intro.AppIntroActivity
 import com.sms.moLotus.feature.main.MainActivity
 import kotlinx.android.synthetic.main.activity_splash.*
 
@@ -46,10 +49,24 @@ class SplashActivity : AppCompatActivity() {
         // we used the postDelayed(Runnable, time) method
         // to send a message with a delayed time.
         Handler().postDelayed({
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
-            overridePendingTransition(0, 0)
-            finish()
+            if (!PreferenceHelper.getPreference(this, "INTRO")) {
+                val intent = Intent(this, AppIntroActivity::class.java)
+                startActivity(intent)
+                overridePendingTransition(0, 0)
+                finish()
+            } else if (PreferenceHelper.getPreference(this, "UserLoggedIn")) {
+                val intent = Intent(this, APNDetailsActivity::class.java)
+                intent.putExtra("PhoneNumber", PreferenceHelper.getStringPreference(this, "PhoneNumber"))
+                intent.putExtra("CarrierText", PreferenceHelper.getStringPreference(this, "CarrierText"))
+                startActivity(intent)
+                overridePendingTransition(0, 0)
+                finish()
+            } else {
+                val intent = Intent(this, MainActivity::class.java)
+                startActivity(intent)
+                overridePendingTransition(0, 0)
+                finish()
+            }
         }, 2000)
 
 

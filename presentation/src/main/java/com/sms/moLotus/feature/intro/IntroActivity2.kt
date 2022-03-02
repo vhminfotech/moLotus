@@ -11,7 +11,8 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.sms.moLotus.R
-import kotlinx.android.synthetic.main.intro_activity_main.*
+import kotlinx.android.synthetic.main.intro_activity_2.*
+import kotlinx.android.synthetic.main.intro_activity_main.carrier_provider
 
 class IntroActivity2 : AppCompatActivity(){
 
@@ -76,6 +77,9 @@ class IntroActivity2 : AppCompatActivity(){
                 position: Int,
                 id: Long
             ) {
+                (parent.getChildAt(0) as TextView).setTextColor(Color.BLACK)
+                (parent.getChildAt(0) as TextView).textSize = 14f
+
                 // by default spinner initial selected item is first item
                 if (position != 0){
 //                    showToast(message = "Position:${position} and language: ${languages[position]}")
@@ -88,7 +92,7 @@ class IntroActivity2 : AppCompatActivity(){
         }
 
         // set on-click listener
-        btnLogin.setOnClickListener {
+        btnNext.setOnClickListener {
             val CarrierText = carrier_provider.selectedItem.toString()
 
             if (CarrierText == "Select carrier provider"){

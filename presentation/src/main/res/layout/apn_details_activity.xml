@@ -1,517 +1,528 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
-    <LinearLayout
-        android:orientation="vertical"
-        android:background="@color/white"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:orientation="vertical">
+
+    <com.sms.moLotus.common.widget.QkTextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
         android:padding="10dp"
-        android:layout_height="match_parent"
-        android:layout_width="match_parent">
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/NAME_tf"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:endIconMode="custom"
-            android:paddingBottom="3dp"
-            app:endIconDrawable="@drawable/ic_baseline_content_white" >
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/NAME_et"
-                android:hint="APN Name"
-                android:textColor="@color/backgroundDark"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:editable="false"
-                android:text="APN Name Data"
-                android:enabled="false"
-                />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/APN_tf"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:endIconMode="custom"
-            android:paddingBottom="3dp"
-            app:endIconDrawable="@drawable/ic_baseline_content_white" >
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/APN_et"
-                android:hint="APN"
-                android:textColor="@color/backgroundDark"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:editable="false"
-                android:text="APN DATA"
-                android:enabled="false"
-                />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/Proxy_tf"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:endIconMode="custom"
-            android:paddingBottom="3dp"
-            app:endIconDrawable="@drawable/ic_baseline_content_white" >
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/Proxy_et"
-                android:hint="Proxy"
-                android:textColor="@color/backgroundDark"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:editable="false"
-                android:text="Proxy DATA"
-                android:enabled="false"
-                />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/Port_tf"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:endIconMode="custom"
-            android:paddingBottom="3dp"
-            app:endIconDrawable="@drawable/ic_baseline_content_white" >
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/Port_et"
-                android:hint="Port"
-                android:textColor="@color/backgroundDark"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:editable="false"
-                android:text="Port DATA"
-                android:enabled="false"
-                />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/username_tf"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:endIconMode="custom"
-            android:paddingBottom="3dp"
-            app:endIconDrawable="@drawable/ic_baseline_content_white" >
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/username_et"
-                android:hint="Username"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:editable="false"
-                android:text="Username DATA"
-                android:enabled="false"
-                android:textColor="@color/backgroundDark"
-                />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/password_tf"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:endIconMode="custom"
-            android:paddingBottom="3dp"
-            app:endIconDrawable="@drawable/ic_baseline_content_white" >
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/password_et"
-                android:hint="Password"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:editable="false"
-                android:text="Password DATA"
-                android:enabled="false"
-                android:textColor="@color/backgroundDark"
-                />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/Server_tf"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:endIconMode="custom"
-            android:paddingBottom="3dp"
-            app:endIconDrawable="@drawable/ic_baseline_content_white" >
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/Server_et"
-                android:hint="Server"
-                android:textColor="@color/backgroundDark"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:editable="false"
-                android:text="Server DATA"
-                android:enabled="false"
-                />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/MMSC_tf"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:endIconMode="custom"
-            android:paddingBottom="3dp"
-            app:endIconDrawable="@drawable/ic_baseline_content_white" >
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/MMSC_et"
-                android:hint="MMSC"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:editable="false"
-                android:text="MMSC DATA"
-                android:enabled="false"
-                android:textColor="@color/backgroundDark"
-                />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/mms_proxy_tf"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:endIconMode="custom"
-            android:paddingBottom="3dp"
-            app:endIconDrawable="@drawable/ic_baseline_content_white"
-
-            >
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/mms_proxy_et"
-                android:hint="MMS Proxy"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:editable="false"
-                android:text="MMS PROXY DATA"
-                android:enabled="false"
-                android:textColor="@color/backgroundDark"
-                />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/MMS_Port_tf"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:endIconMode="custom"
-            android:paddingBottom="3dp"
-            app:endIconDrawable="@drawable/ic_baseline_content_white" >
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/MMS_Port_et"
-                android:hint="MMS Port"
-                android:textColor="@color/backgroundDark"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:editable="false"
-                android:text="MMS Port DATA"
-                android:enabled="false"
-                />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/MCC_tf"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:endIconMode="custom"
-            android:paddingBottom="3dp"
-            app:endIconDrawable="@drawable/ic_baseline_content_white" >
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/MCC_et"
-                android:hint="MCC"
-                android:textColor="@color/backgroundDark"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:editable="false"
-                android:text="MCC DATA"
-                android:enabled="false"
-                />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/MNC_tf"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:endIconMode="custom"
-            android:paddingBottom="3dp"
-            app:endIconDrawable="@drawable/ic_baseline_content_white" >
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/MNC_et"
-                android:hint="MNC"
-                android:textColor="@color/backgroundDark"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:editable="false"
-                android:text="MNC DATA"
-                android:enabled="false"
-                />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/Auth_Type_tf"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:endIconMode="custom"
-            android:paddingBottom="3dp"
-            app:endIconDrawable="@drawable/ic_baseline_content_white" >
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/Auth_Type_et"
-                android:hint="AUTH Type"
-                android:textColor="@color/backgroundDark"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:editable="false"
-                android:text="AUTH Type DATA"
-                android:enabled="false"
-                />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/APN_Type_tf"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:endIconMode="custom"
-            android:paddingBottom="3dp"
-            app:endIconDrawable="@drawable/ic_baseline_content_white" >
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/APN_Type_et"
-                android:hint="APN Type"
-                android:textColor="@color/backgroundDark"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:editable="false"
-                android:text="APN Type DATA"
-                android:enabled="false"
-                />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/APN_Protocol_tf"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:endIconMode="custom"
-            android:paddingBottom="3dp"
-            app:endIconDrawable="@drawable/ic_baseline_content_white" >
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/APN_Protocol_et"
-                android:hint="APN Protocol"
-                android:textColor="@color/backgroundDark"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:editable="false"
-                android:text="APN Protocol DATA"
-                android:enabled="false"
-                />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/APN_Roaming_tf"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:endIconMode="custom"
-            android:paddingBottom="3dp"
-            app:endIconDrawable="@drawable/ic_baseline_content_white" >
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/APN_Roaming_et"
-                android:hint="APN Roaming"
-                android:textColor="@color/backgroundDark"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:editable="false"
-                android:text="APN Roaming DATA"
-                android:enabled="false"
-                />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/Bearer_tf"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:endIconMode="custom"
-            android:paddingBottom="3dp"
-            app:endIconDrawable="@drawable/ic_baseline_content_white" >
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/Bearer_et"
-                android:hint="Bearer"
-                android:textColor="@color/backgroundDark"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:editable="false"
-                android:text="Bearer DATA"
-                android:enabled="false"
-                />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/MVNO_Type_tf"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:endIconMode="custom"
-            android:paddingBottom="3dp"
-            app:endIconDrawable="@drawable/ic_baseline_content_white" >
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/MVNO_Type_et"
-                android:hint="MVNO Type"
-                android:textColor="@color/backgroundDark"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:editable="false"
-                android:text="MVNO Type"
-                android:enabled="false"
-                />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/MVNO_Value_tf"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:endIconMode="custom"
-            android:paddingBottom="3dp"
-            app:endIconDrawable="@drawable/ic_baseline_content_white" >
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/MVNO_Value_et"
-                android:hint="MVNO Value"
-                android:textColor="@color/backgroundDark"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:editable="false"
-                android:text="MVNO Value DATA"
-                android:enabled="false"
-                />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/compose"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
-            android:layout_margin="16dp"
-            android:contentDescription="@string/scheduled_compose_cd"
-            android:src="@drawable/ic_add_black_24dp"
-            android:tint="@color/white"
-            android:visibility="gone"
-            tools:backgroundTint="@color/tools_theme" />
+        android:text="@string/apn_configuration"
+        android:textColor="@color/tools_theme"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <ScrollView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
 
         <LinearLayout
-            android:id="@+id/goto_setting"
-            android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:layout_gravity="bottom|end"
-            android:layout_margin="16dp"
-            android:background="@drawable/rounded_rectangle_24dp"
-            android:elevation="4dp"
-            android:gravity="center"
-            tools:backgroundTint="@color/tools_theme"
-            tools:visibility="visible">
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:orientation="vertical"
+            android:padding="10dp">
 
-            <ImageView
-                android:id="@+id/upgradeIcon"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_marginStart="12dp"
-                android:src="@drawable/ic_chevron_right_black_24dp"
-                tools:tint="@color/textPrimaryDark" />
 
-            <com.sms.moLotus.common.widget.QkTextView
-                android:id="@+id/upgradeLabel"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/NAME_tf"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="3dp"
+                app:endIconDrawable="@drawable/ic_baseline_content_white"
+                app:endIconMode="custom">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/NAME_et"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:editable="false"
+                    android:enabled="false"
+                    android:hint="@string/text_apn_name"
+                    android:text="APN Name Data"
+                    android:textColor="@color/backgroundDark" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/APN_tf"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="3dp"
+                app:endIconDrawable="@drawable/ic_baseline_content_white"
+                app:endIconMode="custom">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/APN_et"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:editable="false"
+                    android:enabled="false"
+                    android:hint="APN"
+                    android:text="APN DATA"
+                    android:textColor="@color/backgroundDark" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/Proxy_tf"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="3dp"
+                app:endIconDrawable="@drawable/ic_baseline_content_white"
+                app:endIconMode="custom">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/Proxy_et"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:editable="false"
+                    android:enabled="false"
+                    android:hint="Proxy"
+                    android:text="Proxy DATA"
+                    android:textColor="@color/backgroundDark" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/Port_tf"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="3dp"
+                app:endIconDrawable="@drawable/ic_baseline_content_white"
+                app:endIconMode="custom">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/Port_et"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:editable="false"
+                    android:enabled="false"
+                    android:hint="Port"
+                    android:text="Port DATA"
+                    android:textColor="@color/backgroundDark" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/username_tf"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="3dp"
+                app:endIconDrawable="@drawable/ic_baseline_content_white"
+                app:endIconMode="custom">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/username_et"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:editable="false"
+                    android:enabled="false"
+                    android:hint="Username"
+                    android:text="Username DATA"
+                    android:textColor="@color/backgroundDark" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/password_tf"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="3dp"
+                app:endIconDrawable="@drawable/ic_baseline_content_white"
+                app:endIconMode="custom">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/password_et"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:editable="false"
+                    android:enabled="false"
+                    android:hint="Password"
+                    android:text="Password DATA"
+                    android:textColor="@color/backgroundDark" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/Server_tf"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="3dp"
+                app:endIconDrawable="@drawable/ic_baseline_content_white"
+                app:endIconMode="custom">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/Server_et"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:editable="false"
+                    android:enabled="false"
+                    android:hint="Server"
+                    android:text="Server DATA"
+                    android:textColor="@color/backgroundDark" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/MMSC_tf"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="3dp"
+                app:endIconDrawable="@drawable/ic_baseline_content_white"
+                app:endIconMode="custom">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/MMSC_et"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:editable="false"
+                    android:enabled="false"
+                    android:hint="MMSC"
+                    android:text="MMSC DATA"
+                    android:textColor="@color/backgroundDark" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/mms_proxy_tf"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="3dp"
+                app:endIconDrawable="@drawable/ic_baseline_content_white"
+                app:endIconMode="custom"
+
+                >
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/mms_proxy_et"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:editable="false"
+                    android:enabled="false"
+                    android:hint="MMS Proxy"
+                    android:text="MMS PROXY DATA"
+                    android:textColor="@color/backgroundDark" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/MMS_Port_tf"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="3dp"
+                app:endIconDrawable="@drawable/ic_baseline_content_white"
+                app:endIconMode="custom">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/MMS_Port_et"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:editable="false"
+                    android:enabled="false"
+                    android:hint="MMS Port"
+                    android:text="MMS Port DATA"
+                    android:textColor="@color/backgroundDark" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/MCC_tf"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="3dp"
+                app:endIconDrawable="@drawable/ic_baseline_content_white"
+                app:endIconMode="custom">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/MCC_et"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:editable="false"
+                    android:enabled="false"
+                    android:hint="MCC"
+                    android:text="MCC DATA"
+                    android:textColor="@color/backgroundDark" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/MNC_tf"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="3dp"
+                app:endIconDrawable="@drawable/ic_baseline_content_white"
+                app:endIconMode="custom">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/MNC_et"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:editable="false"
+                    android:enabled="false"
+                    android:hint="MNC"
+                    android:text="MNC DATA"
+                    android:textColor="@color/backgroundDark" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/Auth_Type_tf"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="3dp"
+                app:endIconDrawable="@drawable/ic_baseline_content_white"
+                app:endIconMode="custom">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/Auth_Type_et"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:editable="false"
+                    android:enabled="false"
+                    android:hint="AUTH Type"
+                    android:text="AUTH Type DATA"
+                    android:textColor="@color/backgroundDark" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/APN_Type_tf"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="3dp"
+                app:endIconDrawable="@drawable/ic_baseline_content_white"
+                app:endIconMode="custom">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/APN_Type_et"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:editable="false"
+                    android:enabled="false"
+                    android:hint="APN Type"
+                    android:text="APN Type DATA"
+                    android:textColor="@color/backgroundDark" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/APN_Protocol_tf"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="3dp"
+                app:endIconDrawable="@drawable/ic_baseline_content_white"
+                app:endIconMode="custom">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/APN_Protocol_et"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:editable="false"
+                    android:enabled="false"
+                    android:hint="APN Protocol"
+                    android:text="APN Protocol DATA"
+                    android:textColor="@color/backgroundDark" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/APN_Roaming_tf"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="3dp"
+                app:endIconDrawable="@drawable/ic_baseline_content_white"
+                app:endIconMode="custom">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/APN_Roaming_et"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:editable="false"
+                    android:enabled="false"
+                    android:hint="APN Roaming"
+                    android:text="APN Roaming DATA"
+                    android:textColor="@color/backgroundDark" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/Bearer_tf"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="3dp"
+                app:endIconDrawable="@drawable/ic_baseline_content_white"
+                app:endIconMode="custom">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/Bearer_et"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:editable="false"
+                    android:enabled="false"
+                    android:hint="Bearer"
+                    android:text="Bearer DATA"
+                    android:textColor="@color/backgroundDark" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/MVNO_Type_tf"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="3dp"
+                app:endIconDrawable="@drawable/ic_baseline_content_white"
+                app:endIconMode="custom">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/MVNO_Type_et"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:editable="false"
+                    android:enabled="false"
+                    android:hint="MVNO Type"
+                    android:text="MVNO Type"
+                    android:textColor="@color/backgroundDark" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/MVNO_Value_tf"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="3dp"
+                app:endIconDrawable="@drawable/ic_baseline_content_white"
+                app:endIconMode="custom">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/MVNO_Value_et"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:editable="false"
+                    android:enabled="false"
+                    android:hint="MVNO Value"
+                    android:text="MVNO Value DATA"
+                    android:textColor="@color/backgroundDark" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/compose"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:text="Goto APN Setting"
-                android:textColor="@color/black"
-                android:textStyle="bold"
-                app:textSize="primary" />
+                android:layout_gravity="bottom|end"
+                android:layout_margin="16dp"
+                android:contentDescription="@string/scheduled_compose_cd"
+                android:src="@drawable/ic_add_black_24dp"
+                android:tint="@color/white"
+                android:visibility="gone"
+                tools:backgroundTint="@color/tools_theme" />
 
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/skip"
-            android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:layout_gravity="bottom|end"
-            android:layout_margin="16dp"
-            android:background="@drawable/rounded_rectangle_24dp"
-            android:elevation="4dp"
-            android:gravity="center"
-            tools:backgroundTint="@color/tools_theme"
-            tools:visibility="visible">
-
-            <ImageView
-                android:id="@+id/skip_icon"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_marginStart="12dp"
-                android:src="@drawable/ic_chevron_right_black_24dp"
-                tools:tint="@color/textPrimaryDark" />
-
-            <com.sms.moLotus.common.widget.QkTextView
-                android:id="@+id/skipLabel"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:text="Next"
-                android:textColor="@color/black"
-                android:textStyle="bold"
-                app:textSize="primary" />
+                android:orientation="horizontal"
+                android:weightSum="2">
 
-    </LinearLayout>
+                <LinearLayout
+                    android:id="@+id/goto_setting"
+                    android:layout_width="50dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="bottom|end"
+                    android:layout_margin="16dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/rounded_rectangle_border"
+                    android:elevation="4dp"
+                    android:gravity="center"
+                    tools:visibility="visible">
+
+                    <ImageView
+
+                        android:id="@+id/upgradeIcon"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginStart="12dp"
+                        android:src="@drawable/ic_chevron_right_black_24dp"
+                        android:visibility="gone"
+                        tools:tint="@color/textPrimaryDark" />
+
+                    <com.sms.moLotus.common.widget.QkTextView
+                        android:id="@+id/upgradeLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:text="@string/apn_setting"
+                        android:textColor="@color/tools_theme"
+                        android:textStyle="bold"
+                        app:textSize="primary" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/skip"
+                    android:layout_width="50dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="bottom|end"
+                    android:layout_margin="16dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/rounded_rectangle_24dp"
+                    android:backgroundTint="@color/tools_theme"
+                    android:elevation="4dp"
+                    android:gravity="center"
+                    tools:visibility="visible">
+
+                    <ImageView
+                        android:id="@+id/skip_icon"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginStart="12dp"
+                        android:src="@drawable/ic_chevron_right_black_24dp"
+                        android:visibility="gone"
+                        tools:tint="@color/textPrimaryDark" />
+
+                    <com.sms.moLotus.common.widget.QkTextView
+                        android:id="@+id/skipLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:text="Next"
+                        android:textColor="@color/white"
+                        android:textStyle="bold"
+                        app:textSize="primary" />
+
+                </LinearLayout>
+            </LinearLayout>
+
+
         </LinearLayout>
-        </ScrollView>
-    <!--<LinearLayout-->
-<!--    xmlns:android="http://schemas.android.com/apk/res/android"-->
-<!--    android:layout_width="match_parent"-->
-<!--    android:layout_height="match_parent"-->
-<!--    xmlns:app="http://schemas.android.com/apk/res-auto"-->
-<!--    xmlns:tools="http://schemas.android.com/tools"-->
-<!--    android:orientation="vertical"-->
-<!--    android:background="@color/white"-->
-<!--    android:padding="10dp">-->
+    </ScrollView>
+</LinearLayout><!--<LinearLayout-->
+    <!--    xmlns:android="http://schemas.android.com/apk/res/android"-->
+    <!--    android:layout_width="match_parent"-->
+    <!--    android:layout_height="match_parent"-->
+    <!--    xmlns:app="http://schemas.android.com/apk/res-auto"-->
+    <!--    xmlns:tools="http://schemas.android.com/tools"-->
+    <!--    android:orientation="vertical"-->
+    <!--    android:background="@color/white"-->
+    <!--    android:padding="10dp">-->
 
-<!--    -->
+    <!--    -->
 
 
-<!--    </LinearLayout>-->
+    <!--    </LinearLayout>-->
 
-<!--</LinearLayout>-->
+    <!--</LinearLayout>-->
 
 

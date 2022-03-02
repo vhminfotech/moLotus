@@ -6,7 +6,7 @@
     android:background="@color/color_background"
     tools:context=".feature.splash.SplashActivity">
 
-    <TextView
+    <com.sms.moLotus.common.widget.QkTextView
         android:id="@+id/txtMchat"
         android:layout_width="match_parent"
         android:text="@string/splash_name"

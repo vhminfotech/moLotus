@@ -12,11 +12,11 @@ interface MainView : QkView<MainState> {
     val activityResumedIntent: Observable<Boolean>
     val queryChangedIntent: Observable<CharSequence>
     val composeIntent: Observable<Unit>
-    val drawerOpenIntent: Observable<Boolean>
+    //val drawerOpenIntent: Observable<Boolean>
     val homeIntent: Observable<*>
-    val navigationIntent: Observable<NavItem>
+//    val navigationIntent: Observable<NavItem>
     val optionsItemIntent: Observable<Int>
-    val plusBannerIntent: Observable<*>
+//    val plusBannerIntent: Observable<*>
     val dismissRatingIntent: Unit
     val rateIntent: Unit
     val conversationsSelectedIntent: Observable<List<Long>>

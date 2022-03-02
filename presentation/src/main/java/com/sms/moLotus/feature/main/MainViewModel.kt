@@ -223,7 +223,7 @@ class MainViewModel @Inject constructor(
                 .autoDisposable(view.scope())
                 .subscribe()
 
-        view.drawerOpenIntent
+        /*view.drawerOpenIntent
                 .autoDisposable(view.scope())
                 .subscribe { open -> newState { copy(drawerOpen = open) } }
 
@@ -262,7 +262,7 @@ class MainViewModel @Inject constructor(
                     }
                 }
                 .autoDisposable(view.scope())
-                .subscribe()
+                .subscribe()*/
 
         view.optionsItemIntent
                 .filter { itemId -> itemId == R.id.archive }
@@ -351,12 +351,12 @@ class MainViewModel @Inject constructor(
                 .autoDisposable(view.scope())
                 .subscribe()
 
-        view.plusBannerIntent
+        /*view.plusBannerIntent
                 .autoDisposable(view.scope())
                 .subscribe {
                     newState { copy(drawerOpen = false) }
                     navigator.showQksmsPlusActivity("main_banner")
-                }
+                }*/
 
 //        view.rateIntent
 //                .autoDisposable(view.scope())

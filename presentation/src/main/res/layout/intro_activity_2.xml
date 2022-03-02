@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/introlinearlayout"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    xmlns:tools="http://schemas.android.com/tools"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/white"
     android:gravity="center"
     android:orientation="vertical"
-    android:id="@+id/introlinearlayout"
     android:padding="10dp">
 
     <LinearLayout
@@ -22,49 +22,51 @@
             android:id="@+id/carrier_provider"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:background="@color/backgroundDark"
+            android:layout_marginLeft="5dp"
+            android:layout_marginTop="30dp"
+            android:layout_marginRight="5dp"
+            android:background="@drawable/background_button"
+            android:elevation="3dp"
             android:minHeight="48dp"
-            android:padding="10dp"
-            android:textAlignment="center"
+            android:padding="5dp"
+            android:textAlignment="center" />
 
-            />
-
-        <LinearLayout
-
-            android:text="Next"
-            android:textColor="@color/white"
-            android:id="@+id/btnLogin"
-            android:layout_width="wrap_content"
-            android:layout_height="48dp"
+        <RelativeLayout
+            android:id="@+id/btnNext"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_gravity="bottom|center"
-            android:layout_margin="16dp"
+            android:layout_marginLeft="5dp"
+            android:layout_marginTop="50dp"
+            android:layout_marginRight="5dp"
+            android:layout_marginBottom="10dp"
             android:background="@drawable/rounded_rectangle_24dp"
-            android:elevation="4dp"
-            android:gravity="center"
-            tools:backgroundTint="@color/tools_theme"
+            android:backgroundTint="@color/tools_theme"
+            android:drawableEnd="@drawable/ic_baseline_arrow_right_alt_24"
+            android:elevation="3dp"
+            android:padding="10dp"
             tools:visibility="visible">
 
             <ImageView
                 android:id="@+id/skip_icon"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_marginStart="12dp"
-                android:src="@drawable/ic_chevron_right_black_24dp"
-                tools:tint="@color/textPrimaryDark" />
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_centerInParent="true"
+                android:layout_toEndOf="@+id/skipLabel"
+                android:src="@drawable/ic_baseline_arrow_right_alt_24" />
 
             <com.sms.moLotus.common.widget.QkTextView
                 android:id="@+id/skipLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
+                android:layout_centerInParent="true"
                 android:text="Next"
-                android:textColor="@color/black"
-                android:textStyle="bold"
-                app:textSize="primary" />
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold" />
 
-        </LinearLayout>
+        </RelativeLayout>
 
     </LinearLayout>
 

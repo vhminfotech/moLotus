@@ -16,7 +16,6 @@ import androidx.appcompat.app.AppCompatActivity
 import com.sms.moLotus.R
 import com.sms.moLotus.feature.authentication.VerifyOtpActivity
 import com.sms.moLotus.feature.networkcall.ApiHelper
-import kotlinx.android.synthetic.main.activity_splash.*
 import kotlinx.android.synthetic.main.intro_activity_main.*
 import kotlinx.android.synthetic.main.intro_activity_main.txtMchat
 
@@ -49,7 +48,7 @@ class IntroActivity : AppCompatActivity() {
         languages.add(0, "Select carrier provider")
         api = ApiHelper(this)
         // get reference to all views
-        var inputPhoneNumber = findViewById<EditText>(R.id.phone_number)
+        val inputPhoneNumber = findViewById<EditText>(R.id.phone_number)
 
         val adapter: ArrayAdapter<String> = object : ArrayAdapter<String>(
             this,
@@ -73,10 +72,10 @@ class IntroActivity : AppCompatActivity() {
                 view.gravity = Gravity.CENTER
 
                 // set selected item style
-                if (position == carrier_provider.selectedItemPosition && position != 0) {
-//                    view.background = ColorDrawable(Color.parseColor("#F7E7CE"))
-//                    view.setTextColor(Color.parseColor("#333399"))
-                }
+                /*if (position == carrier_provider.selectedItemPosition && position != 0) {
+                    view.background = ColorDrawable(Color.parseColor("#F7E7CE"))
+                    view.setTextColor(Color.parseColor("#333399"))
+                }*/
 
                 // make hint item color gray
                 if (position == 0) {
@@ -104,10 +103,13 @@ class IntroActivity : AppCompatActivity() {
                 position: Int,
                 id: Long
             ) {
+                (parent.getChildAt(0) as TextView).setTextColor(Color.BLACK)
+                (parent.getChildAt(0) as TextView).textSize = 14f
+
                 // by default spinner initial selected item is first item
-                if (position != 0) {
-//                    showToast(message = "Position:${position} and language: ${languages[position]}")
-                }
+                /*if (position != 0) {
+                    showToast(message = "Position:${position} and language: ${languages[position]}")
+                }*/
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {
@@ -117,44 +119,46 @@ class IntroActivity : AppCompatActivity() {
 
         // set on-click listener
         btnLogin.setOnClickListener {
-            val PhoneNumber = inputPhoneNumber.text
-            val CarrierText = carrier_provider.selectedItem.toString()
+            btnLogin.isEnabled = false
+            val phoneNumber = inputPhoneNumber.text
+            val carrierText = carrier_provider.selectedItem.toString()
 
-            if (PhoneNumber.isEmpty()) {
+            if (phoneNumber.isEmpty()) {
+                btnLogin.isEnabled = true
                 showToast(message = "Phone number is empty")
-            }
-
-            if (CarrierText == "Select carrier provider") {
+            } else if (carrierText == "Select carrier provider") {
+                btnLogin.isEnabled = true
                 showToast(message = "Please select carrier provider")
-            }
-
-            if (CarrierText != "Select carrier provider" && !PhoneNumber.isEmpty()) {
-                requestOtp(PhoneNumber.toString(), CarrierText)
+            } else if (carrierText != "Select carrier provider" && phoneNumber.isNotEmpty()) {
+                btnLogin.isEnabled = false
+                requestOtp(phoneNumber.toString(), carrierText)
             }
         }
     }
 
-    private fun requestOtp(phoneNo: String,carrierText: String) {
+    private fun requestOtp(phoneNo: String, carrierText: String) {
         api?.request(phoneNo,
             { success ->
                 if (success) {
+                    btnLogin.isEnabled = true
                     Toast.makeText(
                         this,
                         "OTP sent successfully.!!",
                         Toast.LENGTH_SHORT
                     ).show()
-
-                    val intent = Intent(this, VerifyOtpActivity::class.java);
+                    val intent = Intent(this, VerifyOtpActivity::class.java)
                     intent.putExtra("PhoneNumber", phoneNo)
                     intent.putExtra("CarrierText", carrierText)
                     startActivity(intent)
                 } else {
+                    btnLogin.isEnabled = true
                     Toast.makeText(
                         this,
                         "Error getting OTP", Toast.LENGTH_LONG
                     ).show()
                 }
             }) { // Do something else.
+            btnLogin.isEnabled = true
             Toast.makeText(
                 this,
                 "Failed to request OTP", Toast.LENGTH_LONG
