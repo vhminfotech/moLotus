@@ -8,44 +8,64 @@ import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.get
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import com.sms.moLotus.R
+import com.sms.moLotus.customview.CustomStringBuilder
 import com.sms.moLotus.feature.authentication.VerifyOtpActivity
 import com.sms.moLotus.feature.networkcall.ApiHelper
+import com.sms.moLotus.feature.retrofit.MainRepository
+import com.sms.moLotus.feature.retrofit.MainViewModel
+import com.sms.moLotus.feature.retrofit.MyViewModelFactory
+import com.sms.moLotus.feature.retrofit.RetrofitService
 import kotlinx.android.synthetic.main.intro_activity_main.*
 import kotlinx.android.synthetic.main.intro_activity_main.txtMchat
 
 class IntroActivity : AppCompatActivity() {
 
-    var languages = mutableListOf("Telkomsel", "Indosat", "XL Axiata", "Celcom", "U Mobile")
+    var languages = mutableListOf<String>()
+
+    //    var languages = mutableListOf("Telkomsel", "Indosat", "XL Axiata", "Celcom", "U Mobile")
     private var api: ApiHelper? = null
+    lateinit var viewModel: MainViewModel
+    private val retrofitService = RetrofitService.getInstance()
+
+    private fun getOperators() {
+        viewModel.operatorsList.observe(this, { it ->
+            Log.e("=====", "response:: $it")
+            it.forEach { element ->
+                languages.add(element.operator_name)
+            }
+
+            Log.e("=====", "languages added:: $languages")
+
+        })
+        viewModel.errorMessage.observe(this, {
+            Log.e("=====", "errorMessage:: $it")
+        })
+        viewModel.getAllOperators()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.intro_activity_main)
-        val word: Spannable = SpannableString("m")
-
-        word.setSpan(
-            ForegroundColorSpan(Color.parseColor("#27a9e1")),
-            0,
-            word.length,
-            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-        )
-
-        txtMchat.text = word
-        val wordTwo: Spannable = SpannableString("Chat")
-        wordTwo.setSpan(
-            ForegroundColorSpan(Color.parseColor("#ff6b13")),
-            0,
-            wordTwo.length,
-            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-        )
-        txtMchat.append(wordTwo)
+        CustomStringBuilder.mChatBuilder(txtMchat)
         languages.add(0, "Select carrier provider")
+        viewModel =
+            ViewModelProvider(this, MyViewModelFactory(MainRepository(retrofitService))).get(
+                MainViewModel::class.java
+            )
+        getOperators()
+
+
+
         api = ApiHelper(this)
         // get reference to all views
         val inputPhoneNumber = findViewById<EditText>(R.id.phone_number)
@@ -122,6 +142,9 @@ class IntroActivity : AppCompatActivity() {
             btnLogin.isEnabled = false
             val phoneNumber = inputPhoneNumber.text
             val carrierText = carrier_provider.selectedItem.toString()
+            val carrierId = carrier_provider.selectedItemId
+
+            Log.e("==============", "carrierId::::::: $carrierId")
 
             if (phoneNumber.isEmpty()) {
                 btnLogin.isEnabled = true
@@ -131,12 +154,12 @@ class IntroActivity : AppCompatActivity() {
                 showToast(message = "Please select carrier provider")
             } else if (carrierText != "Select carrier provider" && phoneNumber.isNotEmpty()) {
                 btnLogin.isEnabled = false
-                requestOtp(phoneNumber.toString(), carrierText)
+                requestOtp(phoneNumber.toString(), carrierText, carrierId.toInt())
             }
         }
     }
 
-    private fun requestOtp(phoneNo: String, carrierText: String) {
+    private fun requestOtp(phoneNo: String, carrierText: String, carrierId: Int) {
         api?.request(phoneNo,
             { success ->
                 if (success) {
@@ -149,6 +172,7 @@ class IntroActivity : AppCompatActivity() {
                     val intent = Intent(this, VerifyOtpActivity::class.java)
                     intent.putExtra("PhoneNumber", phoneNo)
                     intent.putExtra("CarrierText", carrierText)
+                    intent.putExtra("CarrierId", carrierId)
                     startActivity(intent)
                 } else {
                     btnLogin.isEnabled = true

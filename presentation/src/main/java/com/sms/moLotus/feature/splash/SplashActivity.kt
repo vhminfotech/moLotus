@@ -11,10 +11,13 @@ import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
+import com.sms.moLotus.customview.CustomStringBuilder
 import com.sms.moLotus.feature.intro.APNDetailsActivity
 import com.sms.moLotus.feature.intro.AppIntroActivity
 import com.sms.moLotus.feature.main.MainActivity
 import kotlinx.android.synthetic.main.activity_splash.*
+import kotlinx.android.synthetic.main.activity_splash.txtMchat
+import kotlinx.android.synthetic.main.intro_activity_main.*
 
 
 class SplashActivity : AppCompatActivity() {
@@ -27,24 +30,8 @@ class SplashActivity : AppCompatActivity() {
             WindowManager.LayoutParams.FLAG_FULLSCREEN
         )
 
-        val word: Spannable = SpannableString("m")
+        CustomStringBuilder.mChatBuilder(txtMchat)
 
-        word.setSpan(
-            ForegroundColorSpan(Color.parseColor("#27a9e1")),
-            0,
-            word.length,
-            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-        )
-
-        txtMchat.text = word
-        val wordTwo: Spannable = SpannableString("Chat")
-        wordTwo.setSpan(
-            ForegroundColorSpan(Color.parseColor("#ff6b13")),
-            0,
-            wordTwo.length,
-            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-        )
-        txtMchat.append(wordTwo)
 
         // we used the postDelayed(Runnable, time) method
         // to send a message with a delayed time.
@@ -54,13 +41,26 @@ class SplashActivity : AppCompatActivity() {
                 startActivity(intent)
                 overridePendingTransition(0, 0)
                 finish()
-            } else if (PreferenceHelper.getPreference(this, "UserLoggedIn")) {
-                val intent = Intent(this, APNDetailsActivity::class.java)
-                intent.putExtra("PhoneNumber", PreferenceHelper.getStringPreference(this, "PhoneNumber"))
-                intent.putExtra("CarrierText", PreferenceHelper.getStringPreference(this, "CarrierText"))
-                startActivity(intent)
-                overridePendingTransition(0, 0)
-                finish()
+            }  else if (PreferenceHelper.getPreference(this, "UserLoggedIn")) {
+                if (!PreferenceHelper.getPreference(this,"APNSETTINGS")) {
+                    val intent = Intent(this, APNDetailsActivity::class.java)
+                    intent.putExtra(
+                        "PhoneNumber",
+                        PreferenceHelper.getStringPreference(this, "PhoneNumber")
+                    )
+                    intent.putExtra(
+                        "CarrierText",
+                        PreferenceHelper.getStringPreference(this, "CarrierText")
+                    )
+                    startActivity(intent)
+                    overridePendingTransition(0, 0)
+                    finish()
+                }else{
+                    val intent = Intent(this, MainActivity::class.java)
+                    startActivity(intent)
+                    overridePendingTransition(0, 0)
+                    finish()
+                }
             } else {
                 val intent = Intent(this, MainActivity::class.java)
                 startActivity(intent)

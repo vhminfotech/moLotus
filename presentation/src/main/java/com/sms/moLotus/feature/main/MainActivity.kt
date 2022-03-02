@@ -170,6 +170,10 @@ class MainActivity : QkThemedActivity(), MainView {
                 true
             )
             view.txtSettings?.setOnClickListener {
+                navigator.showAppsetting()
+                myPopupWindow.dismiss()
+            }
+            view.txtAPNSettings?.setOnClickListener {
                 navigator.showAPNsetting()
                 myPopupWindow.dismiss()
             }

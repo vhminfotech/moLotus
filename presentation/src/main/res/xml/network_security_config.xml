@@ -3,5 +3,6 @@
     <base-config cleartextTrafficPermitted="true" />
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">http://192.168.1.27:3000</domain>
+        <domain includeSubdomains="true">http://mgram-backend.vhminfotech.com</domain>
     </domain-config>
 </network-security-config>

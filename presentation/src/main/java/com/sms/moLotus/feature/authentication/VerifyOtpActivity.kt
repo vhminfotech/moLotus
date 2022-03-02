@@ -17,15 +17,18 @@ import com.sms.moLotus.feature.authentication.MySMSBroadcastReceiver.OTPReceiveL
 import com.google.android.gms.tasks.Task
 import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
+import com.sms.moLotus.customview.CustomStringBuilder
 import com.sms.moLotus.feature.intro.APNDetailsActivity
 import com.sms.moLotus.feature.networkcall.ApiHelper
 import kotlinx.android.synthetic.main.activity_verify_otp.*
 import kotlinx.android.synthetic.main.activity_verify_otp.txtMchat
+import kotlinx.android.synthetic.main.intro_activity_main.*
 
 class VerifyOtpActivity : AppCompatActivity() {
     private var mySMSBroadcastReceiver: MySMSBroadcastReceiver? = null
     private var phoneNo: String? = null
     private var carrierText: String? = null
+    private var carrierId: Int? = 0
     private var api: ApiHelper? = null
     var isOTPVerified: Boolean? = false
 
@@ -33,25 +36,12 @@ class VerifyOtpActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_verify_otp)
-        val word: Spannable = SpannableString("m")
-        word.setSpan(
-            ForegroundColorSpan(Color.parseColor("#27a9e1")),
-            0,
-            word.length,
-            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-        )
-        txtMchat.text = word
-        val wordTwo: Spannable = SpannableString("Chat")
-        wordTwo.setSpan(
-            ForegroundColorSpan(Color.parseColor("#ff6b13")),
-            0,
-            wordTwo.length,
-            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-        )
-        txtMchat.append(wordTwo)
+        CustomStringBuilder.mChatBuilder(txtMchat)
+
 
         phoneNo = intent?.getStringExtra("PhoneNumber")
         carrierText = intent?.getStringExtra("CarrierText")
+        carrierId = intent?.getIntExtra("CarrierId",0)
 
         //Log.e("===========", "phoneNo::: $phoneNo === carrierText::: $carrierText")
         txtOTP?.text = "Please type the verification code sent to $phoneNo"
@@ -122,9 +112,11 @@ class VerifyOtpActivity : AppCompatActivity() {
                     PreferenceHelper.setPreference(this, "INTRO", true)
                     PreferenceHelper.setStringPreference(this, "PhoneNumber", phoneNumber)
                     PreferenceHelper.setStringPreference(this, "CarrierText", carrierText.toString())
+                    PreferenceHelper.setStringPreference(this, "CarrierId", carrierId.toString())
                     val intent = Intent(this, APNDetailsActivity::class.java)
                     intent.putExtra("PhoneNumber", phoneNumber)
                     intent.putExtra("CarrierText", carrierText)
+                    intent.putExtra("CarrierId", carrierId)
                     startActivity(intent)
                 } else {
                     isOTPVerified = true

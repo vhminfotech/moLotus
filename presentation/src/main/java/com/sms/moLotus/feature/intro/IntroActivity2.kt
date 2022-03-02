@@ -5,36 +5,66 @@ import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import com.sms.moLotus.R
+import com.sms.moLotus.feature.retrofit.MainRepository
+import com.sms.moLotus.feature.retrofit.MainViewModel
+import com.sms.moLotus.feature.retrofit.MyViewModelFactory
+import com.sms.moLotus.feature.retrofit.RetrofitService
 import kotlinx.android.synthetic.main.intro_activity_2.*
 import kotlinx.android.synthetic.main.intro_activity_main.carrier_provider
 
-class IntroActivity2 : AppCompatActivity(){
+class IntroActivity2 : AppCompatActivity() {
 
-    var languages = mutableListOf("Telkomsel", "Indosat", "XL Axiata", "Celcom", "U Mobile")
+    var languages = mutableListOf<String>()
+
+    //    var languages = mutableListOf("Telkomsel", "Indosat", "XL Axiata", "Celcom", "U Mobile")
+    lateinit var viewModel: MainViewModel
+    private val retrofitService = RetrofitService.getInstance()
+
+    private fun getOperators() {
+        viewModel.operatorsList.observe(this, { it ->
+            Log.e("=====", "response:: $it")
+            it.forEach { element ->
+                languages.add(element.operator_name)
+            }
+
+            Log.e("=====", "languages added:: $languages")
+
+        })
+        viewModel.errorMessage.observe(this, {
+            Log.e("=====", "errorMessage:: $it")
+        })
+        viewModel.getAllOperators()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.intro_activity_2)
 
-        languages.add(0,"Select carrier provider")
-
-        val adapter:ArrayAdapter<String> = object: ArrayAdapter<String>(
+        languages.add(0, "Select carrier provider")
+        viewModel =
+            ViewModelProvider(this, MyViewModelFactory(MainRepository(retrofitService))).get(
+                MainViewModel::class.java
+            )
+        getOperators()
+        val adapter: ArrayAdapter<String> = object : ArrayAdapter<String>(
             this,
             android.R.layout.simple_spinner_dropdown_item,
             languages
-        ){
+        ) {
             override fun getDropDownView(
                 position: Int,
                 convertView: View?,
                 parent: ViewGroup
             ): View {
-                val view:TextView = super.getDropDownView(
+                val view: TextView = super.getDropDownView(
                     position,
                     convertView,
                     parent
@@ -46,13 +76,13 @@ class IntroActivity2 : AppCompatActivity(){
                 view.gravity = Gravity.CENTER
 
                 // set selected item style
-                if (position == carrier_provider.selectedItemPosition && position != 0 ){
+                if (position == carrier_provider.selectedItemPosition && position != 0) {
 //                    view.background = ColorDrawable(Color.parseColor("#F7E7CE"))
 //                    view.setTextColor(Color.parseColor("#333399"))
                 }
 
                 // make hint item color gray
-                if(position == 0){
+                if (position == 0) {
                     view.setTextColor(Color.LTGRAY)
                 }
 
@@ -81,7 +111,7 @@ class IntroActivity2 : AppCompatActivity(){
                 (parent.getChildAt(0) as TextView).textSize = 14f
 
                 // by default spinner initial selected item is first item
-                if (position != 0){
+                if (position != 0) {
 //                    showToast(message = "Position:${position} and language: ${languages[position]}")
                 }
             }
@@ -94,20 +124,26 @@ class IntroActivity2 : AppCompatActivity(){
         // set on-click listener
         btnNext.setOnClickListener {
             val CarrierText = carrier_provider.selectedItem.toString()
+            val CarrierId = carrier_provider.selectedItemId.toInt()
 
-            if (CarrierText == "Select carrier provider"){
+            if (CarrierText == "Select carrier provider") {
                 showToast(message = "Please select carrier provider")
             }
 
-            if (CarrierText != "Select carrier provider" ){
+            if (CarrierText != "Select carrier provider") {
                 val intent = Intent(this, APNDetailsActivity::class.java);
                 intent.putExtra("CarrierText", CarrierText)
+                intent.putExtra("CarrierId", CarrierId)
                 startActivity(intent)
             }
         }
     }
 
-    private fun showToast(context: Context = applicationContext, message: String, duration: Int = Toast.LENGTH_LONG) {
+    private fun showToast(
+        context: Context = applicationContext,
+        message: String,
+        duration: Int = Toast.LENGTH_LONG
+    ) {
         Toast.makeText(context, message, duration).show()
     }
 }

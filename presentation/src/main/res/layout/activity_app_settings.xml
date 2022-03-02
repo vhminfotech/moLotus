@@ -17,9 +17,9 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/layoutHeader"
         android:drawableRight="@drawable/ic_baseline_navigate_next_24"
-        android:paddingStart="40dp"
+        android:paddingStart="30dp"
         android:paddingTop="10dp"
-        android:paddingEnd="40dp"
+        android:paddingEnd="30dp"
         android:paddingBottom="10dp"
         android:text="APN Parameter"
         android:textColor="@color/black"
@@ -38,8 +38,8 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/view1"
         android:orientation="horizontal"
-        android:paddingStart="40dp"
-        android:paddingEnd="40dp"
+        android:paddingStart="30dp"
+        android:paddingEnd="30dp"
         android:weightSum="2">
 
         <com.sms.moLotus.common.widget.QkTextView
@@ -56,9 +56,264 @@
         <androidx.appcompat.widget.SwitchCompat
             android:layout_width="40dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            />
+            android:layout_weight="1" />
     </LinearLayout>
 
+    <View
+        android:id="@+id/view2"
+        android:layout_width="match_parent"
+        android:layout_height="0.25dp"
+        android:layout_below="@+id/llAutoDownload"
+        android:background="@android:color/darker_gray" />
 
+    <LinearLayout
+        android:id="@+id/llNotification"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/view2"
+        android:orientation="horizontal"
+        android:paddingStart="30dp"
+        android:paddingEnd="30dp"
+        android:weightSum="2">
+
+        <com.sms.moLotus.common.widget.QkTextView
+            android:id="@+id/txtNotification"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:text="Notification"
+            android:textColor="@color/black" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:layout_width="40dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+    </LinearLayout>
+
+    <View
+        android:id="@+id/view3"
+        android:layout_width="match_parent"
+        android:layout_height="0.25dp"
+        android:layout_below="@+id/llNotification"
+        android:background="@android:color/darker_gray" />
+
+    <LinearLayout
+        android:id="@+id/llDeliveryReport"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/view3"
+        android:orientation="horizontal"
+        android:paddingStart="30dp"
+        android:paddingEnd="30dp"
+        android:weightSum="2">
+
+        <com.sms.moLotus.common.widget.QkTextView
+            android:id="@+id/txtDeliveryReport"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:text="Delivery Report"
+            android:textColor="@color/black" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:layout_width="40dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+    </LinearLayout>
+
+    <View
+        android:id="@+id/view4"
+        android:layout_width="match_parent"
+        android:layout_height="0.25dp"
+        android:layout_below="@+id/llDeliveryReport"
+        android:background="@android:color/darker_gray" />
+
+    <LinearLayout
+        android:id="@+id/llReadReport"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/view4"
+        android:orientation="horizontal"
+        android:paddingStart="30dp"
+        android:paddingEnd="30dp"
+        android:weightSum="2">
+
+        <com.sms.moLotus.common.widget.QkTextView
+            android:id="@+id/txtReadReport"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:text="Read Report"
+            android:textColor="@color/black" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:layout_width="40dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+    </LinearLayout>
+
+    <View
+        android:id="@+id/view5"
+        android:layout_width="match_parent"
+        android:layout_height="0.25dp"
+        android:layout_below="@+id/llReadReport"
+        android:background="@android:color/darker_gray" />
+
+    <LinearLayout
+        android:id="@+id/llSendPaidMessages"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/view5"
+        android:orientation="horizontal"
+        android:paddingStart="30dp"
+        android:paddingEnd="30dp"
+        android:weightSum="2">
+
+        <com.sms.moLotus.common.widget.QkTextView
+            android:id="@+id/txtSendPaidMessages"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:text="Send paid messages"
+            android:textColor="@color/black" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:layout_width="40dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+    </LinearLayout>
+
+    <View
+        android:id="@+id/view6"
+        android:layout_width="match_parent"
+        android:layout_height="0.25dp"
+        android:layout_below="@+id/llSendPaidMessages"
+        android:background="@android:color/darker_gray" />
+
+    <LinearLayout
+        android:id="@+id/llSignature"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/view6"
+        android:orientation="horizontal"
+        android:paddingStart="30dp"
+        android:paddingEnd="30dp"
+        android:weightSum="2">
+
+        <com.sms.moLotus.common.widget.QkTextView
+            android:id="@+id/txtSignature"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:text="Signature"
+            android:textColor="@color/black" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:layout_width="40dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+    </LinearLayout>
+
+    <View
+        android:id="@+id/view7"
+        android:layout_width="match_parent"
+        android:layout_height="0.25dp"
+        android:layout_below="@+id/llSignature"
+        android:background="@android:color/darker_gray" />
+
+    <LinearLayout
+        android:id="@+id/llSignatureText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/view7"
+        android:orientation="horizontal"
+        android:paddingStart="30dp"
+        android:paddingEnd="30dp"
+        android:weightSum="2">
+
+        <com.sms.moLotus.common.widget.QkTextView
+            android:id="@+id/txtSignatureText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:text="Signature Text"
+            android:textColor="@color/colorGreyLt" />
+
+        <com.sms.moLotus.common.widget.QkTextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="end"
+            android:text="Akanksha"
+            android:textColor="@color/colorGreyLt" />
+    </LinearLayout>
+
+    <View
+        android:id="@+id/view8"
+        android:layout_width="match_parent"
+        android:layout_height="0.25dp"
+        android:layout_below="@+id/llSignatureText"
+        android:background="@android:color/darker_gray" />
+
+    <LinearLayout
+        android:id="@+id/llCheckForUpdates"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/view8"
+        android:orientation="horizontal"
+        android:paddingStart="30dp"
+        android:paddingEnd="30dp"
+        android:weightSum="2">
+
+        <com.sms.moLotus.common.widget.QkTextView
+            android:id="@+id/txtCheckForUpdate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:text="Signature Text"
+            android:textColor="@color/black" />
+
+        <com.sms.moLotus.common.widget.QkTextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="end"
+            android:text="1.1.1"
+            android:textColor="@color/black" />
+    </LinearLayout>
+
+    <View
+        android:id="@+id/view9"
+        android:layout_width="match_parent"
+        android:layout_height="0.25dp"
+        android:layout_below="@+id/llCheckForUpdates"
+        android:background="@android:color/darker_gray" />
+
+    <com.sms.moLotus.common.widget.QkTextView
+        android:id="@+id/txtAboutUs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/view9"
+        android:drawableRight="@drawable/ic_baseline_navigate_next_24"
+        android:paddingStart="30dp"
+        android:paddingEnd="30dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:text="APN Parameter"
+        android:textColor="@color/black"
+        app:drawableTint="@color/tools_theme" />
 </RelativeLayout>

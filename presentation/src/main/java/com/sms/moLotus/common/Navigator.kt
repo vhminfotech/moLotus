@@ -22,6 +22,7 @@ import com.sms.moLotus.feature.gallery.GalleryActivity
 import com.sms.moLotus.feature.notificationprefs.NotificationPrefsActivity
 import com.sms.moLotus.feature.plus.PlusActivity
 import com.sms.moLotus.feature.scheduled.ScheduledActivity
+import com.sms.moLotus.feature.settings.AppSettingsActivity
 import com.sms.moLotus.feature.settings.SettingsActivity
 import com.sms.moLotus.manager.AnalyticsManager
 import com.sms.moLotus.manager.BillingManager
@@ -116,6 +117,11 @@ class Navigator @Inject constructor(
     fun showAPNsetting(){
         analyticsManager.track("Viewed APN Setting")
         startActivity(Intent(context, IntroActivity2::class.java))
+    }
+
+    fun showAppsetting(){
+        analyticsManager.track("Viewed Settings")
+        startActivity(Intent(context, AppSettingsActivity::class.java))
     }
 
     fun showScheduled() {
