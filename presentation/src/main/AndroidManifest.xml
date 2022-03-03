@@ -39,7 +39,8 @@
         android:usesCleartextTraffic="true">
         <activity
             android:name=".feature.settings.AppSettingsActivity"
-            android:exported="true" />
+            android:exported="true"
+           />
         <activity
             android:name=".feature.intro.AppIntroActivity"
             android:exported="true" />

@@ -5,13 +5,13 @@
 
     <item android:id="@android:id/mask">
         <shape android:shape="oval">
-            <solid android:color="@color/white" />
+            <solid android:color="@color/tools_theme" />
         </shape>
     </item>
 
     <item>
         <shape android:shape="oval">
-            <solid android:color="@color/white" />
+            <solid android:color="@color/tools_theme" />
         </shape>
     </item>
 

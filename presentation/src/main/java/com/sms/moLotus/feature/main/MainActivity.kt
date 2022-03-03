@@ -274,10 +274,10 @@ class MainActivity : QkThemedActivity(), MainView {
                 syncingProgress?.indeterminateTintList = ColorStateList.valueOf(theme.theme)
                 //plusIcon.setTint(theme.theme)
 //                    rateIcon.setTint(theme.theme)
-                compose.setBackgroundTint(theme.theme)
+//                compose.setBackgroundTint(theme.theme)
 
                 // Set the FAB compose icon color
-                compose.setTint(theme.textPrimary)
+      //          compose.setTint(theme.textPrimary)
             }
 
         // These theme attributes don't apply themselves on API 21

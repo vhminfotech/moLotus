@@ -32,25 +32,44 @@ class IntroActivity : AppCompatActivity() {
 
     var languages = mutableListOf<String>()
 
-    //    var languages = mutableListOf("Telkomsel", "Indosat", "XL Axiata", "Celcom", "U Mobile")
+    //var languages = mutableListOf("Telkomsel", "Indosat", "XL Axiata", "Celcom", "U Mobile")
     private var api: ApiHelper? = null
     lateinit var viewModel: MainViewModel
     private val retrofitService = RetrofitService.getInstance()
 
     private fun getOperators() {
-        viewModel.operatorsList.observe(this, { it ->
+        viewModel.operatorsList.observe(this, {
             Log.e("=====", "response:: $it")
             it.forEach { element ->
                 languages.add(element.operator_name)
             }
-
             Log.e("=====", "languages added:: $languages")
-
         })
         viewModel.errorMessage.observe(this, {
             Log.e("=====", "errorMessage:: $it")
+            Toast.makeText(this, it.toString(),Toast.LENGTH_SHORT).show()
         })
         viewModel.getAllOperators()
+    }
+
+    private fun registerUser() {
+        viewModel.loginResponse.observe(this, {
+            Log.e("=====", "response:: $it")
+            requestOtp(
+                phone_number.text.toString(),
+                carrier_provider.selectedItem.toString(),
+                carrier_provider.selectedItemId.toInt()
+            )
+        })
+        viewModel.errorMessage.observe(this, {
+            Log.e("=====", "errorMessage:: $it")
+            Toast.makeText(this, it.toString(),Toast.LENGTH_SHORT).show()
+        })
+        viewModel.registerUser(
+            etName.text.toString(),
+            carrier_provider.selectedItemId.toInt(),
+            phone_number.text.toString()
+        )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,13 +81,14 @@ class IntroActivity : AppCompatActivity() {
             ViewModelProvider(this, MyViewModelFactory(MainRepository(retrofitService))).get(
                 MainViewModel::class.java
             )
+
         getOperators()
 
 
 
         api = ApiHelper(this)
         // get reference to all views
-        val inputPhoneNumber = findViewById<EditText>(R.id.phone_number)
+        //val inputPhoneNumber = findViewById<EditText>(R.id.phone_number)
 
         val adapter: ArrayAdapter<String> = object : ArrayAdapter<String>(
             this,
@@ -99,7 +119,7 @@ class IntroActivity : AppCompatActivity() {
 
                 // make hint item color gray
                 if (position == 0) {
-                    view.setTextColor(Color.LTGRAY)
+                    view.setTextColor(resources.getColor(android.R.color.darker_gray))
                 }
 
                 return view
@@ -140,21 +160,24 @@ class IntroActivity : AppCompatActivity() {
         // set on-click listener
         btnLogin.setOnClickListener {
             btnLogin.isEnabled = false
-            val phoneNumber = inputPhoneNumber.text
+            //val phoneNumber = inputPhoneNumber.text
             val carrierText = carrier_provider.selectedItem.toString()
             val carrierId = carrier_provider.selectedItemId
 
             Log.e("==============", "carrierId::::::: $carrierId")
 
-            if (phoneNumber.isEmpty()) {
+            if (etName.text.isEmpty()) {
+                btnLogin.isEnabled = true
+                showToast(message = "Name is empty")
+            }else if (phone_number.text.isEmpty()) {
                 btnLogin.isEnabled = true
                 showToast(message = "Phone number is empty")
             } else if (carrierText == "Select carrier provider") {
                 btnLogin.isEnabled = true
                 showToast(message = "Please select carrier provider")
-            } else if (carrierText != "Select carrier provider" && phoneNumber.isNotEmpty()) {
+            } else if (carrierText != "Select carrier provider" && phone_number.text.isNotEmpty() && etName.text.isNotEmpty()) {
                 btnLogin.isEnabled = false
-                requestOtp(phoneNumber.toString(), carrierText, carrierId.toInt())
+                registerUser()
             }
         }
     }
@@ -174,6 +197,7 @@ class IntroActivity : AppCompatActivity() {
                     intent.putExtra("CarrierText", carrierText)
                     intent.putExtra("CarrierId", carrierId)
                     startActivity(intent)
+                    finish()
                 } else {
                     btnLogin.isEnabled = true
                     Toast.makeText(

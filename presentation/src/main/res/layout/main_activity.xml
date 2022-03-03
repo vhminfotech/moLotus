@@ -124,8 +124,7 @@
         android:src="@drawable/ic_add_black_24dp"
         app:layout_constraintBottom_toTopOf="@id/bottom"
         app:layout_constraintEnd_toEndOf="parent"
-        app:tint="@color/white"
-        tools:backgroundTint="@color/tools_theme" />
+        app:tint="@color/white" />
 
     <View
         android:layout_width="0dp"

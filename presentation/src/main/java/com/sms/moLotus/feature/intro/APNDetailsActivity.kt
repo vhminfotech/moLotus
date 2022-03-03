@@ -55,6 +55,7 @@ class APNDetailsActivity : AppCompatActivity() {
         })
         viewModel.errorMessage.observe(this, {
             Log.e("=====", "errorMessage:: $it")
+            Toast.makeText(this, it.toString(),Toast.LENGTH_SHORT).show()
         })
         viewModel.getApnDetails(id)
     }

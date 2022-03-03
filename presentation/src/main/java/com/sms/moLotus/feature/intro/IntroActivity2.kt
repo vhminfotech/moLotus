@@ -24,7 +24,7 @@ class IntroActivity2 : AppCompatActivity() {
 
     var languages = mutableListOf<String>()
 
-    //    var languages = mutableListOf("Telkomsel", "Indosat", "XL Axiata", "Celcom", "U Mobile")
+    //var languages = mutableListOf("Telkomsel", "Indosat", "XL Axiata", "Celcom", "U Mobile")
     lateinit var viewModel: MainViewModel
     private val retrofitService = RetrofitService.getInstance()
 
@@ -40,6 +40,7 @@ class IntroActivity2 : AppCompatActivity() {
         })
         viewModel.errorMessage.observe(this, {
             Log.e("=====", "errorMessage:: $it")
+            Toast.makeText(this, it.toString(),Toast.LENGTH_SHORT).show()
         })
         viewModel.getAllOperators()
     }

@@ -41,7 +41,7 @@ class VerifyOtpActivity : AppCompatActivity() {
 
         phoneNo = intent?.getStringExtra("PhoneNumber")
         carrierText = intent?.getStringExtra("CarrierText")
-        carrierId = intent?.getIntExtra("CarrierId",0)
+        carrierId = intent?.getIntExtra("CarrierId", 0)
 
         //Log.e("===========", "phoneNo::: $phoneNo === carrierText::: $carrierText")
         txtOTP?.text = "Please type the verification code sent to $phoneNo"
@@ -61,16 +61,19 @@ class VerifyOtpActivity : AppCompatActivity() {
                 //Log.e("===========", "OTP Received::: $otp")
                 etOTP?.setText(otp)
                 etOTP?.text?.length?.let { etOTP?.setSelection(it) }
-
                 if (etOTP.text?.isNotEmpty() == true || etOTP?.text != null || !etOTP.text.isNullOrEmpty()) {
                     verifyOtp(phoneNo.toString(), etOTP.text?.toString().toString())
                 }
             }
 
             override fun onOTPTimeOut() {
+                isOTPVerified = true
                 //Log.e("===========", "OTP Timeout")
             }
         })
+        btnResendOtp?.setOnClickListener {
+            //carrierId?.let { it1 -> requestOtp(phoneNo.toString(), carrierText.toString(), it1) }
+        }
 
         btnVerifyOtp?.setOnClickListener {
             verifyOtp(phoneNo.toString(), etOTP.text?.toString().toString())
@@ -82,7 +85,7 @@ class VerifyOtpActivity : AppCompatActivity() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                if (isOTPVerified == false) {
+                if (isOTPVerified == true) {
                     if (s?.length == 6) {
                         verifyOtp(phoneNo.toString(), etOTP.text?.toString().toString())
                     }
@@ -95,6 +98,9 @@ class VerifyOtpActivity : AppCompatActivity() {
 
         })
     }
+
+
+
 
     private fun verifyOtp(requestPhone: String, otp: String) {
         api?.verify(requestPhone, otp,
@@ -111,7 +117,11 @@ class VerifyOtpActivity : AppCompatActivity() {
                     PreferenceHelper.setPreference(this, "UserLoggedIn", true)
                     PreferenceHelper.setPreference(this, "INTRO", true)
                     PreferenceHelper.setStringPreference(this, "PhoneNumber", phoneNumber)
-                    PreferenceHelper.setStringPreference(this, "CarrierText", carrierText.toString())
+                    PreferenceHelper.setStringPreference(
+                        this,
+                        "CarrierText",
+                        carrierText.toString()
+                    )
                     PreferenceHelper.setStringPreference(this, "CarrierId", carrierId.toString())
                     val intent = Intent(this, APNDetailsActivity::class.java)
                     intent.putExtra("PhoneNumber", phoneNumber)
