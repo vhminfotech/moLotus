@@ -133,5 +133,16 @@
         <item name="android:colorForeground">#42221f1f</item>
     </style>
 
-
+    <style name="AppTheme.Teal" parent="AppTheme">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimaryTeal</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDarkTeal</item>
+        <item name="colorAccent">@color/colorAccentTeal</item>
+    </style>
+    <style name="AppTheme.Cyan" parent="AppTheme">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimaryCyan</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDarkCyan</item>
+        <item name="colorAccent">@color/colorAccentCyan</item>
+    </style>
 </resources>

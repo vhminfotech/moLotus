@@ -3,6 +3,8 @@ apply plugin: 'realm-android' // Realm needs to be before Kotlin or the build wi
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
+// Apply the Crashlytics Gradle plugin
+apply plugin: 'com.google.firebase.crashlytics'
 
 android {
     compileSdkVersion 29
@@ -178,7 +180,7 @@ dependencies {
     implementation project(':domain')
     implementation project(':library')
 
-    withAnalyticsImplementation 'com.google.firebase:firebase-crashlytics:17.3.0'
+//    withAnalyticsImplementation 'com.google.firebase:firebase-crashlytics:17.3.0'
     withAnalyticsImplementation "com.android.billingclient:billing:$billing_version"
     withAnalyticsImplementation "com.android.billingclient:billing-ktx:$billing_version"
     noAnalyticsDebug project(path: ':data', configuration: 'noAnalyticsDebug')
@@ -205,6 +207,14 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+
+    // Import the BoM for the Firebase platform
+    implementation platform('com.google.firebase:firebase-bom:29.1.0')
+
+    // Declare the dependencies for the Crashlytics and Analytics libraries
+    // When using the BoM, you don't specify versions in Firebase library dependencies
+    implementation 'com.google.firebase:firebase-crashlytics-ktx'
+    implementation 'com.google.firebase:firebase-analytics-ktx'
 }
 
 if (getGradle().getStartParameter().getTaskRequests().toString().contains("WithAnalytics")) {

@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
+import com.sms.moLotus.extension.toast
 import com.sms.moLotus.feature.main.MainActivity
 import com.sms.moLotus.feature.retrofit.MainRepository
 import com.sms.moLotus.feature.retrofit.MainViewModel
@@ -30,9 +31,8 @@ class APNDetailsActivity : AppCompatActivity() {
 
     private fun getApnDetails(id: Int) {
 
-        viewModel.apnDetails.observe(this, { it ->
+        viewModel.apnDetails.observe(this, {
             Log.e("=====", "response:: $it")
-
             NAME_et.setText(it.apn_name)
             APN_et.setText(it.apn)
             Proxy_et.setText(it.proxy)
@@ -55,7 +55,7 @@ class APNDetailsActivity : AppCompatActivity() {
         })
         viewModel.errorMessage.observe(this, {
             Log.e("=====", "errorMessage:: $it")
-            Toast.makeText(this, it.toString(),Toast.LENGTH_SHORT).show()
+            toast(it.toString(), Toast.LENGTH_SHORT)
         })
         viewModel.getApnDetails(id)
     }
@@ -73,272 +73,101 @@ class APNDetailsActivity : AppCompatActivity() {
             )
         carrierId = intent?.getIntExtra("CarrierId", 0)
         Log.e("=====", "carrierId:: $carrierId")
-
         carrierId?.let { getApnDetails(it) }
 
-//        Toast.makeText(this, "Number: $PhoneNumber \nCarrier: $CarrierText", Toast.LENGTH_LONG).show()
-        /*val NAME_et = findViewById<View>(R.id.NAME_et) as EditText
-        val APN_et = findViewById<View>(R.id.APN_et) as EditText
-        val Proxy_et = findViewById<View>(R.id.Proxy_et) as EditText
-        val Port_et = findViewById<View>(R.id.Port_et) as EditText
-        val username_et = findViewById<View>(R.id.username_et) as EditText
-        val password_et = findViewById<View>(R.id.password_et) as EditText
-        val Server_et = findViewById<View>(R.id.Server_et) as EditText
-        val MMSC_et = findViewById<View>(R.id.MMSC_et) as EditText
-        val mms_proxy_et = findViewById<View>(R.id.mms_proxy_et) as EditText
-        val MMS_Port_et = findViewById<View>(R.id.MMS_Port_et) as EditText
-        val MCC_et = findViewById<View>(R.id.MCC_et) as EditText
-        val MNC_et = findViewById<View>(R.id.MNC_et) as EditText
-        val Auth_Type_et = findViewById<View>(R.id.Auth_Type_et) as EditText
-        val APN_Type_et = findViewById<View>(R.id.APN_Type_et) as EditText
-        val APN_Protocol_et = findViewById<View>(R.id.APN_Protocol_et) as EditText
-        val APN_Roaming_et = findViewById<View>(R.id.APN_Roaming_et) as EditText
-        val Bearer_et = findViewById<View>(R.id.Bearer_et) as EditText
-        val MVNO_Type_et = findViewById<View>(R.id.MVNO_Type_et) as EditText
-        val MVNO_Value_et = findViewById<View>(R.id.MVNO_Value_et) as EditText*/
-
-        /*if (CarrierText == "Telkomsel") {
-            NAME_et.setText("Telkomsel MMS")
-            APN_et.setText("indosatmms")
-            Proxy_et.setText("Not Set")
-            Port_et.setText("Not Set")
-            username_et.setText("indosat")
-            password_et.setText("indosat")
-            Server_et.setText("Not Set")
-            MMSC_et.setText("http://mmsc.indosat.com")
-            mms_proxy_et.setText("10.19.19.19")
-            MMS_Port_et.setText("8080")
-            MCC_et.setText("510")
-            MNC_et.setText("01")
-            Auth_Type_et.setText("Not Set")
-            APN_Type_et.setText("mms")
-            APN_Protocol_et.setText("IPv4")
-            APN_Roaming_et.setText("IPv4")
-            Bearer_et.setText("unspecified")
-            MVNO_Type_et.setText("none")
-            MVNO_Value_et.setText("Not set")
-        }
-
-        if (CarrierText == "Indosat") {
-            NAME_et.setText("Indosat MMS")
-            APN_et.setText("indosatmms")
-            Proxy_et.setText("Not Set")
-            Port_et.setText("Not Set")
-            username_et.setText("indosat")
-            password_et.setText("indosat")
-            Server_et.setText("Not Set")
-            MMSC_et.setText("http://mmsc.indosat.com")
-            mms_proxy_et.setText("10.19.19.19")
-            MMS_Port_et.setText("8080")
-            MCC_et.setText("510")
-            MNC_et.setText("01")
-            Auth_Type_et.setText("Not Set")
-            APN_Type_et.setText("mms")
-            APN_Protocol_et.setText("IPv4")
-            APN_Roaming_et.setText("IPv4")
-            Bearer_et.setText("unspecified")
-            MVNO_Type_et.setText("none")
-            MVNO_Value_et.setText("Not set")
-        }
-
-        if (CarrierText == "XL Axiata") {
-            NAME_et.setText("XL Axiata MMS")
-            APN_et.setText("indosatmms")
-            Proxy_et.setText("Not Set")
-            Port_et.setText("Not Set")
-            username_et.setText("indosat")
-            password_et.setText("indosat")
-            Server_et.setText("Not Set")
-            MMSC_et.setText("http://mmsc.indosat.com")
-            mms_proxy_et.setText("10.19.19.19")
-            MMS_Port_et.setText("8080")
-            MCC_et.setText("510")
-            MNC_et.setText("01")
-            Auth_Type_et.setText("Not Set")
-            APN_Type_et.setText("mms")
-            APN_Protocol_et.setText("IPv4")
-            APN_Roaming_et.setText("IPv4")
-            Bearer_et.setText("unspecified")
-            MVNO_Type_et.setText("none")
-            MVNO_Value_et.setText("Not set")
-        }
-
-        if (CarrierText == "Celcom") {
-            NAME_et.setText("Celcom MMS")
-            APN_et.setText("celcom3g")
-            Proxy_et.setText("Not Set")
-            Port_et.setText("Not Set")
-            username_et.setText("Not Set")
-            password_et.setText("Not Set")
-            Server_et.setText("Not Set")
-            MMSC_et.setText("http://mms.celcom.net.my")
-            mms_proxy_et.setText("10.128.1.242")
-            MMS_Port_et.setText("80")
-            MCC_et.setText("502")
-            MNC_et.setText("19")
-            Auth_Type_et.setText("Not Set")
-            APN_Type_et.setText("mms")
-            APN_Protocol_et.setText("IPv4")
-            APN_Roaming_et.setText("IPv4")
-            Bearer_et.setText("unspecified")
-            MVNO_Type_et.setText("none")
-            MVNO_Value_et.setText("Not set")
-        }
-
-        if (CarrierText == "U Mobile") {
-            NAME_et.setText("U Mobile Internet")
-            APN_et.setText("my3g")
-            Proxy_et.setText("Not Set")
-            Port_et.setText("Not Set")
-            username_et.setText("Not Set")
-            password_et.setText("Not Set")
-            Server_et.setText("Not Set")
-            MMSC_et.setText("http://10.30.3.11/servlets/mms")
-            mms_proxy_et.setText("10.30.5.11")
-            MMS_Port_et.setText("8080")
-            MCC_et.setText("502")
-            MNC_et.setText("18")
-            Auth_Type_et.setText("PAP")
-            APN_Type_et.setText("default,supl,mms")
-            APN_Protocol_et.setText("IPv4/IPv6")
-            APN_Roaming_et.setText("IPv4/IPv6")
-            Bearer_et.setText("unspecified")
-            MVNO_Type_et.setText("none")
-            MVNO_Value_et.setText("Not set")
-        }*/
-
         NAME_tf.setEndIconOnClickListener {
-            val text = findViewById<View>(R.id.NAME_et) as EditText
-            val value = text.text.toString()
-            copy2clipboard(value)
-            Toast.makeText(this, "NAME copied to clipboard", Toast.LENGTH_LONG).show()
+            copy2clipboard(NAME_et.text.toString())
+            toast("NAME copied to clipboard")
         }
 
         APN_tf.setEndIconOnClickListener {
-            val text = findViewById<View>(R.id.APN_et) as EditText
-            val value = text.text.toString()
-            copy2clipboard(value)
-            Toast.makeText(this, "APN copied to clipboard", Toast.LENGTH_LONG).show()
+            copy2clipboard(APN_et.text.toString())
+            toast("APN copied to clipboard")
         }
 
         Proxy_tf.setEndIconOnClickListener {
-            val text = findViewById<View>(R.id.Proxy_et) as EditText
-            val value = text.text.toString()
-            copy2clipboard(value)
-            Toast.makeText(this, "Proxy copied to clipboard", Toast.LENGTH_LONG).show()
+            copy2clipboard(Proxy_et.text.toString())
+            toast("Proxy copied to clipboard")
         }
 
         Port_tf.setEndIconOnClickListener {
-            val text = findViewById<View>(R.id.Port_et) as EditText
-            val value = text.text.toString()
-            copy2clipboard(value)
-            Toast.makeText(this, "Port copied to clipboard", Toast.LENGTH_LONG).show()
+            copy2clipboard(Port_et.text.toString())
+            toast("Port copied to clipboard")
         }
 
         username_tf.setEndIconOnClickListener {
-            val text = findViewById<View>(R.id.username_et) as EditText
-            val value = text.text.toString()
-            copy2clipboard(value)
-            Toast.makeText(this, "Username copied to clipboard", Toast.LENGTH_LONG).show()
+            copy2clipboard(username_et.text.toString())
+            toast("Username copied to clipboard")
         }
 
         Server_tf.setEndIconOnClickListener {
-            val text = findViewById<View>(R.id.Server_et) as EditText
-            val value = text.text.toString()
-            copy2clipboard(value)
-            Toast.makeText(this, "Server copied to clipboard", Toast.LENGTH_LONG).show()
+            copy2clipboard(Server_et.text.toString())
+            toast("Server copied to clipboard")
         }
 
         password_tf.setEndIconOnClickListener {
-            val text = findViewById<View>(R.id.password_et) as EditText
-            val value = text.text.toString()
-            copy2clipboard(value)
-            Toast.makeText(this, "Password copied to clipboard", Toast.LENGTH_LONG).show()
+            copy2clipboard(password_et.text.toString())
+            toast("Password copied to clipboard")
         }
 
         MMSC_tf.setEndIconOnClickListener {
-            val text = findViewById<View>(R.id.MMSC_et) as EditText
-            val value = text.text.toString()
-            copy2clipboard(value)
-            Toast.makeText(this, "MMSC copied to clipboard", Toast.LENGTH_LONG).show()
+            copy2clipboard(MMSC_et.text.toString())
+            toast("MMSC copied to clipboard")
         }
 
         mms_proxy_tf.setEndIconOnClickListener {
-            val text = findViewById<View>(R.id.mms_proxy_et) as EditText
-            val value = text.text.toString()
-            copy2clipboard(value)
-            Toast.makeText(this, "MMS Proxy copied to clipboard", Toast.LENGTH_LONG).show()
+            copy2clipboard(mms_proxy_et.text.toString())
+            toast("MMS Proxy copied to clipboard")
         }
 
         MMS_Port_tf.setEndIconOnClickListener {
-            val text = findViewById<View>(R.id.MMS_Port_et) as EditText
-            val value = text.text.toString()
-            copy2clipboard(value)
-            Toast.makeText(this, "MMS Port copied to clipboard", Toast.LENGTH_LONG).show()
+            copy2clipboard(MMS_Port_et.text.toString())
+            toast("MMS Port copied to clipboard")
         }
 
         MCC_tf.setEndIconOnClickListener {
-            val text = findViewById<View>(R.id.MCC_et) as EditText
-            val value = text.text.toString()
-            copy2clipboard(value)
-            Toast.makeText(this, "MCC copied to clipboard", Toast.LENGTH_LONG).show()
+            copy2clipboard(MCC_et.text.toString())
+            toast("MCC copied to clipboard")
         }
 
         MNC_tf.setEndIconOnClickListener {
-            val text = findViewById<View>(R.id.MNC_et) as EditText
-            val value = text.text.toString()
-            copy2clipboard(value)
-            Toast.makeText(this, "MNC copied to clipboard", Toast.LENGTH_LONG).show()
+            copy2clipboard(MNC_et.text.toString())
+            toast("MNC copied to clipboard")
         }
 
         Auth_Type_tf.setEndIconOnClickListener {
-            val text = findViewById<View>(R.id.Auth_Type_et) as EditText
-            val value = text.text.toString()
-            copy2clipboard(value)
-            Toast.makeText(this, "Authentication Type copied to clipboard", Toast.LENGTH_LONG)
-                .show()
+            copy2clipboard(Auth_Type_et.text.toString())
+            toast("Authentication Type copied to clipboard", Toast.LENGTH_LONG)
         }
 
         APN_Type_tf.setEndIconOnClickListener {
-            val text = findViewById<View>(R.id.APN_Type_et) as EditText
-            val value = text.text.toString()
-            copy2clipboard(value)
-            Toast.makeText(this, "APN Type copied to clipboard", Toast.LENGTH_LONG).show()
+            copy2clipboard(APN_Type_et.text.toString())
+            toast("APN Type copied to clipboard")
         }
 
         APN_Protocol_tf.setEndIconOnClickListener {
-            val text = findViewById<View>(R.id.APN_Protocol_et) as EditText
-            val value = text.text.toString()
-            copy2clipboard(value)
-            Toast.makeText(this, "APN Protocol copied to clipboard", Toast.LENGTH_LONG).show()
+            copy2clipboard(APN_Protocol_et.text.toString())
+            toast("APN Protocol copied to clipboard")
         }
 
         APN_Roaming_tf.setEndIconOnClickListener {
-            val text = findViewById<View>(R.id.APN_Roaming_et) as EditText
-            val value = text.text.toString()
-            copy2clipboard(value)
-            Toast.makeText(this, "APN Roaming copied to clipboard", Toast.LENGTH_LONG).show()
+            copy2clipboard(APN_Roaming_et.text.toString())
+            toast("APN Roaming copied to clipboard")
         }
 
         Bearer_tf.setEndIconOnClickListener {
-            val text = findViewById<View>(R.id.Bearer_et) as EditText
-            val value = text.text.toString()
-            copy2clipboard(value)
-            Toast.makeText(this, "Bearer copied to clipboard", Toast.LENGTH_LONG).show()
+            copy2clipboard(Bearer_et.text.toString())
+            toast("Bearer copied to clipboard")
         }
 
         MVNO_Type_tf.setEndIconOnClickListener {
-            val text = findViewById<View>(R.id.MVNO_Type_et) as EditText
-            val value = text.text.toString()
-            copy2clipboard(value)
-            Toast.makeText(this, "MVNO Type copied to clipboard", Toast.LENGTH_LONG).show()
+            copy2clipboard(MVNO_Type_et.text.toString())
+            toast("MVNO Type copied to clipboard")
         }
 
         MVNO_Value_tf.setEndIconOnClickListener {
-            val text = findViewById<View>(R.id.MVNO_Value_et) as EditText
-            val value = text.text.toString()
-            copy2clipboard(value)
-            Toast.makeText(this, "MVNO Value copied to clipboard", Toast.LENGTH_LONG).show()
+            copy2clipboard(MVNO_Value_et.text.toString())
+            toast("MVNO Value copied to clipboard")
         }
 
         // set on-click listener
@@ -368,13 +197,16 @@ class APNDetailsActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         super.onBackPressed()
-        finishAffinity()
-        finish()
+
+        if (!PreferenceHelper.getPreference(this, "isSettings")) {
+            finishAffinity()
+            finish()
+        }
     }
 
-    fun copy2clipboard(text: CharSequence) {
+    private fun copy2clipboard(text: CharSequence) {
         val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clip = ClipData.newPlainText("text", text.toString())
-        clipboard.setPrimaryClip(clip);
+        clipboard.setPrimaryClip(clip)
     }
 }

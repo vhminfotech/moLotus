@@ -20,6 +20,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
@@ -62,6 +63,9 @@ import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
 import kotlinx.android.synthetic.main.backup_list_dialog.*
 import kotlinx.android.synthetic.main.compose_activity.*
+import kotlinx.android.synthetic.main.compose_activity.toolbar
+import kotlinx.android.synthetic.main.compose_activity.toolbarTitle
+import kotlinx.android.synthetic.main.main_activity.*
 import kotlinx.coroutines.*
 import java.io.File
 import java.io.IOException
@@ -179,6 +183,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.compose_activity)
         showBackButton(true)
+
         viewModel.bindView(this)
         recordButton = record_button
         audioRecorder = AudioRecorder()
@@ -951,4 +956,9 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
 
     override fun onBackPressed() = backPressedIntent.onNext(Unit)
 
+    override fun showBackButton(show: Boolean) {
+        if (show) {
+            toolbar.setNavigationIcon(R.drawable.ic_baseline_arrow_back_24)
+        }
+    }
 }

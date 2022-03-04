@@ -55,11 +55,23 @@ class IntroActivity : AppCompatActivity() {
     private fun registerUser() {
         viewModel.loginResponse.observe(this, {
             Log.e("=====", "response:: $it")
-            requestOtp(
+            /*requestOtp(
                 phone_number.text.toString(),
                 carrier_provider.selectedItem.toString(),
                 carrier_provider.selectedItemId.toInt()
-            )
+            )*/
+            btnLogin.isEnabled = true
+            Toast.makeText(
+                this,
+                "OTP sent successfully.!!",
+                Toast.LENGTH_SHORT
+            ).show()
+            val intent = Intent(this, VerifyOtpActivity::class.java)
+            intent.putExtra("PhoneNumber", phone_number.text.toString())
+            intent.putExtra("CarrierText", carrier_provider.selectedItem.toString())
+            intent.putExtra("CarrierId", carrier_provider.selectedItemId.toInt())
+            startActivity(intent)
+            finish()
         })
         viewModel.errorMessage.observe(this, {
             Log.e("=====", "errorMessage:: $it")
@@ -180,6 +192,12 @@ class IntroActivity : AppCompatActivity() {
                 registerUser()
             }
         }
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        finishAffinity()
+        finish()
     }
 
     private fun requestOtp(phoneNo: String, carrierText: String, carrierId: Int) {

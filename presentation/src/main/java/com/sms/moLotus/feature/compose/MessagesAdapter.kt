@@ -224,7 +224,7 @@ class MessagesAdapter @Inject constructor(
             holder.avatar.setVisible(!canGroup(message, next), View.INVISIBLE)
 
             holder.body.setTextColor(theme.textPrimary)
-            holder.body.setBackgroundTint(theme.theme)
+            holder.body.setBackgroundTint(context?.resources.getColor(R.color.tools_theme))
         }
 
         // Bind the body text

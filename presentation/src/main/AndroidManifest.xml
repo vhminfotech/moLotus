@@ -40,10 +40,11 @@
         <activity
             android:name=".feature.settings.AppSettingsActivity"
             android:exported="true"
-           />
+            android:theme="@style/AppTheme1" />
         <activity
             android:name=".feature.intro.AppIntroActivity"
-            android:exported="true" />
+            android:exported="true"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
 
         <receiver
             android:name=".feature.authentication.MySMSBroadcastReceiver"
@@ -55,6 +56,7 @@
         </receiver>
 
         <activity
+            android:theme="@style/AppTheme1"
             android:name=".feature.authentication.VerifyOtpActivity"
             android:exported="true" />
         <activity
@@ -69,9 +71,18 @@
         </activity>
         <activity
             android:name=".feature.intro.APNDetailsActivity"
-            android:theme="@style/AppBaseTheme" /> <!-- <activity android:name="com.sms.moLotus.feature.main.MainActivity" /> -->
-        <activity android:name=".feature.intro.IntroActivity" />
-        <activity android:name=".feature.intro.IntroActivity2" />
+            android:theme="@style/AppTheme1">
+
+            <!--<intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>-->
+        </activity><!-- <activity android:name="com.sms.moLotus.feature.main.MainActivity" /> -->
+        <activity
+            android:name=".feature.intro.IntroActivity"
+            android:theme="@style/AppTheme1" />
+        <activity android:name=".feature.intro.IntroActivity2"  android:theme="@style/AppTheme1"/>
         <activity
             android:name=".feature.main.MainActivity"
             android:exported="true"

@@ -29,6 +29,7 @@
         android:drawableStart="@drawable/ic_settings_black_24dp"
         android:drawablePadding="15dp"
         android:paddingTop="10dp"
+        android:visibility="gone"
         android:paddingEnd="60dp"
         android:paddingBottom="10dp"
         android:text="APN Settings"

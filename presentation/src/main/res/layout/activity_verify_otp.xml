@@ -59,11 +59,38 @@
         android:visibility="gone"
         android:textAllCaps="false"/>
     <Button
-        android:id="@+id/btnVerifyOtp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/tools_theme"
         android:text="@string/verify_otp"
-        android:textAllCaps="false"
-        android:visibility="gone" />
+        android:visibility="gone"
+        android:textAllCaps="false" />
+
+    <RelativeLayout
+        android:id="@+id/btnVerifyOtp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/rounded_rectangle_24dp"
+        android:backgroundTint="@color/tools_theme"
+        android:drawableEnd="@drawable/ic_baseline_arrow_right_alt_24"
+        android:elevation="3dp"
+        android:padding="10dp"
+        tools:visibility="visible">
+        <com.sms.moLotus.common.widget.QkTextView
+            android:id="@+id/skipLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="@string/verify_otp"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+    </RelativeLayout>
 </LinearLayout>

@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver
 import androidx.core.provider.FontRequest
 import androidx.emoji.text.EmojiCompat
 import androidx.emoji.text.FontRequestEmojiCompatConfig
+import com.google.firebase.FirebaseApp
 import com.sms.moLotus.R
 import com.sms.moLotus.common.util.CrashlyticsTree
 import com.sms.moLotus.common.util.FileLoggingTree
@@ -54,7 +55,7 @@ class QKApplication : Application(), HasActivityInjector, HasBroadcastReceiverIn
 
     override fun onCreate() {
         super.onCreate()
-
+        FirebaseApp.initializeApp(this)
         AppComponentManager.init(this)
         appComponent.inject(this)
 

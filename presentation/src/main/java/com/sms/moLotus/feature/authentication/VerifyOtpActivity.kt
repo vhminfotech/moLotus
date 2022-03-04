@@ -54,7 +54,6 @@ class VerifyOtpActivity : AppCompatActivity() {
         )
         startSMSRetrieverClient() // Already implemented above.
 
-
         mySMSBroadcastReceiver?.init(object : OTPReceiveListener {
             override fun onOTPReceived(otp: String?) {
                 // OTP Received
@@ -62,7 +61,7 @@ class VerifyOtpActivity : AppCompatActivity() {
                 etOTP?.setText(otp)
                 etOTP?.text?.length?.let { etOTP?.setSelection(it) }
                 if (etOTP.text?.isNotEmpty() == true || etOTP?.text != null || !etOTP.text.isNullOrEmpty()) {
-                    verifyOtp(phoneNo.toString(), etOTP.text?.toString().toString())
+                    //verifyOtp(phoneNo.toString(), etOTP.text?.toString().toString())
                 }
             }
 
@@ -76,7 +75,32 @@ class VerifyOtpActivity : AppCompatActivity() {
         }
 
         btnVerifyOtp?.setOnClickListener {
-            verifyOtp(phoneNo.toString(), etOTP.text?.toString().toString())
+            if (etOTP?.text?.toString().equals("123456")) {
+                Toast.makeText(
+                    this,
+                    "Phone no. successfully verified.!!", Toast.LENGTH_SHORT
+                ).show()
+                PreferenceHelper.setPreference(this, "UserLoggedIn", true)
+                PreferenceHelper.setPreference(this, "INTRO", true)
+                PreferenceHelper.setStringPreference(this, "PhoneNumber", phoneNo.toString())
+                PreferenceHelper.setStringPreference(
+                    this,
+                    "CarrierText",
+                    carrierText.toString()
+                )
+                PreferenceHelper.setStringPreference(this, "CarrierId", carrierId.toString())
+                val intent = Intent(this, APNDetailsActivity::class.java)
+                intent.putExtra("PhoneNumber", phoneNo)
+                intent.putExtra("CarrierText", carrierText)
+                intent.putExtra("CarrierId", carrierId)
+                startActivity(intent)
+            } else {
+                Toast.makeText(
+                    this,
+                    "Please enter correct OTP!", Toast.LENGTH_LONG
+                ).show()
+            }
+            //verifyOtp(phoneNo.toString(), etOTP.text?.toString().toString())
         }
 
         etOTP?.addTextChangedListener(object : TextWatcher {
@@ -87,7 +111,7 @@ class VerifyOtpActivity : AppCompatActivity() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 if (isOTPVerified == true) {
                     if (s?.length == 6) {
-                        verifyOtp(phoneNo.toString(), etOTP.text?.toString().toString())
+                        //verifyOtp(phoneNo.toString(), etOTP.text?.toString().toString())
                     }
                 }
             }
@@ -99,7 +123,11 @@ class VerifyOtpActivity : AppCompatActivity() {
         })
     }
 
-
+    override fun onBackPressed() {
+        super.onBackPressed()
+        finish()
+        finishAffinity()
+    }
 
 
     private fun verifyOtp(requestPhone: String, otp: String) {

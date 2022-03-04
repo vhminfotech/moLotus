@@ -21,7 +21,7 @@
         android:paddingTop="10dp"
         android:paddingEnd="30dp"
         android:paddingBottom="10dp"
-
+        android:text="APN Parameters"
         android:textColor="@color/black"
         app:drawableTint="@color/tools_theme" />
 
@@ -267,7 +267,6 @@
         android:weightSum="2">
 
         <com.sms.moLotus.common.widget.QkTextView
-            android:id="@+id/txtSignatureText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -277,6 +276,7 @@
             android:textColor="@color/colorGreyLt" />
 
         <com.sms.moLotus.common.widget.QkTextView
+            android:id="@+id/txtSignatureText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
