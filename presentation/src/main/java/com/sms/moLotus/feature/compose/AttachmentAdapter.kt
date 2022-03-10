@@ -44,7 +44,8 @@ class AttachmentAdapter @Inject constructor(
                 false
             )
 
-            else -> null!! // Impossible
+            else -> inflater.inflate(R.layout.attachment_image_list_item, parent, false)
+                .apply { thumbnailBounds.clipToOutline = true }
         }
 
         return QkViewHolder(view).apply {

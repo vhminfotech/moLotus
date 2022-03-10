@@ -428,6 +428,10 @@
     <string name="resend_otp">Resend OTP</string>
     <string name="signature_text">Signature Text</string>
     <string name="ok">OK</string>
+    <string name="compose_menu_share">Share</string>
+    <string name="update_app_text">New update is available. Do you want to update the app?</string>
+    <string name="txt_update">Update</string>
+    <string name="paid_message_description">mCHat would like to send message \nThis will cause chanrges on your mobile account</string>
 
     <string-array name="night_modes">
         <item>System</item>

@@ -63,6 +63,7 @@ import com.linkedin.android.litr.io.MediaRange;
 import com.linkedin.android.litr.utils.CodecUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Objects;
@@ -480,7 +481,7 @@ public class ActVideoTrimmer extends AppCompatActivity {
     private void trimVideo() {
         //not exceed given maxDuration if has given
         if (isValidVideo) {
-            File outputFile=getOutputFile();
+            File outputFile = getOutputFile();
             outputPath = String.valueOf(outputFile);
             LogMessage.v("outputPath::" + outputPath);
             LogMessage.v("sourcePath::" + uri);
@@ -525,9 +526,9 @@ public class ActVideoTrimmer extends AppCompatActivity {
             int[] widthHeight = TrimmerUtils.getVideoWidthHeight(this, uri);
             int width = compressOption.getWidth();
             int height = compressOption.getHeight();
-            if (width<=0 || height<=0){
-                width=widthHeight[0];
-                height=widthHeight[1];
+            if (width <= 0 || height <= 0) {
+                width = widthHeight[0];
+                height = widthHeight[1];
                 if (width > 800) {
                     width = width / 2;
                     height = height / 2;
@@ -600,30 +601,35 @@ public class ActVideoTrimmer extends AppCompatActivity {
         @Override
         public void onError(@NonNull String id, @Nullable Throwable cause, @Nullable List<TrackTransformationInfo> trackTransformationInfos) {
             LogMessage.v("onError " + cause);
-            if (dialog!=null && dialog.isShowing())
+            if (dialog != null && dialog.isShowing())
                 dialog.dismiss();
             runOnUiThread(() ->
                     Toast.makeText(ActVideoTrimmer.this, "Failed to trim", Toast.LENGTH_SHORT).show());
         }
     };
 
-    private String getFileDateTime(){
+    private String getFileDateTime() {
         Calendar calender = Calendar.getInstance();
         return calender.get(Calendar.YEAR) + "_" +
                 calender.get(Calendar.MONTH) + "_" +
                 calender.get(Calendar.DAY_OF_MONTH) + "_" +
-                calender.get(Calendar.HOUR_OF_DAY) + "_"+
-                calender.get(Calendar.MINUTE) + "_"+
+                calender.get(Calendar.HOUR_OF_DAY) + "_" +
+                calender.get(Calendar.MINUTE) + "_" +
                 calender.get(Calendar.SECOND);
     }
 
     private File getOutputFile() {
-        String path = getExternalFilesDir("Download").getPath();
+        String path = Environment.getExternalStorageDirectory() + "/" + Environment.DIRECTORY_MOVIES /*+ "/VideoCompress"*/;
+        if (!new File(path).exists()) {
+
+            new File(path).mkdir();
+
+        }
         String fName = "trimmed_video_";
         if (fileName != null && !fileName.isEmpty())
             fName = fileName;
         File newFile = new File(path + File.separator +
-                (fName)+getFileDateTime() + "." + TrimmerUtils.getFileExtension(this, uri));
+                (fName) + getFileDateTime() + "." + TrimmerUtils.getFileExtension(this, uri));
         return newFile;
     }
 

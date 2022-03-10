@@ -53,6 +53,15 @@ object FileUtils {
                     }
 
                     // TODO handle non-primary volumes
+                } else if (isMIUIDocument(uri)) {
+                    val docId = DocumentsContract.getDocumentId(uri)
+                    val split = docId.split(":".toRegex()).toTypedArray()
+                    val type = split[0]
+                    if ("primary".equals(type, ignoreCase = true)) {
+                        path = Environment.getExternalStorageDirectory()
+                            .toString() + "/" + split[1]
+                    }
+
                 } else if (isDownloadsDocument(uri)) { // DownloadsProvider
                     val id = DocumentsContract.getDocumentId(uri)
                     val contentUri = ContentUris.withAppendedId(
@@ -174,6 +183,10 @@ object FileUtils {
      */
     fun isMediaDocument(uri: Uri): Boolean {
         return "com.android.providers.media.documents" == uri.authority
+    }
+
+    fun isMIUIDocument(uri: Uri): Boolean {
+        return "com.mi.android.globalFileexplorer.myprovider" == uri.authority
     }
 
     private fun makeEmptyFileIntoExternalStorageWithTitle(title: String?): File {

@@ -5,12 +5,21 @@ import android.app.role.RoleManager
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageInfo
+import android.content.pm.PackageManager
+import android.database.Cursor
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
+import android.os.StrictMode
 import android.provider.ContactsContract
+import android.provider.MediaStore
 import android.provider.Settings
 import android.provider.Telephony
+import android.util.Log
 import android.webkit.MimeTypeMap
+import android.widget.Toast
 import androidx.core.content.FileProvider
 import com.sms.moLotus.BuildConfig
 import com.sms.moLotus.feature.intro.IntroActivity2
@@ -28,9 +37,17 @@ import com.sms.moLotus.manager.AnalyticsManager
 import com.sms.moLotus.manager.BillingManager
 import com.sms.moLotus.manager.NotificationManager
 import com.sms.moLotus.manager.PermissionManager
+import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.IOException
+import java.io.InputStream
+import java.lang.Exception
 import javax.inject.Inject
 import javax.inject.Singleton
+import androidx.core.content.ContextCompat.startActivity
+
+
+
 
 @Singleton
 class Navigator @Inject constructor(
@@ -82,18 +99,126 @@ class Navigator @Inject constructor(
     fun showCompose(body: String? = null, images: List<Uri>? = null) {
         val intent = Intent(context, ComposeActivity::class.java)
         intent.putExtra(Intent.EXTRA_TEXT, body)
-
-        images?.takeIf { it.isNotEmpty() }?.let {
+        //images?.takeIf { it.isNotEmpty() }?.let {
+        if (images != null) {
             intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, ArrayList(images))
         }
-
+        //}
         startActivity(intent)
+    }
+
+    fun shareToOtherApps(body: String? = null, images: List<Uri>? = null) {
+        val intent = Intent(Intent.ACTION_SEND)
+        intent.putExtra(Intent.EXTRA_TEXT, body)
+        Log.e("=========","uri:: ${Uri.parse(images.toString())}")
+
+        intent.putExtra(Intent.EXTRA_STREAM, Uri.parse(images.toString()))
+
+        intent.type = "*/*"
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        intent.addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+        /*images?.takeIf { it.isNotEmpty() }?.let {
+            intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, ArrayList(images))
+        }*/
+        startActivity(Intent.createChooser(intent, "Share"))
+    }
+
+    fun sendVideoOrAudio(body: String? = null, images: List<Uri>? = null){
+
+        val sendIntent = Intent(context, ComposeActivity::class.java)
+        sendIntent.putExtra(Intent.EXTRA_TEXT, body)
+
+        sendIntent.putExtra(Intent.EXTRA_STREAM, images.toString())
+        sendIntent.type = "video/mp4"
+        startActivity(sendIntent)
+    }
+
+    fun getRealPathFromURI(context: Context, contentUri: Uri?): String? {
+        var cursor: Cursor? = null
+        return try {
+            val proj = arrayOf(MediaStore.Images.Media.DATA)
+            cursor = context.contentResolver.query(contentUri!!, proj, null, null, null)
+            val column_index = cursor!!.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+            cursor.moveToFirst()
+            cursor.getString(column_index)
+        } finally {
+            cursor?.close()
+        }
+    }
+
+    fun getImageMMS(context: Context, body: String? = null, images: List<Uri>? = null) {
+        ///96
+        val selectionPart = "mid=98"
+
+        val uri = Uri.parse("content://mms/part")
+        val cPart: Cursor? = context?.contentResolver.query(
+            uri, null,
+            selectionPart, null, null
+        )
+        Log.e("message", "==cPart====${cPart}")
+
+        if (cPart?.moveToFirst() == true) {
+            do {
+                val partId: String = cPart.getString(cPart.getColumnIndex("_id"))
+
+                Log.e("message", "==partId====${partId}")
+
+                val type: String = cPart.getString(cPart.getColumnIndex("ct"))
+                if ("image/jpeg" == type || "image/bmp" == type || "image/gif" == type || "image/jpg" == type || "image/png" == type) {
+                    val bitmap: Bitmap? = getMmsImage(partId)
+                    Log.e("message", "==bitmap====${bitmap}")
+                    if (bitmap != null) {
+                        onClickApp("com.sms.moLotus", bitmap)
+                    }
+                }
+            } while (cPart.moveToNext())
+        }
+    }
+
+    private fun onClickApp(pack: String?, bitmap: Bitmap) {
+        val pm: PackageManager = context.packageManager
+        try {
+            val bytes = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes)
+            val path: String =
+                MediaStore.Images.Media.insertImage(context.contentResolver, bitmap, "Title", null)
+            val imageUri = Uri.parse(path)
+            val info: PackageInfo = pm.getPackageInfo(pack, PackageManager.GET_META_DATA)
+            val waIntent = Intent(Intent.ACTION_SEND)
+            waIntent.type = "image/jpg"
+            waIntent.setPackage(pack)
+            waIntent.putExtra(Intent.EXTRA_STREAM, imageUri)
+            waIntent.putExtra(Intent.EXTRA_TEXT, pack)
+            context.startActivity(Intent.createChooser(waIntent, "Share with"))
+        } catch (e: Exception) {
+            Log.e("Error on sharing", "$e ")
+            Toast.makeText(context, "App not Installed", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun getMmsImage(_id: String): Bitmap? {
+        val partURI = Uri.parse("content://mms/part/$_id")
+        var `is`: InputStream? = null
+        var bitmap: Bitmap? = null
+        try {
+            `is` = context.contentResolver.openInputStream(partURI)
+            bitmap = BitmapFactory.decodeStream(`is`)
+        } catch (e: IOException) {
+        } finally {
+            if (`is` != null) {
+                try {
+                    `is`.close()
+                } catch (e: IOException) {
+                }
+            }
+        }
+        return bitmap
     }
 
     fun showConversation(threadId: Long, query: String? = null) {
         val intent = Intent(context, ComposeActivity::class.java)
-                .putExtra("threadId", threadId)
-                .putExtra("query", query)
+            .putExtra("threadId", threadId)
+            .putExtra("query", query)
         startActivity(intent)
     }
 
@@ -114,12 +239,12 @@ class Navigator @Inject constructor(
         startActivity(Intent(context, BackupActivity::class.java))
     }
 
-    fun showAPNsetting(){
+    fun showAPNsetting() {
         analyticsManager.track("Viewed APN Setting")
         startActivity(Intent(context, IntroActivity2::class.java))
     }
 
-    fun showAppsetting(){
+    fun showAppsetting() {
         analyticsManager.track("Viewed Settings")
         startActivity(Intent(context, AppSettingsActivity::class.java))
     }
@@ -146,12 +271,16 @@ class Navigator @Inject constructor(
     }
 
     fun showChangelog() {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/moezbhatti/qksms/releases"))
+        val intent =
+            Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/moezbhatti/qksms/releases"))
         startActivityExternal(intent)
     }
 
     fun showLicense() {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/moezbhatti/qksms/blob/master/LICENSE"))
+        val intent = Intent(
+            Intent.ACTION_VIEW,
+            Uri.parse("https://github.com/moezbhatti/qksms/blob/master/LICENSE")
+        )
         startActivityExternal(intent)
     }
 
@@ -173,9 +302,11 @@ class Navigator @Inject constructor(
 
     fun showRating() {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=com.moez.QKSMS"))
-                .addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY
+            .addFlags(
+                Intent.FLAG_ACTIVITY_NO_HISTORY
                         or Intent.FLAG_ACTIVITY_NEW_DOCUMENT
-                        or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
+                        or Intent.FLAG_ACTIVITY_MULTIPLE_TASK
+            )
 
         try {
             startActivityExternal(intent)
@@ -189,7 +320,8 @@ class Navigator @Inject constructor(
      * Launch the Play Store and display the Call Control listing
      */
     fun installCallControl() {
-        val url = "https://play.google.com/store/apps/details?id=com.flexaspect.android.everycallcontrol"
+        val url =
+            "https://play.google.com/store/apps/details?id=com.flexaspect.android.everycallcontrol"
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
         startActivityExternal(intent)
     }
@@ -209,38 +341,38 @@ class Navigator @Inject constructor(
         intent.putExtra(Intent.EXTRA_EMAIL, arrayOf("moez@qklabs.com"))
         intent.putExtra(Intent.EXTRA_SUBJECT, "QKSMS Support")
         intent.putExtra(Intent.EXTRA_TEXT, StringBuilder("\n\n")
-                .append("\n\n--- Please write your message above this line ---\n\n")
-                .append("Package: ${context.packageName}\n")
-                .append("Version: ${BuildConfig.VERSION_NAME}\n")
-                .append("Device: ${Build.BRAND} ${Build.MODEL}\n")
-                .append("SDK: ${Build.VERSION.SDK_INT}\n")
-                .append("Upgraded"
-                        .takeIf { BuildConfig.FLAVOR != "noAnalytics" }
-                        .takeIf { billingManager.upgradeStatus.blockingFirst() } ?: "")
-                .toString())
+            .append("\n\n--- Please write your message above this line ---\n\n")
+            .append("Package: ${context.packageName}\n")
+            .append("Version: ${BuildConfig.VERSION_NAME}\n")
+            .append("Device: ${Build.BRAND} ${Build.MODEL}\n")
+            .append("SDK: ${Build.VERSION.SDK_INT}\n")
+            .append("Upgraded"
+                .takeIf { BuildConfig.FLAVOR != "noAnalytics" }
+                .takeIf { billingManager.upgradeStatus.blockingFirst() } ?: "")
+            .toString())
         startActivityExternal(intent)
     }
 
     fun showInvite() {
         analyticsManager.track("Clicked Invite")
         Intent(Intent.ACTION_SEND)
-                .setType("text/plain")
-                .putExtra(Intent.EXTRA_TEXT, "http://qklabs.com/download")
-                .let { Intent.createChooser(it, null) }
-                .let(::startActivityExternal)
+            .setType("text/plain")
+            .putExtra(Intent.EXTRA_TEXT, "http://qklabs.com/download")
+            .let { Intent.createChooser(it, null) }
+            .let(::startActivityExternal)
     }
 
     fun addContact(address: String) {
         val intent = Intent(Intent.ACTION_INSERT)
-                .setType(ContactsContract.Contacts.CONTENT_TYPE)
-                .putExtra(ContactsContract.Intents.Insert.PHONE, address)
+            .setType(ContactsContract.Contacts.CONTENT_TYPE)
+            .putExtra(ContactsContract.Intents.Insert.PHONE, address)
 
         startActivityExternal(intent)
     }
 
     fun showContact(lookupKey: String) {
         val intent = Intent(Intent.ACTION_VIEW)
-                .setData(Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_LOOKUP_URI, lookupKey))
+            .setData(Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_LOOKUP_URI, lookupKey))
 
         startActivityExternal(intent)
     }
@@ -249,8 +381,8 @@ class Navigator @Inject constructor(
         val data = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
         val type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(file.name.split(".").last())
         val intent = Intent(Intent.ACTION_VIEW)
-                .setDataAndType(data, type)
-                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            .setDataAndType(data, type)
+            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
 
         startActivityExternal(intent)
     }
@@ -259,9 +391,9 @@ class Navigator @Inject constructor(
         val data = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
         val type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(file.name.split(".").last())
         val intent = Intent(Intent.ACTION_SEND)
-                .setType(type)
-                .putExtra(Intent.EXTRA_STREAM, data)
-                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            .setType(type)
+            .putExtra(Intent.EXTRA_STREAM, data)
+            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
 
         startActivityExternal(intent)
     }
@@ -280,8 +412,8 @@ class Navigator @Inject constructor(
 
             val channelId = notificationManager.buildNotificationChannelId(threadId)
             val intent = Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS)
-                    .putExtra(Settings.EXTRA_CHANNEL_ID, channelId)
-                    .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                .putExtra(Settings.EXTRA_CHANNEL_ID, channelId)
+                .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
             startActivity(intent)
         }
     }

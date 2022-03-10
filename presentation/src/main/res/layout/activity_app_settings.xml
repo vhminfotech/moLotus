@@ -58,7 +58,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:layout_weight="1"
-            android:checked="false"
+            android:checked="true"
             android:thumb="@drawable/bg_thumb"
             app:track="@drawable/bg_switch_states" />
     </LinearLayout>
@@ -91,11 +91,12 @@
             android:textColor="@color/black" />
 
         <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/toggleNotification"
             android:layout_width="40dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:layout_weight="1"
-            android:checked="false"
+            android:checked="true"
             android:thumb="@drawable/bg_thumb"
             app:track="@drawable/bg_switch_states" />
     </LinearLayout>
@@ -132,7 +133,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:layout_weight="1"
-            android:checked="false"
+            android:checked="true"
             android:thumb="@drawable/bg_thumb"
             app:track="@drawable/bg_switch_states" />
     </LinearLayout>
@@ -169,7 +170,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:layout_weight="1"
-            android:checked="false"
+            android:checked="true"
             android:thumb="@drawable/bg_thumb"
             app:track="@drawable/bg_switch_states"  />
     </LinearLayout>
@@ -202,6 +203,7 @@
             android:textColor="@color/black" />
 
         <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/toggleSendPaidMessages"
             android:layout_width="40dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
@@ -281,7 +283,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="end"
-            android:text="Akanksha"
+            android:text="@string/app_name"
             android:textColor="@color/colorGreyLt" />
     </LinearLayout>
 
@@ -313,11 +315,11 @@
             android:textColor="@color/black" />
 
         <com.sms.moLotus.common.widget.QkTextView
+            android:id="@+id/txtVersion"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="end"
-            android:text="1.1.1"
             android:textColor="@color/black" />
     </LinearLayout>
 

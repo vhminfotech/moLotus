@@ -2,56 +2,105 @@ package com.sms.moLotus.feature.settings
 
 import android.app.Dialog
 import android.content.Intent
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
+import android.content.pm.PackageManager
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.Gravity
-import android.view.View
 import android.view.Window
 import android.view.WindowManager
-import android.widget.CompoundButton
 import android.widget.FrameLayout
-import android.widget.LinearLayout
+import android.widget.Toast
+import androidx.lifecycle.ViewModelProvider
 import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
 import com.sms.moLotus.common.Navigator
 import com.sms.moLotus.feature.intro.IntroActivity2
+import com.sms.moLotus.feature.retrofit.MainRepository
+import com.sms.moLotus.feature.retrofit.MainViewModel
+import com.sms.moLotus.feature.retrofit.MyViewModelFactory
+import com.sms.moLotus.feature.retrofit.RetrofitService
 import kotlinx.android.synthetic.main.activity_app_settings.*
 import kotlinx.android.synthetic.main.layout_add_signature.*
+import kotlinx.android.synthetic.main.layout_check_for_updates.*
 import kotlinx.android.synthetic.main.layout_header.*
 
 class AppSettingsActivity : AppCompatActivity() {
-    var dialog: Dialog? = null
     lateinit var navigator: Navigator
+    lateinit var viewModel: MainViewModel
+    private val retrofitService = RetrofitService.getInstance()
+    private var versionCode: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_app_settings)
-        dialog = Dialog(this)
+        viewModel =
+            ViewModelProvider(this, MyViewModelFactory(MainRepository(retrofitService))).get(
+                MainViewModel::class.java
+            )
+        getVersionCodeFromApi()
+        val manager = this.packageManager
+        val info = manager.getPackageInfo(this.packageName, PackageManager.GET_ACTIVITIES)
         imgBack?.setOnClickListener {
             onBackPressed()
         }
-        Log.e("SETTINGS", "===" + dialog?.isShowing)
+
+        txtVersion?.text = info.versionName
         toggleSignature?.setOnCheckedChangeListener { buttonView, isChecked ->
             if (isChecked) {
                 openSignatureDialog()
             }
         }
 
+        toggleSendPaidMessages.isChecked = PreferenceHelper.getPreference(this, "SendPaidMessage")
+        toggleNotification.isChecked = PreferenceHelper.getPreference(this, "Notification")
+
+        toggleSendPaidMessages?.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                toggleSendPaidMessages.isChecked = true
+                PreferenceHelper.setPreference(this, "SendPaidMessage", true)
+            } else {
+                toggleSendPaidMessages.isChecked = false
+                PreferenceHelper.setPreference(this, "SendPaidMessage", false)
+            }
+        }
+
+        toggleNotification?.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                toggleNotification.isChecked = true
+                PreferenceHelper.setPreference(this, "Notification", true)
+            } else {
+                toggleNotification.isChecked = false
+                PreferenceHelper.setPreference(this, "Notification", false)
+            }
+        }
+
         txtAPN?.setOnClickListener {
-            PreferenceHelper.setPreference(this,"isSettings",true)
+            PreferenceHelper.setPreference(this, "isSettings", true)
             startActivity(Intent(this, IntroActivity2::class.java))
+        }
+
+        txtAboutUs?.setOnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.molotus.com/"))
+            startActivity(intent)
+        }
+
+        llCheckForUpdates?.setOnClickListener {
+            if (versionCode >= info.versionCode) {
+                openAppUpdateDialog()
+            } else {
+                Toast.makeText(this, "No Update Available!!", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
     private fun openSignatureDialog() {
-        //val dialog = Dialog(this)
-        dialog?.setCancelable(false)
-        dialog?.setContentView(R.layout.layout_add_signature)
+        val dialog = Dialog(this)
+        dialog.setCancelable(false)
+        dialog.setContentView(R.layout.layout_add_signature)
 
-        val window: Window? = dialog?.window
+        val window: Window? = dialog.window
         val wlp: WindowManager.LayoutParams? = window?.attributes
         wlp?.gravity = Gravity.BOTTOM
         wlp?.width = FrameLayout.LayoutParams.MATCH_PARENT
@@ -59,22 +108,52 @@ class AppSettingsActivity : AppCompatActivity() {
         window?.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
         window?.attributes = wlp
 
-        Log.e("SETTINGS", "===" + dialog?.isShowing)
-
-
-        dialog?.txtOk?.setOnClickListener {
-            dialog?.dismiss()
+        dialog.txtOk?.setOnClickListener {
+            dialog.dismiss()
             toggleSignature?.isChecked = false
-           /* llSignatureText.visibility = View.VISIBLE
-            view7.visibility = View.VISIBLE*/
-            txtSignatureText?.text = dialog?.etSign?.text.toString()
+            /* llSignatureText.visibility = View.VISIBLE
+             view7.visibility = View.VISIBLE*/
+            txtSignatureText?.text = dialog.etSign?.text.toString()
         }
-        dialog?.txtCancel?.setOnClickListener {
-            dialog?.dismiss()
+        dialog.txtCancel?.setOnClickListener {
+            dialog.dismiss()
             toggleSignature?.isChecked = false
         }
+        dialog.show()
+    }
 
+    private fun openAppUpdateDialog() {
+        val dialog = Dialog(this)
+        dialog.setCancelable(true)
+        dialog.setContentView(R.layout.layout_check_for_updates)
 
-        dialog?.show()
+        val window: Window? = dialog.window
+        val wlp: WindowManager.LayoutParams? = window?.attributes
+        wlp?.gravity = Gravity.CENTER_VERTICAL
+        wlp?.width = FrameLayout.LayoutParams.MATCH_PARENT
+        wlp?.height = FrameLayout.LayoutParams.WRAP_CONTENT
+        window?.attributes = wlp
+
+        dialog.txtUpdate?.setOnClickListener {
+            dialog.dismiss()
+
+        }
+        dialog.txtRemind?.setOnClickListener {
+            dialog.dismiss()
+
+        }
+        dialog.show()
+    }
+
+    private fun getVersionCodeFromApi() {
+        viewModel.versionCode.observe(this, {
+            Log.e("=====", "response:: $it")
+            this.versionCode = it[0].config_value.toInt()
+        })
+        viewModel.errorMessage.observe(this, {
+            Log.e("=====", "errorMessage:: $it")
+            Toast.makeText(this, it.toString(), Toast.LENGTH_SHORT).show()
+        })
+        viewModel.getVersionCode()
     }
 }

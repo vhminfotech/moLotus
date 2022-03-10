@@ -189,7 +189,7 @@ object Utils {
             getImageContentUri(compressedFile, context)
         } catch (e: Exception) {
             e.printStackTrace()
-            Log.e("======","error ::: ${e.message}")
+            Log.e("======", "error ::: ${e.message}")
             getImageContentUri(file, context)
         }
     }

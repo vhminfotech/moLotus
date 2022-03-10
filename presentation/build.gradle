@@ -5,6 +5,7 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 // Apply the Crashlytics Gradle plugin
 apply plugin: 'com.google.firebase.crashlytics'
+apply plugin: 'com.google.gms.google-services'
 
 android {
     compileSdkVersion 29
@@ -17,8 +18,8 @@ android {
         applicationId "com.sms.moLotus"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 2218
-        versionName "1.0.1"
+        versionCode 1
+        versionName "1.0.0"
         setProperty("archivesBaseName", "moLotus-v${versionName}")
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -217,7 +218,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-analytics-ktx'
 }
 
-if (getGradle().getStartParameter().getTaskRequests().toString().contains("WithAnalytics")) {
+/*if (getGradle().getStartParameter().getTaskRequests().toString().contains("WithAnalytics")) {
     apply plugin: 'com.google.gms.google-services'
-    apply plugin: 'com.google.firebase.crashlytics'
-}
+//    apply plugin: 'com.google.firebase.crashlytics'
+}*/

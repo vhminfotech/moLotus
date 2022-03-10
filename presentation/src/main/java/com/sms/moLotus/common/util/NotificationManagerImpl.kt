@@ -23,6 +23,7 @@ import androidx.core.graphics.drawable.IconCompat
 import com.sms.moLotus.R
 import com.sms.moLotus.common.util.extensions.dpToPx
 import com.sms.moLotus.extensions.isImage
+import com.sms.moLotus.extensions.isVideo
 import com.sms.moLotus.feature.compose.ComposeActivity
 import com.sms.moLotus.feature.qkreply.QkReplyActivity
 import com.sms.moLotus.manager.PermissionManager
@@ -156,7 +157,7 @@ class NotificationManagerImpl @Inject constructor(
             }
 
             NotificationCompat.MessagingStyle.Message(message.getSummary(), message.date, person.build()).apply {
-                message.parts.firstOrNull { it.isImage() }?.let { part ->
+                message.parts.firstOrNull { it.isImage() || it.isVideo() }?.let { part ->
                     setData(part.type, ContentUris.withAppendedId(CursorToPartImpl.CONTENT_URI, part.id))
                 }
                 messagingStyle.addMessage(this)

@@ -11,6 +11,7 @@ import retrofit2.http.*
 import com.google.gson.GsonBuilder
 
 import com.google.gson.Gson
+import com.sms.moLotus.feature.model.VersionCode
 
 
 interface RetrofitService {
@@ -28,6 +29,9 @@ interface RetrofitService {
         @Field("operator") operator: Int,
         @Field("MSISDN") MSISDN: String
     ): Call<LoginResponse>
+
+    @GET("app_config?config_name=versionCode")
+    fun getVersionCode(): Call<List<VersionCode>>
 
     companion object {
         var retrofitService: RetrofitService? = null

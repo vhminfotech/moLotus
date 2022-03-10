@@ -5,12 +5,14 @@ import androidx.lifecycle.ViewModel
 import com.sms.moLotus.feature.model.APNParamDetails
 import com.sms.moLotus.feature.model.LoginResponse
 import com.sms.moLotus.feature.model.Operators
+import com.sms.moLotus.feature.model.VersionCode
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
 class MainViewModel constructor(private val repository: MainRepository) : ViewModel() {
     val operatorsList = MutableLiveData<List<Operators>>()
+    val versionCode = MutableLiveData<List<VersionCode>>()
     val apnDetails = MutableLiveData<APNParamDetails>()
     val loginResponse = MutableLiveData<LoginResponse>()
     val errorMessage = MutableLiveData<String>()
@@ -26,6 +28,22 @@ class MainViewModel constructor(private val repository: MainRepository) : ViewMo
             }
 
             override fun onFailure(call: Call<List<Operators>>, t: Throwable) {
+                errorMessage.postValue(t.message)
+            }
+        })
+    }
+
+    fun getVersionCode() {
+        val response = repository.getVersionCode()
+        response.enqueue(object : Callback<List<VersionCode>> {
+            override fun onResponse(
+                call: Call<List<VersionCode>>,
+                response: Response<List<VersionCode>>
+            ) {
+                versionCode.postValue(response.body())
+            }
+
+            override fun onFailure(call: Call<List<VersionCode>>, t: Throwable) {
                 errorMessage.postValue(t.message)
             }
         })

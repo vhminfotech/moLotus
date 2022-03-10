@@ -18,7 +18,10 @@
  */
 package com.sms.moLotus.interactor
 
+import android.content.Context
 import android.telephony.SmsMessage
+import android.util.Log
+import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.blocking.BlockingClient
 import com.sms.moLotus.extensions.mapNotNull
 import com.sms.moLotus.manager.NotificationManager
@@ -31,6 +34,7 @@ import timber.log.Timber
 import javax.inject.Inject
 
 class ReceiveSms @Inject constructor(
+    private val context: Context,
     private val conversationRepo: ConversationRepository,
     private val blockingClient: BlockingClient,
     private val prefs: Preferences,
@@ -89,7 +93,7 @@ class ReceiveSms @Inject constructor(
                     if (conversation.archived) conversationRepo.markUnarchived(conversation.id)
                 }
                 .map { conversation -> conversation.id } // Map to the id because [delay] will put us on the wrong thread
-                .doOnNext { threadId -> notificationManager.update(threadId) } // Update the notification
+                .doOnNext { threadId -> if(PreferenceHelper.getPreference(context, "Notification")){ notificationManager.update(threadId) } } // Update the notification
                 .doOnNext { shortcutManager.updateShortcuts() } // Update shortcuts
                 .flatMap { updateBadge.buildObservable(Unit) } // Update the badge and widget
     }

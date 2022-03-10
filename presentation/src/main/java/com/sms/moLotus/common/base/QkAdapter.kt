@@ -18,10 +18,15 @@ abstract class QkAdapter<T> : RecyclerView.Adapter<QkViewHolder>() {
         set(value) {
             if (field === value) return
 
-            val diff = DiffUtil.calculateDiff(getDiffUtilCallback(field, value))
-            field = value
-            diff.dispatchUpdatesTo(this)
-            onDatasetChanged()
+            try {
+                val diff = DiffUtil.calculateDiff(getDiffUtilCallback(field, value))
+                field = value
+                diff.dispatchUpdatesTo(this)
+                onDatasetChanged()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
 
             emptyView?.setVisible(value.isEmpty())
         }
@@ -85,10 +90,10 @@ abstract class QkAdapter<T> : RecyclerView.Adapter<QkViewHolder>() {
     private fun getDiffUtilCallback(oldData: List<T>, newData: List<T>): DiffUtil.Callback {
         return object : DiffUtil.Callback() {
             override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int) =
-                    areItemsTheSame(oldData[oldItemPosition], newData[newItemPosition])
+                areItemsTheSame(oldData[oldItemPosition], newData[newItemPosition])
 
             override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int) =
-                    areContentsTheSame(oldData[oldItemPosition], newData[newItemPosition])
+                areContentsTheSame(oldData[oldItemPosition], newData[newItemPosition])
 
             override fun getOldListSize() = oldData.size
 

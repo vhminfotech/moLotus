@@ -198,7 +198,6 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         addAudio.visibility = View.GONE
         addAudioLabel.visibility = View.GONE
 
-
         contentView.layoutTransition = LayoutTransition().apply {
             disableTransitionType(LayoutTransition.CHANGING)
         }
@@ -276,7 +275,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
 
 
         //auto cancelling recording after timeLimit (In millis)
-        record_view.timeLimit = 30000//30 sec
+        record_view.timeLimit = 15000//15 sec
 
 
         record_view.setOnRecordListener(object : OnRecordListener {
@@ -549,7 +548,9 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
 
         // Don't set the adapters unless needed
         if (state.editingMode && chips.adapter == null) chips.adapter = chipsAdapter
-        toolbar.setNavigationIcon(R.drawable.ic_baseline_clear_24);
+        toolbar.setNavigationIcon(R.drawable.ic_baseline_arrow_back_24)
+        toolbarTitle?.setTextColor(resources.getColor(R.color.white))
+//        toolbar.setNavigationIcon(R.drawable.ic_baseline_clear_24)
 
         toolbar.menu.findItem(R.id.add)?.isVisible = state.editingMode
         toolbar.menu.findItem(R.id.call)?.isVisible =
@@ -565,6 +566,8 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
             !state.editingMode && state.selectedMessages > 0
         toolbar.menu.findItem(R.id.forward)?.isVisible =
             !state.editingMode && state.selectedMessages == 1
+        /*toolbar.menu.findItem(R.id.share)?.isVisible =
+            !state.editingMode && state.selectedMessages == 1*/
 //        toolbar.menu.findItem(R.id.previous)?.isVisible = state.selectedMessages == 0 && state.query.isNotEmpty()
 //        toolbar.menu.findItem(R.id.next)?.isVisible = state.selectedMessages == 0 && state.query.isNotEmpty()
         toolbar.menu.findItem(R.id.clear)?.isVisible =
@@ -720,7 +723,6 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                 }
             }
             .let { cv -> contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, cv) }
-
         val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
             .putExtra(MediaStore.EXTRA_OUTPUT, cameraDestination)
         startActivityForResult(Intent.createChooser(intent, null), TakePhotoRequestCode)
@@ -803,19 +805,21 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
             }
             requestCode == TakePhotoRequestCode && resultCode == Activity.RESULT_OK -> {
 
-                val uri = cameraDestination?.let { FileUtils.getFileFromUri(this, it) }
+                /*val uri =cameraDestination?.let { FileUtils.getFileFromUri(this, it) }
                     ?.let { compressImage(it, this) }
-                Log.e("======", "image uri ::: $uri")
+                Log.e("======", "image uri ::: $uri")*/
 
-                uri?.let(attachmentSelectedIntent::onNext)
+                cameraDestination?.let(attachmentSelectedIntent::onNext)
             }
 
             requestCode == AttachPhotoRequestCode && resultCode == Activity.RESULT_OK -> {
-                Log.e("======", "file ::: ${data?.data}")
-                val uri = data?.data?.let { FileUtils.getFileFromUri(this, it) }
-                    ?.let { compressImage(it, this) }
-                Log.e("======", "image uri ::: $uri")
-                uri?.let(attachmentSelectedIntent::onNext)
+                Log.e("======", "uri ::: ${(data?.data)}")
+                /*val uri = data?.data?.let {
+                    Log.e("=====","file path::: ${FileUtils.getFileFromUri(this, it)}")
+                    FileUtils.getFileFromUri(this, it) }
+                    ?.let { compressImage(it, this) }*/
+//                Log.e("======", "image uri ::: $uri")
+                data?.data?.let(attachmentSelectedIntent::onNext)
 
                 /*data?.clipData?.itemCount
                     ?.let { count -> 0 until count }
@@ -829,50 +833,97 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
             }
 
             requestCode == AttachVideoRequestCode && resultCode == Activity.RESULT_OK -> {
-                var fileSize: Int? = 0
-                var finalUri: Uri? = null
-                val duration = getVideoDuration(data?.data.toString(), this)
-                //Log.e("COMPOSEActivity", "duration:: $duration")
-                if (duration > 15000) {
-                    TrimVideo.activity(data?.data.toString())
-                        .setCompressOption(CompressOption(24, 160))
-                        .setTrimType(TrimType.FIXED_DURATION)
-                        .setFixedDuration(15)
-                        .start(this)
-                } else {
-                    data?.data?.let { returnUri ->
-                        contentResolver.query(returnUri, null, null, null, null)
-                    }?.use { cursor ->
-                        val sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE)
-                        cursor.moveToFirst()
-                        fileSize = android.text.format.Formatter.formatShortFileSize(
-                            this,
-                            cursor.getLong(sizeIndex)
-                        ).filter { it.isDigit() }.toInt()
 
-                        if (fileSize!! > 1) {
-                            progressDialog.show(this@ComposeActivity)
-                            GlobalScope.launch(Dispatchers.IO) {
-                                VideoCompressor.compress(this@ComposeActivity, data.data!!)
-                            }
-                            Handler().postDelayed({
-                                progressDialog.dialog.dismiss()
-                                finalUri = VideoCompressor.newUri
-                                finalUri?.let(attachmentSelectedIntent::onNext)
-                            }, 11000)
+                Log.e("======", "file ::: ${(data?.data)}")
+                /*data?.clipData?.itemCount
+                    ?.let { count -> 0 until count }
+                    ?.mapNotNull { i ->
+                        var fileSize: Int? = 0
+                        var finalUri: Uri? = null
+                        val duration =
+                            getVideoDuration(data.clipData?.getItemAt(i)?.uri.toString(), this)
+                        //Log.e("COMPOSEActivity", "duration:: $duration")
+                        if (duration > 15000) {
+                            TrimVideo.activity(data.clipData?.getItemAt(i)?.uri.toString())
+                                .setCompressOption(CompressOption(24, 160))
+                                .setTrimType(TrimType.FIXED_DURATION)
+                                .setFixedDuration(15)
+                                .start(this)
                         } else {
-                            data.data?.let(attachmentSelectedIntent::onNext)
-                        }
+                            data.clipData?.getItemAt(i)?.uri?.let { returnUri ->
+                                contentResolver.query(returnUri, null, null, null, null)
+                            }?.use { cursor ->
+                                val sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE)
+                                cursor.moveToFirst()
+                                fileSize = android.text.format.Formatter.formatShortFileSize(
+                                    this,
+                                    cursor.getLong(sizeIndex)
+                                ).filter { it.isDigit() }.toInt()
+
+                                if (fileSize!! > 1) {
+                                    progressDialog.show(this@ComposeActivity)
+                                    GlobalScope.launch(Dispatchers.IO) {
+                                        VideoCompressor.compress(
+                                            this@ComposeActivity,
+                                            Uri.parse(data.clipData?.getItemAt(i)?.uri.toString())
+                                        )
+                                    }
+                                    Handler().postDelayed({
+                                        progressDialog.dialog.dismiss()
+                                        finalUri = VideoCompressor.newUri
+                                        finalUri?.let(attachmentSelectedIntent::onNext)
+                                    }, 11000)
+                                } else {
+                                    data.clipData?.getItemAt(i)?.uri?.let(attachmentSelectedIntent::onNext)
+                                }
+                            }
+                        }*/
+
+
+                        var fileSize: Int? = 0
+                        var finalUri: Uri? = null
+                        val duration = getVideoDuration(data?.data.toString(), this)
+                        //Log.e("COMPOSEActivity", "duration:: $duration")
+                        if (duration > 15000) {
+                            TrimVideo.activity(data?.data.toString())
+                                .setCompressOption(CompressOption(24, 160))
+                                .setTrimType(TrimType.FIXED_DURATION)
+                                .setFixedDuration(15)
+                                .start(this)
+                        } else {
+                            data?.data?.let { returnUri ->
+                                contentResolver.query(returnUri, null, null, null, null)
+                            }?.use { cursor ->
+                                val sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE)
+                                cursor.moveToFirst()
+                                fileSize = android.text.format.Formatter.formatShortFileSize(
+                                    this,
+                                    cursor.getLong(sizeIndex)
+                                ).filter { it.isDigit() }.toInt()
+
+                                if (fileSize!! > 1) {
+                                    progressDialog.show(this@ComposeActivity)
+                                    GlobalScope.launch(Dispatchers.IO) {
+                                        VideoCompressor.compress(this@ComposeActivity, data.data!!)
+                                    }
+                                    Handler().postDelayed({
+                                        progressDialog.dialog.dismiss()
+                                        finalUri = VideoCompressor.newUri
+                                        finalUri?.let(attachmentSelectedIntent::onNext)
+                                    }, 11000)
+                                } else {
+                                    data.data?.let(attachmentSelectedIntent::onNext)
+                                }
+                            }
+
+
+                        /*data?.clipData?.itemCount
+                            ?.let { count -> 0 until count }
+                            ?.mapNotNull { i ->
+                                data.clipData?.getItemAt(i)?.uri
+                            }?.forEach(attachmentSelectedIntent::onNext)
+                            ?: data?.data?.let(attachmentSelectedIntent::onNext)*/
                     }
-
-
-                    /*data?.clipData?.itemCount
-                        ?.let { count -> 0 until count }
-                        ?.mapNotNull { i ->
-                            data.clipData?.getItemAt(i)?.uri
-                        }?.forEach(attachmentSelectedIntent::onNext)
-                        ?: data?.data?.let(attachmentSelectedIntent::onNext)*/
-                }
             }
 
             requestCode == TrimVideo.VIDEO_TRIMMER_REQ_CODE && data != null -> {
@@ -889,11 +940,13 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                 val duration: Int = getVideoDuration(data?.data.toString(), this)
                 // Log.e("COMPOSEActivity", "duration:: $duration")
                 if (duration > 15000) {
-                    TrimVideo.activity(data?.data.toString())
-                        .setCompressOption(CompressOption(24, 160))
-                        .setTrimType(TrimType.FIXED_DURATION)
-                        .setFixedDuration(15)
-                        .start(this)
+                    data?.data?.let { returnUri ->
+                        TrimVideo.activity(returnUri.toString())
+                            .setCompressOption(CompressOption(24, 160))
+                            .setTrimType(TrimType.FIXED_DURATION)
+                            .setFixedDuration(15)
+                            .start(this)
+                    }
                 } else {
                     data?.data?.let { returnUri ->
                         contentResolver.query(returnUri, null, null, null, null)
@@ -944,15 +997,15 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         super.onSaveInstanceState(outState)
     }
 
-/*override fun onRestoreInstanceState(savedInstanceState: Bundle?) {
-    cameraDestination = savedInstanceState?.getParcelable(CameraDestinationKey)
-    super.onRestoreInstanceState(savedInstanceState)
-}*/
-
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
-        cameraDestination = savedInstanceState.getParcelable(CameraDestinationKey)
+        cameraDestination = savedInstanceState?.getParcelable(CameraDestinationKey)
         super.onRestoreInstanceState(savedInstanceState)
     }
+
+    /*override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        cameraDestination = savedInstanceState.getParcelable(CameraDestinationKey)
+        super.onRestoreInstanceState(savedInstanceState)
+    }*/
 
     override fun onBackPressed() = backPressedIntent.onNext(Unit)
 

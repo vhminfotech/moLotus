@@ -1,14 +1,19 @@
 package com.sms.moLotus.feature.compose
 
+import android.app.Dialog
 import android.content.Context
 import android.net.Uri
 import android.os.Vibrator
 import android.provider.ContactsContract
 import android.telephony.SmsMessage
 import android.util.Log
+import android.view.Gravity
 import android.view.View
-import android.widget.Toast
+import android.view.Window
+import android.view.WindowManager
+import android.widget.FrameLayout
 import androidx.core.content.getSystemService
+import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
 import com.sms.moLotus.common.Navigator
 import com.sms.moLotus.common.base.QkViewModel
@@ -17,10 +22,6 @@ import com.sms.moLotus.common.util.MessageDetailsFormatter
 import com.sms.moLotus.common.util.extensions.makeToast
 import com.sms.moLotus.compat.SubscriptionManagerCompat
 import com.sms.moLotus.compat.TelephonyCompat
-import com.sms.moLotus.extensions.asObservable
-import com.sms.moLotus.extensions.isImage
-import com.sms.moLotus.extensions.isVideo
-import com.sms.moLotus.extensions.mapNotNull
 import com.sms.moLotus.interactor.AddScheduledMessage
 import com.sms.moLotus.interactor.CancelDelayedMessage
 import com.sms.moLotus.interactor.DeleteMessages
@@ -55,13 +56,12 @@ import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
 import kotlinx.android.synthetic.main.compose_activity.*
-import org.reactivestreams.Subscriber
-import org.reactivestreams.Subscription
 import timber.log.Timber
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Named
-import android.icu.lang.UCharacter.GraphemeClusterBreak.L
+import com.sms.moLotus.extensions.*
+import kotlinx.android.synthetic.main.layout_send_paid_message.*
 
 
 class ComposeViewModel @Inject constructor(
@@ -375,9 +375,45 @@ class ComposeViewModel @Inject constructor(
         view.optionsItemIntent
             .filter { it == R.id.forward }
             .withLatestFrom(view.messagesSelectedIntent) { _, messages ->
+
                 messages?.firstOrNull()?.let { messageRepo.getMessage(it) }?.let { message ->
-                    val images = message.parts.filter { it.isImage() }.mapNotNull { it.getUri() }
-                    navigator.showCompose(message.getText(), images)
+                    Log.e("message", "======${message.parts}")
+                    /*for(i in message.parts){
+                        Log.e("message", "======${i.getUri()}")
+                        navigator.showCompose(message.getText(), listOf(i.getUri()))
+                    }*/
+                    for (i in message.parts) {
+                        Log.e("message", "====i==${i.getUri()}")
+                        Log.e("message", "====i==${i}")
+                        navigator.showCompose(message.getText(), listOf(i.getUri()))
+                    }
+                    /*val images =
+                        message.parts.filter { it.isVideo() || it.isVCard() || it.isAudio() || it.isImage() }
+                            .mapNotNull {
+                                Log.e("message", "==uri====${it.getUri()}")
+                                it.getUri()
+                            }*/
+
+                }
+            }
+            .autoDisposable(view.scope())
+            .subscribe { view.clearSelection() }
+
+        // Share the message
+        view.optionsItemIntent
+            .filter { it == R.id.share }
+            .withLatestFrom(view.messagesSelectedIntent) { _, messages ->
+                Log.e("message", "======${messages}")
+                messages?.firstOrNull()?.let { messageRepo.getMessage(it) }?.let { message ->
+                    Log.e("message", "======${message.parts}")
+                    val images =
+                        message.parts.filter { it.isVideo() || it.isVCard() || it.isAudio() || it.isImage() }
+                            .mapNotNull {
+                                Log.e("message", "==uri====${it.getUri()}")
+                                it.getUri()
+                            }
+                    navigator.shareToOtherApps(message.getText(), images)
+//                    navigator.shareToOtherApps(message.getText(), images)
                 }
             }
             .autoDisposable(view.scope())
@@ -482,6 +518,7 @@ class ComposeViewModel @Inject constructor(
                 cancelMessage.execute(CancelDelayedMessage.Params(message.id, message.threadId))
             }
 
+        // Set the current conversation
         // Set the current conversation
         Observables
             .combineLatest(
@@ -813,6 +850,7 @@ class ComposeViewModel @Inject constructor(
                                 SendMessage
                                     .Params(subId, threadId, address, body, attachments, delay)
                             )
+
 //                                syncManager.syncMessages()
 
                         }
@@ -825,6 +863,8 @@ class ComposeViewModel @Inject constructor(
                 if (state.editingMode) {
                     newState { copy(editingMode = false, hasError = !sendAsGroup) }
                 }
+
+
             }
             .autoDisposable(view.scope())
             .subscribe()
@@ -849,6 +889,35 @@ class ComposeViewModel @Inject constructor(
             .subscribe()
 
     }
+
+    private fun showSendPaidMessageDialog() {
+        val dialog = Dialog(context)
+        dialog.setCancelable(true)
+        dialog.setContentView(R.layout.layout_send_paid_message)
+
+        val window: Window? = dialog.window
+        val wlp: WindowManager.LayoutParams? = window?.attributes
+        wlp?.gravity = Gravity.CENTER_VERTICAL
+        wlp?.width = FrameLayout.LayoutParams.MATCH_PARENT
+        wlp?.height = FrameLayout.LayoutParams.WRAP_CONTENT
+        window?.attributes = wlp
+
+        dialog.txtOk?.setOnClickListener {
+            if (dialog.chkRemember.isChecked) {
+                PreferenceHelper.setPreference(context, "SendPaidMessage", false)
+            } else {
+                PreferenceHelper.setPreference(context, "SendPaidMessage", true)
+            }
+            dialog.dismiss()
+        }
+
+        dialog.txtCancel?.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
 
     private fun getVCard(contactData: Uri): String? {
         val lookupKey =

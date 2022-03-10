@@ -148,7 +148,7 @@ class MainActivity : QkThemedActivity(), MainView {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
-        throw RuntimeException("Test Crash")
+
         toolbarVisible = toolbar
         imgSearch.setOnClickListener {
             relSearch?.visibility = View.VISIBLE
