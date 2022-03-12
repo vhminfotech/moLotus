@@ -24,7 +24,8 @@ class SendMessage @Inject constructor(
     private val messageRepo: MessageRepository,
     private val updateBadge: UpdateBadge,
     private val syncManager: SyncRepository,
-    private val syncMessages: SyncMessages
+    private val syncMessages: SyncMessages,
+    private val syncMessage: SyncMessage
 ) : Interactor<SendMessage.Params>() {
 
     data class Params(
@@ -62,12 +63,12 @@ class SendMessage @Inject constructor(
                 else -> params.threadId
             }
         }
-//            .doOnNext { syncManager.syncMessages() }
+//      .doOnNext { syncManager.syncMessages() }
+//      .doOnNext { syncManager.syncNewMessages() }
         .doOnNext { syncMessages.execute(Unit) }
         .doOnNext { threadId -> conversationRepo.updateConversations(threadId) }
         .doOnNext { threadId -> conversationRepo.markUnarchived(threadId) }
         .flatMap { updateBadge.buildObservable(Unit) } // Update the widget
-
 
 
 }

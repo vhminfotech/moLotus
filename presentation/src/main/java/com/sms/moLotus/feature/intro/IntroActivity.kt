@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
+import android.net.ConnectivityManager
+import android.net.NetworkInfo
 import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableString
@@ -17,8 +19,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.get
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import com.google.android.material.snackbar.Snackbar
 import com.sms.moLotus.R
 import com.sms.moLotus.customview.CustomStringBuilder
+import com.sms.moLotus.extension.toast
 import com.sms.moLotus.feature.authentication.VerifyOtpActivity
 import com.sms.moLotus.feature.networkcall.ApiHelper
 import com.sms.moLotus.feature.retrofit.MainRepository
@@ -47,7 +51,24 @@ class IntroActivity : AppCompatActivity() {
         })
         viewModel.errorMessage.observe(this, {
             Log.e("=====", "errorMessage:: $it")
-            Toast.makeText(this, it.toString(),Toast.LENGTH_SHORT).show()
+            //Toast.makeText(this, it.toString(),Toast.LENGTH_SHORT).show()
+            val conMgr = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val netInfo = conMgr.activeNetworkInfo
+            if (netInfo == null) {
+                //No internet
+                Snackbar.make(
+                    findViewById(R.id.introlinearlayout),
+                    "No Internet Connection. Please turn on your internet!",
+                    Snackbar.LENGTH_INDEFINITE
+                )
+                    .setAction("Retry") {
+                        viewModel.getAllOperators()
+                    }
+                    .setActionTextColor(resources.getColor(android.R.color.holo_red_light))
+                    .show()
+            } else {
+                toast(it.toString(), Toast.LENGTH_SHORT)
+            }
         })
         viewModel.getAllOperators()
     }
@@ -75,7 +96,7 @@ class IntroActivity : AppCompatActivity() {
         })
         viewModel.errorMessage.observe(this, {
             Log.e("=====", "errorMessage:: $it")
-            Toast.makeText(this, it.toString(),Toast.LENGTH_SHORT).show()
+            toast(it.toString(), Toast.LENGTH_SHORT)
         })
         viewModel.registerUser(
             etName.text.toString(),
@@ -88,13 +109,20 @@ class IntroActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.intro_activity_main)
         CustomStringBuilder.mChatBuilder(txtMchat)
+
+
+
+
         languages.add(0, "Select carrier provider")
         viewModel =
             ViewModelProvider(this, MyViewModelFactory(MainRepository(retrofitService))).get(
                 MainViewModel::class.java
             )
 
+
+
         getOperators()
+
 
 
 
@@ -181,7 +209,7 @@ class IntroActivity : AppCompatActivity() {
             if (etName.text.isEmpty()) {
                 btnLogin.isEnabled = true
                 showToast(message = "Name is empty")
-            }else if (phone_number.text.isEmpty()) {
+            } else if (phone_number.text.isEmpty()) {
                 btnLogin.isEnabled = true
                 showToast(message = "Phone number is empty")
             } else if (carrierText == "Select carrier provider") {

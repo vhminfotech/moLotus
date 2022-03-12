@@ -22,12 +22,6 @@ import com.sms.moLotus.common.util.MessageDetailsFormatter
 import com.sms.moLotus.common.util.extensions.makeToast
 import com.sms.moLotus.compat.SubscriptionManagerCompat
 import com.sms.moLotus.compat.TelephonyCompat
-import com.sms.moLotus.interactor.AddScheduledMessage
-import com.sms.moLotus.interactor.CancelDelayedMessage
-import com.sms.moLotus.interactor.DeleteMessages
-import com.sms.moLotus.interactor.MarkRead
-import com.sms.moLotus.interactor.RetrySending
-import com.sms.moLotus.interactor.SendMessage
 import com.sms.moLotus.manager.ActiveConversationManager
 import com.sms.moLotus.manager.BillingManager
 import com.sms.moLotus.manager.PermissionManager
@@ -61,6 +55,7 @@ import java.util.*
 import javax.inject.Inject
 import javax.inject.Named
 import com.sms.moLotus.extensions.*
+import com.sms.moLotus.interactor.*
 import kotlinx.android.synthetic.main.layout_send_paid_message.*
 
 
@@ -89,7 +84,8 @@ class ComposeViewModel @Inject constructor(
     private val sendMessage: SendMessage,
     private val subscriptionManager: SubscriptionManagerCompat,
     private val syncManager: SyncRepository,
-    private val syncRepo: SyncRepository
+    private val syncRepo: SyncRepository,
+    private val syncMessage: SyncMessage
 ) : QkViewModel<ComposeView, ComposeState>(
     ComposeState(
         editingMode = threadId == 0L && addresses.isEmpty(),
@@ -856,7 +852,6 @@ class ComposeViewModel @Inject constructor(
                         }
                     }
                 }
-
                 view.setDraft("")
                 this.attachments.onNext(ArrayList())
 

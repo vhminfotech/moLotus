@@ -146,34 +146,34 @@ class Navigator @Inject constructor(
         }
     }
 
-    fun getImageMMS(context: Context, body: String? = null, images: List<Uri>? = null) {
-        ///96
-        val selectionPart = "mid=98"
-
-        val uri = Uri.parse("content://mms/part")
-        val cPart: Cursor? = context?.contentResolver.query(
-            uri, null,
-            selectionPart, null, null
-        )
-        Log.e("message", "==cPart====${cPart}")
-
-        if (cPart?.moveToFirst() == true) {
-            do {
-                val partId: String = cPart.getString(cPart.getColumnIndex("_id"))
-
-                Log.e("message", "==partId====${partId}")
-
-                val type: String = cPart.getString(cPart.getColumnIndex("ct"))
-                if ("image/jpeg" == type || "image/bmp" == type || "image/gif" == type || "image/jpg" == type || "image/png" == type) {
-                    val bitmap: Bitmap? = getMmsImage(partId)
-                    Log.e("message", "==bitmap====${bitmap}")
-                    if (bitmap != null) {
-                        onClickApp("com.sms.moLotus", bitmap)
-                    }
-                }
-            } while (cPart.moveToNext())
-        }
-    }
+//    fun getImageMMS(context: Context, body: String? = null, images: List<Uri>? = null) {
+//        ///96
+//        val selectionPart = "mid=98"
+//
+//        val uri = Uri.parse("content://mms/part")
+//        val cPart: Cursor? = context?.contentResolver.query(
+//            uri, null,
+//            selectionPart, null, null
+//        )
+//        Log.e("message", "==cPart====${cPart}")
+//
+//        if (cPart?.moveToFirst() == true) {
+//            do {
+//                val partId: String = cPart.getString(cPart.getColumnIndex("_id"))
+//
+//                Log.e("message", "==partId====${partId}")
+//
+//                val type: String = cPart.getString(cPart.getColumnIndex("ct"))
+//                if ("image/jpeg" == type || "image/bmp" == type || "image/gif" == type || "image/jpg" == type || "image/png" == type) {
+//                    val bitmap: Bitmap? = getMmsImage(partId)
+//                    Log.e("message", "==bitmap====${bitmap}")
+//                    if (bitmap != null) {
+//                        onClickApp("com.sms.moLotus", bitmap)
+//                    }
+//                }
+//            } while (cPart.moveToNext())
+//        }
+//    }
 
     private fun onClickApp(pack: String?, bitmap: Bitmap) {
         val pm: PackageManager = context.packageManager
@@ -183,7 +183,7 @@ class Navigator @Inject constructor(
             val path: String =
                 MediaStore.Images.Media.insertImage(context.contentResolver, bitmap, "Title", null)
             val imageUri = Uri.parse(path)
-            val info: PackageInfo = pm.getPackageInfo(pack, PackageManager.GET_META_DATA)
+            val info: PackageInfo? = pack?.let { pm.getPackageInfo(it, PackageManager.GET_META_DATA) }
             val waIntent = Intent(Intent.ACTION_SEND)
             waIntent.type = "image/jpg"
             waIntent.setPackage(pack)

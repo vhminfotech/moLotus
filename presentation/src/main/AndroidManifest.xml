@@ -212,6 +212,7 @@
             android:name=".receiver.MmsUpdatedReceiver"
             android:taskAffinity="com.sms.moLotus.MMS_UPDATED" />
         <receiver
+            android:exported="true"
             android:name=".receiver.MmsReceivedReceiver"
             android:taskAffinity="com.klinker.android.messaging.MMS_RECEIVED" />
         <receiver android:name=".receiver.MarkArchivedReceiver" />

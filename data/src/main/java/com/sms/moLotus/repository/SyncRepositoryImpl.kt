@@ -213,6 +213,80 @@ class SyncRepositoryImpl @Inject constructor(
         syncProgress.onNext(SyncRepository.SyncProgress.Idle)
     }
 
+    override fun syncNewMessages() {
+
+        var progress = 0
+        val realm = Realm.getDefaultInstance()
+        realm.beginTransaction()
+
+        realm.delete(MmsPart::class.java)
+
+        keys.reset()
+
+        val partsCursor = cursorToPart.getPartsCursor()
+        val messageCursor = cursorToMessage.getMessagesCursor()
+        val recipientCursor = cursorToRecipient.getRecipientCursor()
+
+        val max = (partsCursor?.count ?: 0) +
+                (messageCursor?.count ?: 0) +
+                (recipientCursor?.count ?: 0)
+        // Sync message parts
+        partsCursor?.use {
+            partsCursor.forEach {
+                tryOrNull {
+                    progress++
+                    val part = cursorToPart.map(partsCursor)
+                    realm.insertOrUpdate(part)
+                }
+            }
+        }
+
+
+        // Sync messages
+        messageCursor?.use {
+            val messageColumns = CursorToMessage.MessageColumns(messageCursor)
+            messageCursor.forEach { cursor ->
+                tryOrNull {
+                    progress++
+                 //   syncProgress.onNext(SyncRepository.SyncProgress.Running(max, progress, false))
+                    val message = cursorToMessage.map(Pair(cursor, messageColumns)).apply {
+                        if (isMms()) {
+                            parts = RealmList<MmsPart>().apply {
+                                addAll(realm.where(MmsPart::class.java)
+                                    .equalTo("messageId", contentId)
+                                    .findAll())
+                            }
+                        }
+                    }
+                    realm.insertOrUpdate(message)
+                }
+            }
+        }
+
+        recipientCursor?.use {
+            val contacts = realm.copyToRealmOrUpdate(getContacts())
+            recipientCursor.forEach { cursor ->
+                tryOrNull {
+                    progress++
+                  //  syncProgress.onNext(SyncRepository.SyncProgress.Running(max, progress, false))
+                    val recipient = cursorToRecipient.map(cursor).apply {
+                        contact = contacts.firstOrNull { contact ->
+                            contact.numbers.any { phoneNumberUtils.compare(address, it.address) }
+                        }
+                    }
+                    realm.insertOrUpdate(recipient)
+                }
+            }
+        }
+        syncProgress.onNext(SyncRepository.SyncProgress.Running(0, 0, true))
+
+        realm.insert(SyncLog())
+        realm.commitTransaction()
+        realm.close()
+
+        syncProgress.onNext(SyncRepository.SyncProgress.Idle)
+    }
+
     override fun syncMessage(uri: Uri): Message? {
 
         // If we don't have a valid type, return null

@@ -127,6 +127,7 @@ class VerifyOtpActivity : AppCompatActivity() {
         super.onBackPressed()
         finish()
         finishAffinity()
+        finishAndRemoveTask()
     }
 
 

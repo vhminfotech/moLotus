@@ -283,7 +283,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                 record_view.visibility = View.VISIBLE
                 record_view?.setBackgroundColor(resources.getColor(R.color.bubbleLight))
                 recordFile = File(
-                    Environment.getExternalStorageDirectory(), /*UUID.randomUUID().toString()*/
+                    externalCacheDir?.absolutePath, /*UUID.randomUUID().toString()*/
                     "audioTest" + ".aac"
                 )
                 if (recordFile?.exists() == true) {
@@ -722,7 +722,19 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                     )
                 }
             }
-            .let { cv -> contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, cv) }
+            .let { cv ->
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    contentResolver.insert(
+                        MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY),
+                        cv
+                    )
+                } else {
+                    contentResolver.insert(
+                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                        cv
+                    )
+                }
+            }
         val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
             .putExtra(MediaStore.EXTRA_OUTPUT, cameraDestination)
         startActivityForResult(Intent.createChooser(intent, null), TakePhotoRequestCode)
@@ -804,28 +816,71 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                     ?: hashMapOf())
             }
             requestCode == TakePhotoRequestCode && resultCode == Activity.RESULT_OK -> {
-
+                Log.e("======", "data ::: ${(data?.data)}")
+                Log.e("======", "clipdata ::: ${(data?.clipData)}")
                 /*val uri =cameraDestination?.let { FileUtils.getFileFromUri(this, it) }
                     ?.let { compressImage(it, this) }
                 Log.e("======", "image uri ::: $uri")*/
 
-                cameraDestination?.let(attachmentSelectedIntent::onNext)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    cameraDestination?.let(attachmentSelectedIntent::onNext)
+                } else {
+                    val uri = cameraDestination?.let {
+                        FileUtils.getUriRealPath(this, it)
+                    }?.let { compressImage(File(it), this) }
+                    Log.e("======", "image uri ::: $uri")
+                    uri?.let(attachmentSelectedIntent::onNext)
+                }
+//                cameraDestination?.let(attachmentSelectedIntent::onNext)
             }
 
             requestCode == AttachPhotoRequestCode && resultCode == Activity.RESULT_OK -> {
-                Log.e("======", "uri ::: ${(data?.data)}")
+
+                Log.e("======", "data ::: ${(data?.data)}")
+                Log.e("======", "clipdata ::: ${(data?.clipData)}")
+
                 /*val uri = data?.data?.let {
                     Log.e("=====","file path::: ${FileUtils.getFileFromUri(this, it)}")
                     FileUtils.getFileFromUri(this, it) }
                     ?.let { compressImage(it, this) }*/
 //                Log.e("======", "image uri ::: $uri")
-                data?.data?.let(attachmentSelectedIntent::onNext)
+                //data?.data?.let(attachmentSelectedIntent::onNext)
+                if (data?.data != null) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        data.data?.let(attachmentSelectedIntent::onNext)
+                    } else {
+                        val uri = data.data?.let {
+                            FileUtils.getUriRealPath(this, it)
+                        }?.let { compressImage(File(it), this) }
+                        Log.e("======", "image uri ::: $uri")
+                        uri?.let(attachmentSelectedIntent::onNext)
+                    }
 
-                /*data?.clipData?.itemCount
-                    ?.let { count -> 0 until count }
-                    ?.mapNotNull { i -> data.clipData?.getItemAt(i)?.uri }
-                    ?.forEach(attachmentSelectedIntent::onNext)
-                    ?: data?.data*/
+
+                } else {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        data?.clipData?.itemCount
+                            ?.let { count -> 0 until count }
+                            ?.mapNotNull { i ->
+                                data.clipData?.getItemAt(i)?.uri
+                            }?.forEach(attachmentSelectedIntent::onNext)
+                            ?: data?.data?.let(attachmentSelectedIntent::onNext)
+                    } else {
+                        var uri: Uri? = null
+
+                        data?.clipData?.itemCount
+                            ?.let { count -> 0 until count }
+                            ?.mapNotNull { i ->
+                                uri = data.clipData?.getItemAt(i)?.uri?.let {
+                                    FileUtils.getUriRealPath(this, it)
+                                }?.let { compressImage(File(it), this) }
+                            }
+
+                        uri?.let(attachmentSelectedIntent::onNext)
+                        Log.e("======", "image uri ::: $uri")
+                    }
+
+                }
             }
 
             requestCode == AttachContactRequestCode && resultCode == Activity.RESULT_OK -> {
@@ -834,96 +889,105 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
 
             requestCode == AttachVideoRequestCode && resultCode == Activity.RESULT_OK -> {
 
-                Log.e("======", "file ::: ${(data?.data)}")
+                Log.e("======", "data ::: ${(data?.data)}")
+                Log.e("======", "clipdata ::: ${(data?.clipData)}")
+                if (data?.data != null) {
+                    var fileSize: Int? = 0
+                    var finalUri: Uri? = null
+                    val duration = getVideoDuration(data?.data.toString(), this)
+                    //Log.e("COMPOSEActivity", "duration:: $duration")
+                    if (duration > 15000) {
+                        TrimVideo.activity(data?.data.toString())
+                            .setCompressOption(CompressOption(24, 160))
+                            .setTrimType(TrimType.FIXED_DURATION)
+                            .setFixedDuration(15)
+                            .start(this)
+                    } else {
+                        data?.data?.let { returnUri ->
+                            contentResolver.query(returnUri, null, null, null, null)
+                        }?.use { cursor ->
+                            val sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE)
+                            cursor.moveToFirst()
+                            fileSize = android.text.format.Formatter.formatShortFileSize(
+                                this,
+                                cursor.getLong(sizeIndex)
+                            ).filter { it.isDigit() }.toInt()
+
+                            if (fileSize!! > 1) {
+                                progressDialog.show(this@ComposeActivity)
+                                GlobalScope.launch(Dispatchers.IO) {
+                                    VideoCompressor.compress(this@ComposeActivity, data.data!!)
+                                }
+                                Handler(Looper.getMainLooper()).postDelayed({
+                                    progressDialog.dialog.dismiss()
+                                    finalUri = VideoCompressor.newUri
+                                    finalUri?.let(attachmentSelectedIntent::onNext)
+                                }, 11000)
+                            } else {
+                                data.data?.let(attachmentSelectedIntent::onNext)
+                            }
+                        }
+                    }
+                } else {
+                    data?.clipData?.itemCount
+                        ?.let { count -> 0 until count }
+                        ?.mapNotNull { i ->
+                            var fileSize: Int? = 0
+                            var finalUri: Uri? = null
+                            val duration =
+                                getVideoDuration(
+                                    data.clipData?.getItemAt(i)?.uri.toString(),
+                                    this
+                                )
+                            //Log.e("COMPOSEActivity", "duration:: $duration")
+                            if (duration > 15000) {
+                                TrimVideo.activity(data.clipData?.getItemAt(i)?.uri.toString())
+                                    .setCompressOption(CompressOption(24, 160))
+                                    .setTrimType(TrimType.FIXED_DURATION)
+                                    .setFixedDuration(15)
+                                    .start(this)
+                            } else {
+                                data.clipData?.getItemAt(i)?.uri?.let { returnUri ->
+                                    contentResolver.query(returnUri, null, null, null, null)
+                                }?.use { cursor ->
+                                    val sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE)
+                                    cursor.moveToFirst()
+                                    fileSize =
+                                        android.text.format.Formatter.formatShortFileSize(
+                                            this,
+                                            cursor.getLong(sizeIndex)
+                                        ).filter { it.isDigit() }.toInt()
+
+                                    if (fileSize!! > 1) {
+                                        progressDialog.show(this@ComposeActivity)
+                                        GlobalScope.launch(Dispatchers.IO) {
+                                            VideoCompressor.compress(
+                                                this@ComposeActivity,
+                                                Uri.parse(data.clipData?.getItemAt(i)?.uri.toString())
+                                            )
+                                        }
+                                        Handler(Looper.getMainLooper()).postDelayed({
+                                            progressDialog.dialog.dismiss()
+                                            finalUri = VideoCompressor.newUri
+                                            finalUri?.let(attachmentSelectedIntent::onNext)
+                                        }, 11000)
+                                    } else {
+                                        data.clipData?.getItemAt(i)?.uri?.let(
+                                            attachmentSelectedIntent::onNext
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                }
+
                 /*data?.clipData?.itemCount
                     ?.let { count -> 0 until count }
                     ?.mapNotNull { i ->
-                        var fileSize: Int? = 0
-                        var finalUri: Uri? = null
-                        val duration =
-                            getVideoDuration(data.clipData?.getItemAt(i)?.uri.toString(), this)
-                        //Log.e("COMPOSEActivity", "duration:: $duration")
-                        if (duration > 15000) {
-                            TrimVideo.activity(data.clipData?.getItemAt(i)?.uri.toString())
-                                .setCompressOption(CompressOption(24, 160))
-                                .setTrimType(TrimType.FIXED_DURATION)
-                                .setFixedDuration(15)
-                                .start(this)
-                        } else {
-                            data.clipData?.getItemAt(i)?.uri?.let { returnUri ->
-                                contentResolver.query(returnUri, null, null, null, null)
-                            }?.use { cursor ->
-                                val sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE)
-                                cursor.moveToFirst()
-                                fileSize = android.text.format.Formatter.formatShortFileSize(
-                                    this,
-                                    cursor.getLong(sizeIndex)
-                                ).filter { it.isDigit() }.toInt()
+                        data.clipData?.getItemAt(i)?.uri
+                    }?.forEach(attachmentSelectedIntent::onNext)
+                    ?: data?.data?.let(attachmentSelectedIntent::onNext)*/
 
-                                if (fileSize!! > 1) {
-                                    progressDialog.show(this@ComposeActivity)
-                                    GlobalScope.launch(Dispatchers.IO) {
-                                        VideoCompressor.compress(
-                                            this@ComposeActivity,
-                                            Uri.parse(data.clipData?.getItemAt(i)?.uri.toString())
-                                        )
-                                    }
-                                    Handler().postDelayed({
-                                        progressDialog.dialog.dismiss()
-                                        finalUri = VideoCompressor.newUri
-                                        finalUri?.let(attachmentSelectedIntent::onNext)
-                                    }, 11000)
-                                } else {
-                                    data.clipData?.getItemAt(i)?.uri?.let(attachmentSelectedIntent::onNext)
-                                }
-                            }
-                        }*/
-
-
-                        var fileSize: Int? = 0
-                        var finalUri: Uri? = null
-                        val duration = getVideoDuration(data?.data.toString(), this)
-                        //Log.e("COMPOSEActivity", "duration:: $duration")
-                        if (duration > 15000) {
-                            TrimVideo.activity(data?.data.toString())
-                                .setCompressOption(CompressOption(24, 160))
-                                .setTrimType(TrimType.FIXED_DURATION)
-                                .setFixedDuration(15)
-                                .start(this)
-                        } else {
-                            data?.data?.let { returnUri ->
-                                contentResolver.query(returnUri, null, null, null, null)
-                            }?.use { cursor ->
-                                val sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE)
-                                cursor.moveToFirst()
-                                fileSize = android.text.format.Formatter.formatShortFileSize(
-                                    this,
-                                    cursor.getLong(sizeIndex)
-                                ).filter { it.isDigit() }.toInt()
-
-                                if (fileSize!! > 1) {
-                                    progressDialog.show(this@ComposeActivity)
-                                    GlobalScope.launch(Dispatchers.IO) {
-                                        VideoCompressor.compress(this@ComposeActivity, data.data!!)
-                                    }
-                                    Handler().postDelayed({
-                                        progressDialog.dialog.dismiss()
-                                        finalUri = VideoCompressor.newUri
-                                        finalUri?.let(attachmentSelectedIntent::onNext)
-                                    }, 11000)
-                                } else {
-                                    data.data?.let(attachmentSelectedIntent::onNext)
-                                }
-                            }
-
-
-                        /*data?.clipData?.itemCount
-                            ?.let { count -> 0 until count }
-                            ?.mapNotNull { i ->
-                                data.clipData?.getItemAt(i)?.uri
-                            }?.forEach(attachmentSelectedIntent::onNext)
-                            ?: data?.data?.let(attachmentSelectedIntent::onNext)*/
-                    }
             }
 
             requestCode == TrimVideo.VIDEO_TRIMMER_REQ_CODE && data != null -> {
@@ -1002,10 +1066,10 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         super.onRestoreInstanceState(savedInstanceState)
     }
 
-    /*override fun onRestoreInstanceState(savedInstanceState: Bundle) {
-        cameraDestination = savedInstanceState.getParcelable(CameraDestinationKey)
-        super.onRestoreInstanceState(savedInstanceState)
-    }*/
+/*override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+    cameraDestination = savedInstanceState.getParcelable(CameraDestinationKey)
+    super.onRestoreInstanceState(savedInstanceState)
+}*/
 
     override fun onBackPressed() = backPressedIntent.onNext(Unit)
 

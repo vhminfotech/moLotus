@@ -13,9 +13,11 @@ import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
+import com.google.android.material.snackbar.Snackbar
 import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
 import com.sms.moLotus.common.Navigator
+import com.sms.moLotus.extension.toast
 import com.sms.moLotus.feature.intro.IntroActivity2
 import com.sms.moLotus.feature.retrofit.MainRepository
 import com.sms.moLotus.feature.retrofit.MainViewModel
@@ -152,7 +154,16 @@ class AppSettingsActivity : AppCompatActivity() {
         })
         viewModel.errorMessage.observe(this, {
             Log.e("=====", "errorMessage:: $it")
-            Toast.makeText(this, it.toString(), Toast.LENGTH_SHORT).show()
+            Snackbar.make(
+                findViewById(R.id.introlinearlayout),
+                "No Internet Connection. Please turn on your internet!",
+                Snackbar.LENGTH_INDEFINITE
+            )
+                .setAction("Retry") {
+                    viewModel.getVersionCode()
+                }
+                .setActionTextColor(resources.getColor(android.R.color.holo_red_light))
+                .show()
         })
         viewModel.getVersionCode()
     }

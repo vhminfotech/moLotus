@@ -18,6 +18,8 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.lang.Exception
+import java.text.SimpleDateFormat
+import java.util.*
 
 object Utils {
     fun getVideoContentUri(file: File, context: Context): Uri? {
@@ -110,14 +112,28 @@ object Utils {
         val builder: StrictMode.VmPolicy.Builder = StrictMode.VmPolicy.Builder()
         StrictMode.setVmPolicy(builder.build())
         val filePath = file.absolutePath
-        val cursor: Cursor? = context.contentResolver.query(
-            MediaStore.Images.Media.EXTERNAL_CONTENT_URI, arrayOf(MediaStore.Images.Media._ID),
-            MediaStore.Images.Media.DATA + "=? ", arrayOf(filePath), null
-        )
+        val cursor: Cursor? =
+            context.contentResolver.query(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI, arrayOf(
+                    MediaStore.Images.Media.DISPLAY_NAME,
+                    MediaStore.Images.Media.SIZE,
+                    MediaStore.Images.Media.DATE_TAKEN,
+                    MediaStore.Images.Media._ID,
+                    MediaStore.MediaColumns.DATA
+                ),
+                MediaStore.Images.Media.DATA + "=? ", arrayOf(filePath), null
+            )
         return if (cursor != null && cursor.moveToFirst()) {
-            val id = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns._ID))
+            val id = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA))
             cursor.close()
-            Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "" + id)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                Uri.withAppendedPath(
+                    MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY),
+                    "" + id
+                )
+            } else {
+                Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "" + id)
+            }
         } else {
             if (file.exists()) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -133,7 +149,6 @@ object Utils {
                     )
                     picDetail.put(MediaStore.Images.Media.IS_PENDING, 0)
                     return resolver.insert(picCollection, picDetail)
-
                 } else {
                     val values = ContentValues()
                     values.put(MediaStore.Images.Media.DATA, filePath)
@@ -177,15 +192,26 @@ object Utils {
             inputStream.close()
 
             val compressedFile =
-                File(Environment.getExternalStorageDirectory().absolutePath + "/" + Environment.DIRECTORY_PICTURES + "/imageCompress.jpg")
+                File(
+                    context.externalCacheDir?.absolutePath + "/" + SimpleDateFormat(
+                        "yyyyMMdd_HHmmss",
+                        Locale.getDefault()
+                    ).format(
+                        Date()
+                    ) + ".jpg"
+                )
+
             if (compressedFile.exists()) {
                 compressedFile.delete()
                 compressedFile.createNewFile()
+                val outputStream = FileOutputStream(compressedFile)
+                selectedBitmap?.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
             } else {
                 compressedFile.createNewFile()
+                val outputStream = FileOutputStream(compressedFile)
+                selectedBitmap?.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
             }
-            val outputStream = FileOutputStream(compressedFile)
-            selectedBitmap?.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+
             getImageContentUri(compressedFile, context)
         } catch (e: Exception) {
             e.printStackTrace()

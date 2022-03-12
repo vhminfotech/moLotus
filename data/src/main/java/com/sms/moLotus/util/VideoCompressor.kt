@@ -27,7 +27,7 @@ object VideoCompressor {
             context = context, // => This is required
             uris = listOf(uri), // => Source can be provided as content uris
             isStreamable = true,
-            saveAt = Environment.DIRECTORY_MOVIES + "/VideoCompress", // => the directory to save the compressed video(s)
+            saveAt = context.cacheDir?.absolutePath /*Environment.DIRECTORY_MOVIES + "/VideoCompress"*/, // => the directory to save the compressed video(s)
             listener = object : CompressionListener {
                 override fun onProgress(index: Int, percent: Float) {
                     // Update UI with progress value
@@ -110,7 +110,6 @@ object VideoCompressor {
                     picDetail.put(MediaStore.Video.Media.IS_PENDING, 0)
                     val finalUri: Uri? = resolver.insert(picCollection, picDetail)
                     finalUri
-
                 } else {
                     val values = ContentValues()
                     values.put(MediaStore.Video.Media.DATA, filePath)

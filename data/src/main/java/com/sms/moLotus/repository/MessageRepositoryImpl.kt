@@ -357,7 +357,27 @@ class MessageRepositoryImpl @Inject constructor(
                 val message = insertSentSms(subId, threadId, addresses.first(), strippedBody, now())
                 sendSms(message)
             }
-        } else { // MMS
+        } /*else if (attachments.isNotEmpty()) {
+
+
+            attachments
+                .mapNotNull { attachment -> attachment as? Attachment.Contact }
+                .map { attachment -> attachment.vCard.toByteArray() }
+                .map { vCard ->
+                    val transaction = Transaction(context)
+                    val recipients = addresses.map(phoneNumberUtils::normalizeNumber)
+                    transaction.sendNewMessage(
+                        subId,
+                        threadId,
+                        recipients,
+                        listOf(MMSPart("contact", ContentType.TEXT_VCARD, vCard)),
+                        null,
+                        null
+                    )
+                }
+
+
+        }*/ else { // MMS
             val parts = arrayListOf<MMSPart>()
 
             val maxWidth =
@@ -457,19 +477,19 @@ class MessageRepositoryImpl @Inject constructor(
 
                             },5000)*/
 
-                          /*  uri = com.sms.moLotus.util.VideoCompressor(context, uri).compress()!!
-                           return Handler().postDelayed({*/
+                            /*  uri = com.sms.moLotus.util.VideoCompressor(context, uri).compress()!!
+                             return Handler().postDelayed({*/
                             //GlobalScope.launch {
 
-                                ImageUtils.getScaledVideo(context, uri/*, maxWidth, maxHeight*/)
-                          //  }
-                      //   },5000).notifyAll()
+                            ImageUtils.getScaledVideo(context, uri/*, maxWidth, maxHeight*/)
+                            //  }
+                            //   },5000).notifyAll()
 
                         }
                         attachment.isAudio(context) -> {
                             Log.e("ImageUtils", "getAudio uri ::$uri")
 
-                            ImageUtils.getAudio(context,uri)
+                            ImageUtils.getAudio(context, uri)
                         }
                         else -> {
                             Log.e("ImageUtils", "getImage ::$uri")
@@ -607,20 +627,20 @@ class MessageRepositoryImpl @Inject constructor(
                                 byteBuffer.write(buffer, 0, len)
                             }
                             byteBuffer.toByteArray()*/
-                           /* uri = com.sms.moLotus.util.VideoCompressor(context, uri).compress()!!
-                            Log.e("TAG","uri:: $uri")
+                            /* uri = com.sms.moLotus.util.VideoCompressor(context, uri).compress()!!
+                             Log.e("TAG","uri:: $uri")
 
-                            val handler =  Handler().postDelayed({
-                                Log.e("TAG","delay")*/
-                                ImageUtils.getScaledVideo(context, uri/*, width, height, 80*/)
-                           /* },5000)
-                            Log.e("TAG","handler:: $handler")
+                             val handler =  Handler().postDelayed({
+                                 Log.e("TAG","delay")*/
+                            ImageUtils.getScaledVideo(context, uri/*, width, height, 80*/)
+                            /* },5000)
+                             Log.e("TAG","handler:: $handler")
 
-                            return handler.notifyAll()*/
+                             return handler.notifyAll()*/
 
-                        }else if (attachment.isAudio(context)) {
+                        } else if (attachment.isAudio(context)) {
                             Log.e("ImageUtils", "getAudio uri ::$uri")
-                            ImageUtils.getAudio(context,uri)
+                            ImageUtils.getAudio(context, uri)
                         } else {
                             ImageUtils.getScaledImage(context, uri, newWidth, newHeight, 80)
                         }
@@ -636,15 +656,20 @@ class MessageRepositoryImpl @Inject constructor(
             }
 
             imageBytesByAttachment.forEach { (attachment, bytes) ->
-                parts += if (attachment.isGif(context)) {
-                    /* true ->*/ MMSPart("image", ContentType.IMAGE_GIF, bytes)
-                    //false -> MMSPart("image", ContentType.IMAGE_JPEG, bytes)
-                } else if (attachment.isVideo(context)) {
-                    MMSPart("video", ContentType.VIDEO_MP4, bytes)
-                }else if (attachment.isAudio(context)) {
-                    MMSPart("audio", ContentType.AUDIO_AAC, bytes)
-                } else {
-                    MMSPart("image", ContentType.IMAGE_JPEG, bytes)
+                parts += when {
+                    attachment.isGif(context) -> {
+                        /* true ->*/ MMSPart("image", ContentType.IMAGE_GIF, bytes)
+                        //false -> MMSPart("image", ContentType.IMAGE_JPEG, bytes)
+                    }
+                    attachment.isVideo(context) -> {
+                        MMSPart("video", ContentType.VIDEO_MP4, bytes)
+                    }
+                    attachment.isAudio(context) -> {
+                        MMSPart("audio", ContentType.AUDIO_AAC, bytes)
+                    }
+                    else -> {
+                        MMSPart("image", ContentType.IMAGE_JPEG, bytes)
+                    }
                 }
             }
 
@@ -795,6 +820,7 @@ class MessageRepositoryImpl @Inject constructor(
         uri?.lastPathSegment?.toLong()?.let { id ->
             realm.executeTransaction { managedMessage?.takeIf { it.isValid }?.contentId = id }
         }
+
         realm.close()
 
         // On some devices, we can't obtain a threadId until after the first message is sent in a
