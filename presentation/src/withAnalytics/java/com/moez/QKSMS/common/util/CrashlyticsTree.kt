@@ -1,4 +1,4 @@
-package com.moez.QKSMS.common.util
+package com.sms.moLotus.common.util
 
 import android.util.Log
 import com.google.firebase.crashlytics.FirebaseCrashlytics

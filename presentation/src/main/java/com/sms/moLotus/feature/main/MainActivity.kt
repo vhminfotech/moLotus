@@ -530,7 +530,11 @@ class MainActivity : QkThemedActivity(), MainView {
     }
 
     override fun onBackPressed() {
-        backPressedSubject.onNext(NavItem.BACK)
+        super.onBackPressed()
     }
+
+    /*override fun onBackPressed() {
+         backPressedSubject.onNext(NavItem.BACK)
+    }*/
 
 }

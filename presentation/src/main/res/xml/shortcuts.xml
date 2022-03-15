@@ -11,9 +11,9 @@
         android:shortcutShortLabel="@string/shortcut_compose_short_label">
 
         <intent
-            android:action="com.moez.QKSMS.START"
-            android:targetClass="com.moez.QKSMS.feature.compose.ComposeActivity"
-            android:targetPackage="com.moez.QKSMS" />
+            android:action="com.sms.moLotus.START"
+            android:targetClass="com.sms.moLotus.feature.compose.ComposeActivity"
+            android:targetPackage="com.sms.moLotus" />
 
         <categories android:name="android.shortcut.conversation" />
 

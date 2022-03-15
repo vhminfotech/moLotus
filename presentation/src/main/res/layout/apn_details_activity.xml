@@ -432,7 +432,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:weightSum="2">
+                >
 
                 <LinearLayout
                     android:id="@+id/goto_setting"
@@ -473,6 +473,7 @@
                     android:id="@+id/skip"
                     android:layout_width="50dp"
                     android:layout_height="48dp"
+
                     android:layout_gravity="bottom|end"
                     android:layout_margin="16dp"
                     android:layout_weight="1"

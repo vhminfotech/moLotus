@@ -18,6 +18,7 @@ import com.google.android.gms.tasks.Task
 import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
 import com.sms.moLotus.customview.CustomStringBuilder
+import com.sms.moLotus.extension.toast
 import com.sms.moLotus.feature.intro.APNDetailsActivity
 import com.sms.moLotus.feature.networkcall.ApiHelper
 import kotlinx.android.synthetic.main.activity_verify_otp.*
@@ -27,8 +28,7 @@ import kotlinx.android.synthetic.main.intro_activity_main.*
 class VerifyOtpActivity : AppCompatActivity() {
     private var mySMSBroadcastReceiver: MySMSBroadcastReceiver? = null
     private var phoneNo: String? = null
-    private var carrierText: String? = null
-    private var carrierId: Int? = 0
+
     private var api: ApiHelper? = null
     var isOTPVerified: Boolean? = false
 
@@ -38,12 +38,7 @@ class VerifyOtpActivity : AppCompatActivity() {
         setContentView(R.layout.activity_verify_otp)
         CustomStringBuilder.mChatBuilder(txtMchat)
 
-
         phoneNo = intent?.getStringExtra("PhoneNumber")
-        carrierText = intent?.getStringExtra("CarrierText")
-        carrierId = intent?.getIntExtra("CarrierId", 0)
-
-        //Log.e("===========", "phoneNo::: $phoneNo === carrierText::: $carrierText")
         txtOTP?.text = "Please type the verification code sent to $phoneNo"
         mySMSBroadcastReceiver = MySMSBroadcastReceiver()
         api = ApiHelper(this)
@@ -71,6 +66,7 @@ class VerifyOtpActivity : AppCompatActivity() {
             }
         })
         btnResendOtp?.setOnClickListener {
+            toast("OTP sent successfully.!!")
             //carrierId?.let { it1 -> requestOtp(phoneNo.toString(), carrierText.toString(), it1) }
         }
 
@@ -83,16 +79,8 @@ class VerifyOtpActivity : AppCompatActivity() {
                 PreferenceHelper.setPreference(this, "UserLoggedIn", true)
                 PreferenceHelper.setPreference(this, "INTRO", true)
                 PreferenceHelper.setStringPreference(this, "PhoneNumber", phoneNo.toString())
-                PreferenceHelper.setStringPreference(
-                    this,
-                    "CarrierText",
-                    carrierText.toString()
-                )
-                PreferenceHelper.setStringPreference(this, "CarrierId", carrierId.toString())
                 val intent = Intent(this, APNDetailsActivity::class.java)
                 intent.putExtra("PhoneNumber", phoneNo)
-                intent.putExtra("CarrierText", carrierText)
-                intent.putExtra("CarrierId", carrierId)
                 startActivity(intent)
             } else {
                 Toast.makeText(
@@ -146,16 +134,8 @@ class VerifyOtpActivity : AppCompatActivity() {
                     PreferenceHelper.setPreference(this, "UserLoggedIn", true)
                     PreferenceHelper.setPreference(this, "INTRO", true)
                     PreferenceHelper.setStringPreference(this, "PhoneNumber", phoneNumber)
-                    PreferenceHelper.setStringPreference(
-                        this,
-                        "CarrierText",
-                        carrierText.toString()
-                    )
-                    PreferenceHelper.setStringPreference(this, "CarrierId", carrierId.toString())
-                    val intent = Intent(this, APNDetailsActivity::class.java)
+                     val intent = Intent(this, APNDetailsActivity::class.java)
                     intent.putExtra("PhoneNumber", phoneNumber)
-                    intent.putExtra("CarrierText", carrierText)
-                    intent.putExtra("CarrierId", carrierId)
                     startActivity(intent)
                 } else {
                     isOTPVerified = true

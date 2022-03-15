@@ -24,6 +24,7 @@ import com.sms.moLotus.common.base.QkViewHolder
 import com.sms.moLotus.common.util.Colors
 import com.sms.moLotus.common.util.extensions.setVisible
 import com.sms.moLotus.common.widget.BubbleImageView
+import com.sms.moLotus.extensions.isAudio
 import com.sms.moLotus.extensions.isImage
 import com.sms.moLotus.extensions.isVideo
 import com.sms.moLotus.model.Message

@@ -21,7 +21,7 @@ package com.sms.moLotus.manager
 interface WidgetManager {
 
     companion object {
-        const val ACTION_NOTIFY_DATASET_CHANGED = "com.moez.QKSMS.intent.action.ACTION_NOTIFY_DATASET_CHANGED"
+        const val ACTION_NOTIFY_DATASET_CHANGED = "com.sms.moLotus.intent.action.ACTION_NOTIFY_DATASET_CHANGED"
     }
 
     fun updateUnreadCount()

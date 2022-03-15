@@ -1,5 +1,6 @@
 package com.sms.moLotus.feature.compose
 
+import android.app.Activity
 import android.app.Dialog
 import android.content.Context
 import android.net.Uri
@@ -12,6 +13,7 @@ import android.view.View
 import android.view.Window
 import android.view.WindowManager
 import android.widget.FrameLayout
+import android.widget.Toast
 import androidx.core.content.getSystemService
 import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
@@ -67,6 +69,7 @@ class ComposeViewModel @Inject constructor(
     @Named("attachments") private val sharedAttachments: Attachments,
     private val contactRepo: ContactRepository,
     private val context: Context,
+    private val activity: ComposeActivity,
     private val activeConversationManager: ActiveConversationManager,
     private val addScheduledMessage: AddScheduledMessage,
     private val billingManager: BillingManager,
@@ -280,6 +283,7 @@ class ComposeViewModel @Inject constructor(
                 view.showKeyboard()
             }
 
+
         // Set the contact suggestions list to visible when the add button is pressed
         view.optionsItemIntent
             .filter { it == R.id.add }
@@ -373,16 +377,10 @@ class ComposeViewModel @Inject constructor(
             .withLatestFrom(view.messagesSelectedIntent) { _, messages ->
 
                 messages?.firstOrNull()?.let { messageRepo.getMessage(it) }?.let { message ->
-                    Log.e("message", "======${message.parts}")
-                    /*for(i in message.parts){
-                        Log.e("message", "======${i.getUri()}")
-                        navigator.showCompose(message.getText(), listOf(i.getUri()))
-                    }*/
-                    for (i in message.parts) {
-                        Log.e("message", "====i==${i.getUri()}")
-                        Log.e("message", "====i==${i}")
-                        navigator.showCompose(message.getText(), listOf(i.getUri()))
-                    }
+                    val images =
+                        message.parts.filter { it.isImage() || it.isAudio() || it.isVideo() }
+                            .mapNotNull { it.getUri() }
+                    navigator.showCompose(message.getText(), images)
                     /*val images =
                         message.parts.filter { it.isVideo() || it.isVCard() || it.isAudio() || it.isImage() }
                             .mapNotNull {
@@ -475,14 +473,20 @@ class ComposeViewModel @Inject constructor(
         // Media attachment clicks
         view.messagePartClickIntent
             .mapNotNull(messageRepo::getPart)
-            .filter { part -> part.isImage() || part.isVideo() }
+            .filter { part -> part.isImage() || part.isVideo() || part.isAudio() }
             .autoDisposable(view.scope())
-            .subscribe { part -> navigator.showMedia(part.id) }
+            .subscribe { part ->
+                if (part.isAudio()) {
+                    navigator.showAudioMedia(part.getUri())
+                } else {
+                    navigator.showMedia(part.id)
+                }
+            }
 
         // Non-media attachment clicks
         view.messagePartClickIntent
             .mapNotNull(messageRepo::getPart)
-            .filter { part -> !part.isImage() && !part.isVideo() }
+            .filter { part -> !part.isImage() && !part.isVideo() && !part.isAudio() }
             .autoDisposable(view.scope())
             .subscribe { part ->
                 if (permissionManager.hasStorage()) {
@@ -615,7 +619,7 @@ class ComposeViewModel @Inject constructor(
 //                .autoDisposable(view.scope())
 //                .subscribe { view.requestDatePicker() }
 
-        // A photo/video was selected
+//        // A photo/video was selected
         Observable.merge(
             view.attachmentSelectedIntent.map { uri -> Attachment.Image(uri) },
             view.inputContentIntent.map { inputContent -> Attachment.Image(inputContent = inputContent) })
@@ -759,7 +763,39 @@ class ComposeViewModel @Inject constructor(
             .autoDisposable(view.scope())
             .subscribe()
 
+
         // Send a message when the send button is clicked, and disable editing mode if it's enabled
+        view.sendIntent
+            .filter { permissionManager.isDefaultSms().also { if (!it) view.requestDefaultSms() } }
+            .filter { permissionManager.hasSendSms().also { if (!it) view.requestSmsPermission() } }
+            .withLatestFrom(view.textChangedIntent) { _, body -> body }
+            .map { body -> body.toString() }
+            .withLatestFrom(
+                state,
+                attachments,
+                conversation,
+                selectedChips
+            ) { body, state, attachments,
+                conversation, chips ->
+
+                if (PreferenceHelper.getPreference(context, "SendPaidMessage")) {
+                    showSendPaidMessageDialog(view, state, attachments, conversation, chips, body)
+                } else {
+                    sendMessage(view, state, attachments, conversation, chips, body)
+                }
+
+
+            }.observeOn(AndroidSchedulers.mainThread()).doOnNext {
+                /*if (messageRepo.markDeliveredStatus()) {
+                    Toast.makeText(context, "Message Delivered", Toast.LENGTH_SHORT).show()
+                    Log.e("========", "Message Delivered!!!!!!!!!!!!")
+                }*/
+            }
+            .autoDisposable(view.scope())
+            .subscribe()
+
+
+        /*// Send a message when the send button is clicked, and disable editing mode if it's enabled
         view.sendIntent
             .filter { permissionManager.isDefaultSms().also { if (!it) view.requestDefaultSms() } }
             .filter { permissionManager.hasSendSms().also { if (!it) view.requestSmsPermission() } }
@@ -862,7 +898,7 @@ class ComposeViewModel @Inject constructor(
 
             }
             .autoDisposable(view.scope())
-            .subscribe()
+            .subscribe()*/
 
         // View moLotus+
 //        view.viewQksmsPlusIntent
@@ -885,8 +921,106 @@ class ComposeViewModel @Inject constructor(
 
     }
 
-    private fun showSendPaidMessageDialog() {
-        val dialog = Dialog(context)
+    private fun sendMessage(
+        view: ComposeView,
+        state: ComposeState,
+        attachments: List<Attachment>,
+        conversation: Conversation,
+        chips: List<Recipient>,
+        body: String
+    ) {
+        val subId = state.subscription?.subscriptionId ?: -1
+        val addresses = when (conversation.recipients.isNotEmpty()) {
+            true -> conversation.recipients.map { it.address }
+            false -> chips.map { chip -> chip.address }
+        }
+        val delay = when (prefs.sendDelay.get()) {
+            Preferences.SEND_DELAY_SHORT -> 3000
+            Preferences.SEND_DELAY_MEDIUM -> 5000
+            Preferences.SEND_DELAY_LONG -> 10000
+            else -> 0
+        }
+        val sendAsGroup = !state.editingMode || state.sendAsGroup
+
+        when {
+            // Scheduling a message
+            state.scheduled != 0L -> {
+                newState { copy(scheduled = 0) }
+                val uris = attachments
+                    .mapNotNull { it as? Attachment.Image }
+                    .map { it.getUri() }
+                    .map { it.toString() }
+                val params = AddScheduledMessage
+                    .Params(state.scheduled, subId, addresses, sendAsGroup, body, uris)
+                addScheduledMessage.execute(params)
+                context.makeToast(R.string.compose_scheduled_toast)
+            }
+
+            // Sending a group message
+            sendAsGroup -> {
+                sendMessage.execute(
+                    SendMessage
+                        .Params(subId, conversation.id, addresses, body, attachments, delay)
+                )
+            }
+
+            // Sending a message to an existing conversation with one recipient
+            conversation.recipients.size == 1 -> {
+                val address = conversation.recipients.map { it.address }
+                sendMessage.execute(
+                    SendMessage.Params(
+                        subId, threadId, address, body,
+                        attachments, delay
+                    )
+                )
+            }
+
+            // Create a new conversation with one address
+            addresses.size == 1 -> {
+                sendMessage.execute(
+                    SendMessage
+                        .Params(subId, threadId, addresses, body, attachments, delay)
+                )
+            }
+
+            // Send a message to multiple addresses
+            else -> {
+                addresses.forEach { addr ->
+                    val threadId = tryOrNull(false) {
+                        TelephonyCompat.getOrCreateThreadId(context, addr)
+                    } ?: 0
+                    val address = listOf(
+                        conversationRepo
+                            .getConversation(threadId)?.recipients?.firstOrNull()?.address ?: addr
+                    )
+                    sendMessage.execute(
+                        SendMessage
+                            .Params(subId, threadId, address, body, attachments, delay)
+                    )
+                }
+            }
+        }
+
+        view.setDraft("")
+        this.attachments.onNext(ArrayList())
+
+        if (state.editingMode) {
+            newState { copy(editingMode = false, hasError = !sendAsGroup) }
+        }
+
+
+    }
+
+
+    private fun showSendPaidMessageDialog(
+        view: ComposeView,
+        state: ComposeState,
+        attachments: List<Attachment>,
+        conversation: Conversation,
+        chips: List<Recipient>,
+        body: String
+    ) {
+        val dialog = Dialog(activity)
         dialog.setCancelable(true)
         dialog.setContentView(R.layout.layout_send_paid_message)
 
@@ -903,6 +1037,8 @@ class ComposeViewModel @Inject constructor(
             } else {
                 PreferenceHelper.setPreference(context, "SendPaidMessage", true)
             }
+            sendMessage(view, state, attachments, conversation, chips, body)
+
             dialog.dismiss()
         }
 

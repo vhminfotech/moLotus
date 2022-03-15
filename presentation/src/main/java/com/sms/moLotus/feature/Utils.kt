@@ -22,9 +22,9 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 object Utils {
-    fun getVideoContentUri(file: File, context: Context): Uri? {
-        val filePath = file.absolutePath
-        val cursor: Cursor? = context.contentResolver.query(
+    fun getVideoContentUri(imageFile: File, context: Context): Uri? {
+        val filePath = imageFile.absolutePath
+        val cursor = context.contentResolver.query(
             MediaStore.Video.Media.EXTERNAL_CONTENT_URI, arrayOf(MediaStore.Video.Media._ID),
             MediaStore.Video.Media.DATA + "=? ", arrayOf(filePath), null
         )
@@ -33,22 +33,24 @@ object Utils {
             cursor.close()
             Uri.withAppendedPath(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, "" + id)
         } else {
-            if (file.exists()) {
+            if (imageFile.exists()) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    val resolver: ContentResolver = context.contentResolver
+                    val resolver = context.contentResolver
                     val picCollection = MediaStore.Video.Media
                         .getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
                     val picDetail = ContentValues()
-                    picDetail.put(MediaStore.Video.Media.DISPLAY_NAME, file.name)
+                    picDetail.put(MediaStore.Video.Media.DISPLAY_NAME, imageFile.name)
                     picDetail.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
                     picDetail.put(
                         MediaStore.Video.Media.RELATIVE_PATH,
-                        Environment.DIRECTORY_MOVIES
+                        "Movies/" + UUID.randomUUID().toString() + ".mp4"
                     )
+                    picDetail.put(MediaStore.Video.Media.IS_PENDING, 1)
+                    val finaluri = resolver.insert(picCollection, picDetail)
+                    picDetail.clear()
                     picDetail.put(MediaStore.Video.Media.IS_PENDING, 0)
-                    val finalUri: Uri? = resolver.insert(picCollection, picDetail)
-                    finalUri
-
+                    resolver.update(picCollection, picDetail, null, null)
+                    finaluri
                 } else {
                     val values = ContentValues()
                     values.put(MediaStore.Video.Media.DATA, filePath)
@@ -62,19 +64,130 @@ object Utils {
             }
         }
     }
-
-    fun getAudioContentUri(file: File, context: Context): Uri? {
-        val builder: StrictMode.VmPolicy.Builder = StrictMode.VmPolicy.Builder()
-        StrictMode.setVmPolicy(builder.build())
-        val filePath = file.absolutePath
+    /*fun getVideoContentUri(file: File, context: Context): Uri? {
+        *//*val filePath = file.absolutePath
         val cursor: Cursor? = context.contentResolver.query(
-            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, arrayOf(MediaStore.Audio.Media._ID),
-            MediaStore.Audio.Media.DATA + "=? ", arrayOf(filePath), null
+            MediaStore.Video.Media.EXTERNAL_CONTENT_URI, arrayOf(MediaStore.Video.Media._ID),
+            MediaStore.Video.Media.DATA + "=? ", arrayOf(filePath), null
         )
         return if (cursor != null && cursor.moveToFirst()) {
             val id = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns._ID))
             cursor.close()
-            Uri.withAppendedPath(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, "" + id)
+            Uri.withAppendedPath(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, "" + id)
+        } else {*//*
+        val builder: StrictMode.VmPolicy.Builder = StrictMode.VmPolicy.Builder()
+        StrictMode.setVmPolicy(builder.build())
+        val filePath = file.absolutePath
+        val cursor: Cursor? =
+            context.contentResolver.query(
+                MediaStore.Video.Media.EXTERNAL_CONTENT_URI, arrayOf(
+                    MediaStore.Video.Media.DISPLAY_NAME,
+                    MediaStore.Video.Media.SIZE,
+                    MediaStore.Video.Media.DATE_TAKEN,
+                    MediaStore.Video.Media._ID,
+                    MediaStore.MediaColumns.DATA
+                ),
+                MediaStore.Video.Media.DATA + "=? ", arrayOf(filePath), null
+            )
+        return if (cursor != null && cursor.moveToFirst()) {
+            val id = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA))
+            cursor.close()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                Uri.withAppendedPath(
+                    MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY),
+                    "" + id
+                )
+            } else {
+                Uri.withAppendedPath(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, "" + id)
+            }
+        } else {
+            if (file.exists()) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    *//* val resolver: ContentResolver = context.contentResolver
+                     val picCollection = MediaStore.Video.Media
+                         .getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+                     val picDetail = ContentValues()
+                     picDetail.put(MediaStore.Video.Media.DISPLAY_NAME, file.name)
+                     picDetail.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
+                     picDetail.put(
+                         MediaStore.Video.Media.RELATIVE_PATH,
+                         Environment.DIRECTORY_MOVIES
+                     )
+                     picDetail.put(MediaStore.Video.Media.IS_PENDING, 0)
+                     val finalUri: Uri? = resolver.insert(picCollection, picDetail)
+                     finalUri*//*
+                    val resolver: ContentResolver = context.contentResolver
+                    val picCollection = MediaStore.Video.Media
+                        .getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+                    val picDetail = ContentValues()
+                    picDetail.put(MediaStore.Video.Media.DISPLAY_NAME, file.name)
+                    picDetail.put(MediaStore.Video.Media.TITLE, file.name)
+                    picDetail.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
+                    picDetail.put(
+                        MediaStore.Video.Media.RELATIVE_PATH,
+                        Environment.DIRECTORY_MOVIES
+                    )
+                    picDetail.put(MediaStore.Video.Media.IS_PENDING, 1)
+                    val uri = resolver.insert(picCollection, picDetail)
+                    Log.e("===========", "uri:before:: $uri")
+
+                    picDetail.clear()
+                    picDetail.put(MediaStore.Video.Media.IS_PENDING, 0)
+                    resolver.update(picCollection, picDetail, null, null);
+                    Log.e("===========", "uri::: $uri")
+
+                    return uri
+                } else {
+                    val values = ContentValues()
+                    values.put(MediaStore.Video.Media.DATA, filePath)
+                    values.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
+                    context.contentResolver.insert(
+                        MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values
+                    )
+                }
+            } else {
+                null
+            }
+        }
+    }*/
+
+    fun getAudioContentUri(file: File, context: Context): Uri? {
+        /* val builder: StrictMode.VmPolicy.Builder = StrictMode.VmPolicy.Builder()
+         StrictMode.setVmPolicy(builder.build())
+         val filePath = file.absolutePath
+         val cursor: Cursor? = context.contentResolver.query(
+             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, arrayOf(MediaStore.Audio.Media._ID),
+             MediaStore.Audio.Media.DATA + "=? ", arrayOf(filePath), null
+         )
+         return if (cursor != null && cursor.moveToFirst()) {
+             val id = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns._ID))
+             cursor.close()
+             Uri.withAppendedPath(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, "" + id)
+         } else {*/
+        val builder: StrictMode.VmPolicy.Builder = StrictMode.VmPolicy.Builder()
+        StrictMode.setVmPolicy(builder.build())
+        val filePath = file.absolutePath
+        val cursor: Cursor? =
+            context.contentResolver.query(
+                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, arrayOf(
+                    MediaStore.Audio.Media.DISPLAY_NAME,
+                    MediaStore.Audio.Media.SIZE,
+                    MediaStore.Audio.Media._ID,
+                    MediaStore.MediaColumns.DATA
+                ),
+                MediaStore.Audio.Media.DATA + "=? ", arrayOf(filePath), null
+            )
+        return if (cursor != null && cursor.moveToFirst()) {
+            val id = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA))
+            cursor.close()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                Uri.withAppendedPath(
+                    MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY),
+                    "" + id
+                )
+            } else {
+                Uri.withAppendedPath(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, "" + id)
+            }
         } else {
             if (file.exists()) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -91,7 +204,10 @@ object Utils {
                     )
                     picDetail.put(MediaStore.Audio.Media.IS_PENDING, 0)
                     //val uri = resolver.insert(picCollection, picDetail)
-                    //Log.e("===========", "uri::: $uri")
+                    Log.e(
+                        "===========",
+                        "audio uri::: ${resolver.insert(picCollection, picDetail)}"
+                    )
                     return resolver.insert(picCollection, picDetail)
 
                 } else {

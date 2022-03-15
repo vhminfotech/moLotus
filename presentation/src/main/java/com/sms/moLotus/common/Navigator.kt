@@ -45,8 +45,7 @@ import java.lang.Exception
 import javax.inject.Inject
 import javax.inject.Singleton
 import androidx.core.content.ContextCompat.startActivity
-
-
+import androidx.core.content.ContextCompat.startActivity
 
 
 @Singleton
@@ -99,18 +98,18 @@ class Navigator @Inject constructor(
     fun showCompose(body: String? = null, images: List<Uri>? = null) {
         val intent = Intent(context, ComposeActivity::class.java)
         intent.putExtra(Intent.EXTRA_TEXT, body)
-        //images?.takeIf { it.isNotEmpty() }?.let {
-        if (images != null) {
+
+        images?.takeIf { it.isNotEmpty() }?.let {
             intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, ArrayList(images))
         }
-        //}
+
         startActivity(intent)
     }
 
     fun shareToOtherApps(body: String? = null, images: List<Uri>? = null) {
         val intent = Intent(Intent.ACTION_SEND)
         intent.putExtra(Intent.EXTRA_TEXT, body)
-        Log.e("=========","uri:: ${Uri.parse(images.toString())}")
+        Log.e("=========", "uri:: ${Uri.parse(images.toString())}")
 
         intent.putExtra(Intent.EXTRA_STREAM, Uri.parse(images.toString()))
 
@@ -123,7 +122,7 @@ class Navigator @Inject constructor(
         startActivity(Intent.createChooser(intent, "Share"))
     }
 
-    fun sendVideoOrAudio(body: String? = null, images: List<Uri>? = null){
+    fun sendVideoOrAudio(body: String? = null, images: List<Uri>? = null) {
 
         val sendIntent = Intent(context, ComposeActivity::class.java)
         sendIntent.putExtra(Intent.EXTRA_TEXT, body)
@@ -183,7 +182,8 @@ class Navigator @Inject constructor(
             val path: String =
                 MediaStore.Images.Media.insertImage(context.contentResolver, bitmap, "Title", null)
             val imageUri = Uri.parse(path)
-            val info: PackageInfo? = pack?.let { pm.getPackageInfo(it, PackageManager.GET_META_DATA) }
+            val info: PackageInfo? =
+                pack?.let { pm.getPackageInfo(it, PackageManager.GET_META_DATA) }
             val waIntent = Intent(Intent.ACTION_SEND)
             waIntent.type = "image/jpg"
             waIntent.setPackage(pack)
@@ -232,6 +232,14 @@ class Navigator @Inject constructor(
         val intent = Intent(context, GalleryActivity::class.java)
         intent.putExtra("partId", partId)
         startActivity(intent)
+    }
+
+    fun showAudioMedia(uri: Uri) {
+        val viewMediaIntent = Intent()
+        viewMediaIntent.action = Intent.ACTION_VIEW
+        viewMediaIntent.setDataAndType(uri, "audio/aac")
+        viewMediaIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        startActivity(viewMediaIntent)
     }
 
     fun showBackup() {
@@ -378,7 +386,7 @@ class Navigator @Inject constructor(
     }
 
     fun viewFile(file: File) {
-        val data = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+        val data = FileProvider.getUriForFile(context, "com.sms.moLotus.fileprovider", file)
         val type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(file.name.split(".").last())
         val intent = Intent(Intent.ACTION_VIEW)
             .setDataAndType(data, type)
@@ -388,7 +396,7 @@ class Navigator @Inject constructor(
     }
 
     fun shareFile(file: File) {
-        val data = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+        val data = FileProvider.getUriForFile(context, "com.sms.moLotus.fileprovider", file)
         val type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(file.name.split(".").last())
         val intent = Intent(Intent.ACTION_SEND)
             .setType(type)

@@ -18,6 +18,7 @@ import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
 import com.sms.moLotus.common.Navigator
 import com.sms.moLotus.extension.toast
+import com.sms.moLotus.feature.intro.APNDetailsActivity
 import com.sms.moLotus.feature.intro.IntroActivity2
 import com.sms.moLotus.feature.retrofit.MainRepository
 import com.sms.moLotus.feature.retrofit.MainViewModel
@@ -80,7 +81,7 @@ class AppSettingsActivity : AppCompatActivity() {
 
         txtAPN?.setOnClickListener {
             PreferenceHelper.setPreference(this, "isSettings", true)
-            startActivity(Intent(this, IntroActivity2::class.java))
+            startActivity(Intent(this, APNDetailsActivity::class.java))
         }
 
         txtAboutUs?.setOnClickListener {

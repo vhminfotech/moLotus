@@ -4,6 +4,7 @@ import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
@@ -34,7 +35,7 @@ class SplashActivity : AppCompatActivity() {
 
         // we used the postDelayed(Runnable, time) method
         // to send a message with a delayed time.
-        Handler().postDelayed({
+        Handler(Looper.getMainLooper()).postDelayed({
             if (!PreferenceHelper.getPreference(this, "INTRO")) {
                 val intent = Intent(this, AppIntroActivity::class.java)
                 startActivity(intent)
@@ -46,10 +47,6 @@ class SplashActivity : AppCompatActivity() {
                     intent.putExtra(
                         "PhoneNumber",
                         PreferenceHelper.getStringPreference(this, "PhoneNumber")
-                    )
-                    intent.putExtra(
-                        "CarrierText",
-                        PreferenceHelper.getStringPreference(this, "CarrierText")
                     )
                     startActivity(intent)
                     overridePendingTransition(0, 0)

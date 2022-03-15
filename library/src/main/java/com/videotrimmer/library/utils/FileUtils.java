@@ -24,7 +24,7 @@ public class FileUtils {
         final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
         String selection = null;
         String[] selectionArgs = null;
-        if (isKitKat ) {
+        if (isKitKat) {
             if (isExternalStorageDocument(uri)) {
                 final String docId = DocumentsContract.getDocumentId(uri);
                 final String[] split = docId.split(":");
@@ -36,6 +36,17 @@ public class FileUtils {
                     return null;
                 }
             }
+           /* if (isMIUIDownloads(uri)) {
+                final String docId = DocumentsContract.getDocumentId(uri);
+                final String[] split = docId.split(":");
+                final String type = split[0];
+                String fullPath = getPathFromExtSD(split);
+                if (fullPath != "") {
+                    return fullPath;
+                } else {
+                    return null;
+                }
+            }*/
             if (isDownloadsDocument(uri)) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     final String id;
@@ -49,8 +60,7 @@ public class FileUtils {
                                 return path;
                             }
                         }
-                    }
-                    finally {
+                    } finally {
                         if (cursor != null)
                             cursor.close();
                     }
@@ -75,18 +85,16 @@ public class FileUtils {
                             }
                         }
                     }
-                }
-                else {
+                } else {
                     final String id = DocumentsContract.getDocumentId(uri);
-                    Uri contentUri=null;
+                    Uri contentUri = null;
                     if (id.startsWith("raw:")) {
                         return id.replaceFirst("raw:", "");
                     }
                     try {
                         contentUri = ContentUris.withAppendedId(
                                 Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
-                    }
-                    catch (NumberFormatException e) {
+                    } catch (NumberFormatException e) {
                         e.printStackTrace();
                     }
                     if (contentUri != null) {
@@ -117,11 +125,11 @@ public class FileUtils {
             }
 
             if (isGoogleDriveUri(uri)) {
-                return getDriveFilePath(context,uri);
+                return getDriveFilePath(context, uri);
             }
 
-            if(isWhatsAppFile(uri)){
-                return getFilePathForWhatsApp(context,uri);
+            if (isWhatsAppFile(uri)) {
+                return getFilePathForWhatsApp(context, uri);
             }
 
 
@@ -131,17 +139,14 @@ public class FileUtils {
                     return uri.getLastPathSegment();
                 }
                 if (isGoogleDriveUri(uri)) {
-                    return getDriveFilePath(context,uri);
+                    return getDriveFilePath(context, uri);
                 }
-                if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-                {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
 
                     // return getFilePathFromURI(context,uri);
-                    return copyFileToInternalStorage(context,uri,"userfiles");
+                    return copyFileToInternalStorage(context, uri, "userfiles");
                     // return getRealPathFromURI(context,uri);
-                }
-                else
-                {
+                } else {
                     return getDataColumn(context, uri, null, null);
                 }
 
@@ -149,11 +154,10 @@ public class FileUtils {
             if ("file".equalsIgnoreCase(uri.getScheme())) {
                 return uri.getPath();
             }
-        }
-        else {
+        } else {
 
-            if(isWhatsAppFile(uri)){
-                return getFilePathForWhatsApp(context,uri);
+            if (isWhatsAppFile(uri)) {
+                return getFilePathForWhatsApp(context, uri);
             }
 
             if ("content".equalsIgnoreCase(uri.getScheme())) {
@@ -211,7 +215,7 @@ public class FileUtils {
         return fullPath;
     }
 
-    private static String getDriveFilePath(Context context,Uri uri) {
+    private static String getDriveFilePath(Context context, Uri uri) {
         Uri returnUri = uri;
         Cursor returnCursor = context.getContentResolver().query(returnUri, null, null, null, null);
         /*
@@ -256,11 +260,11 @@ public class FileUtils {
      * @param newDirName if you want to create a directory, you can set this variable
      * @return
      */
-    private static String copyFileToInternalStorage(Context context,Uri uri,String newDirName) {
+    private static String copyFileToInternalStorage(Context context, Uri uri, String newDirName) {
         Uri returnUri = uri;
 
         Cursor returnCursor = context.getContentResolver().query(returnUri, new String[]{
-                OpenableColumns.DISPLAY_NAME,OpenableColumns.SIZE
+                OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE
         }, null, null, null);
 
 
@@ -276,14 +280,13 @@ public class FileUtils {
         String size = (Long.toString(returnCursor.getLong(sizeIndex)));
 
         File output;
-        if(!newDirName.equals("")) {
+        if (!newDirName.equals("")) {
             File dir = new File(context.getFilesDir() + "/" + newDirName);
             if (!dir.exists()) {
                 dir.mkdir();
             }
             output = new File(context.getFilesDir() + "/" + newDirName + "/" + name);
-        }
-        else{
+        } else {
             output = new File(context.getFilesDir() + "/" + name);
         }
         try {
@@ -299,8 +302,7 @@ public class FileUtils {
             inputStream.close();
             outputStream.close();
 
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
 
             Log.e("Exception", e.getMessage());
         }
@@ -308,8 +310,8 @@ public class FileUtils {
         return output.getPath();
     }
 
-    private static String getFilePathForWhatsApp(Context context,Uri uri){
-        return  copyFileToInternalStorage(context,uri,"whatsapp");
+    private static String getFilePathForWhatsApp(Context context, Uri uri) {
+        return copyFileToInternalStorage(context, uri, "whatsapp");
     }
 
     private static String getDataColumn(Context context, Uri uri, String selection, String[] selectionArgs) {
@@ -325,8 +327,7 @@ public class FileUtils {
                 final int index = cursor.getColumnIndexOrThrow(column);
                 return cursor.getString(index);
             }
-        }
-        finally {
+        } finally {
             if (cursor != null)
                 cursor.close();
         }
@@ -342,6 +343,10 @@ public class FileUtils {
         return "com.android.providers.downloads.documents".equals(uri.getAuthority());
     }
 
+    private static boolean isMIUIDownloads(Uri uri) {
+        return "com.mi.android.globalFileexplorer.myprovider".equals(uri.getAuthority());
+    }
+
     private static boolean isMediaDocument(Uri uri) {
         return "com.android.providers.media.documents".equals(uri.getAuthority());
     }
@@ -350,7 +355,7 @@ public class FileUtils {
         return "com.google.android.apps.photos.content".equals(uri.getAuthority());
     }
 
-    public static boolean isWhatsAppFile(Uri uri){
+    public static boolean isWhatsAppFile(Uri uri) {
         return "com.whatsapp.provider.media".equals(uri.getAuthority());
     }
 

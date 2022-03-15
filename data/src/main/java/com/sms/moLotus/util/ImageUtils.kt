@@ -18,8 +18,11 @@
  */
 package com.sms.moLotus.util
 
+import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
+import android.os.Build
+import android.provider.OpenableColumns
 import android.util.Log
 import kotlinx.coroutines.*
 import java.io.*
@@ -50,7 +53,6 @@ object ImageUtils {
         return outputStream.toByteArray()
     }
 
-
     fun getScaledVideo(
         context: Context,
         uri: Uri
@@ -58,7 +60,11 @@ object ImageUtils {
         val baos = ByteArrayOutputStream()
         var fis: InputStream? = null
         try {
-            fis = context.contentResolver.openInputStream(uri)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                fis = context.contentResolver.openAssetFileDescriptor(uri, "r")?.createInputStream()
+            } else {
+                fis = context.contentResolver.openInputStream(uri)
+            }
             val bufferSize = 1024
             val buffer = ByteArray(bufferSize)
             var len = 0
@@ -77,11 +83,30 @@ object ImageUtils {
         return@runBlocking baos.toByteArray()
     }
 
+    @Throws(IOException::class)
+    fun readBytes(inputStream: InputStream): ByteArray? {
+        // this dynamically extends to take the bytes you read
+        val byteBuffer = ByteArrayOutputStream()
+
+        // this is storage overwritten on each iteration with bytes
+        val bufferSize = 1024
+        val buffer = ByteArray(bufferSize)
+
+        // we need to know how may bytes were read to write them to the byteBuffer
+        var len = 0
+        while (inputStream.read(buffer).also { len = it } != -1) {
+            byteBuffer.write(buffer, 0, len)
+        }
+
+        // and then we can return your byte array.
+        return byteBuffer.toByteArray()
+    }
+
 
     fun getAudio(
         context: Context,
         uri: Uri
-    ): ByteArray= runBlocking {
+    ): ByteArray = runBlocking {
         val baos = ByteArrayOutputStream()
         var fis: InputStream? = null
         try {

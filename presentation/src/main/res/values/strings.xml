@@ -431,7 +431,8 @@
     <string name="compose_menu_share">Share</string>
     <string name="update_app_text">New update is available. Do you want to update the app?</string>
     <string name="txt_update">Update</string>
-    <string name="paid_message_description">mCHat would like to send message \nThis will cause chanrges on your mobile account</string>
+    <string name="paid_message_description">mCHat would like to send message \nThis will cause charges on your mobile account</string>
+    <string name="message_status_sending">Sending message..</string>
 
     <string-array name="night_modes">
         <item>System</item>

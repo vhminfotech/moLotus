@@ -7,9 +7,7 @@ import android.content.Intent
 import android.net.ConnectivityManager
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.view.View
-import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
@@ -17,6 +15,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
 import com.sms.moLotus.extension.toast
+import com.sms.moLotus.feature.Constants
 import com.sms.moLotus.feature.main.MainActivity
 import com.sms.moLotus.feature.retrofit.MainRepository
 import com.sms.moLotus.feature.retrofit.MainViewModel
@@ -28,13 +27,12 @@ class APNDetailsActivity : AppCompatActivity() {
 
     lateinit var viewModel: MainViewModel
     private val retrofitService = RetrofitService.getInstance()
-    private var carrierId: Int? = 0
 
 
-    private fun getApnDetails(id: Int) {
+    private fun getApnDetails(carrierId: Int) {
 
         viewModel.apnDetails.observe(this, {
-            Log.e("=====", "response:: $it")
+//            Log.e("=====", "response:: $it")
             NAME_et.setText(it.apn_name)
             APN_et.setText(it.apn)
             Proxy_et.setText(it.proxy)
@@ -56,7 +54,7 @@ class APNDetailsActivity : AppCompatActivity() {
             MVNO_Value_et.setText(it.mvno_value)
         })
         viewModel.errorMessage.observe(this, {
-            Log.e("=====", "errorMessage:: $it")
+//            Log.e("=====", "errorMessage:: $it")
 
 
             val conMgr = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -69,7 +67,7 @@ class APNDetailsActivity : AppCompatActivity() {
                     Snackbar.LENGTH_INDEFINITE
                 )
                     .setAction("Retry") {
-                        viewModel.getApnDetails(id)
+                        viewModel.getApnDetails(carrierId)
                     }
                     .setActionTextColor(resources.getColor(android.R.color.holo_red_light))
                     .show()
@@ -77,7 +75,7 @@ class APNDetailsActivity : AppCompatActivity() {
                 toast(it.toString(), Toast.LENGTH_SHORT)
             }
         })
-        viewModel.getApnDetails(id)
+        viewModel.getApnDetails(carrierId)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -86,14 +84,16 @@ class APNDetailsActivity : AppCompatActivity() {
         //get data from intent
         var intent = intent
         val phoneNumber = intent.getStringExtra("PhoneNumber")
-        val CarrierText = intent.getStringExtra("CarrierText")
+        if (!PreferenceHelper.getPreference(this, "isSettings")) {
+            skip.visibility = View.VISIBLE
+        }else{
+            skip.visibility = View.GONE
+        }
         viewModel =
             ViewModelProvider(this, MyViewModelFactory(MainRepository(retrofitService))).get(
                 MainViewModel::class.java
             )
-        carrierId = intent?.getIntExtra("CarrierId", 0)
-        Log.e("=====", "carrierId:: $carrierId")
-        carrierId?.let { getApnDetails(it) }
+        getApnDetails(Constants.CARRIER_ID)
 
         NAME_tf.setEndIconOnClickListener {
             copy2clipboard(NAME_et.text.toString())
@@ -208,9 +208,10 @@ class APNDetailsActivity : AppCompatActivity() {
             editor.commit()
 
             PreferenceHelper.setPreference(this, "APNSETTINGS", true)
+            PreferenceHelper.setPreference(this, "Notification", true)
             val intent = Intent(this, MainActivity::class.java);
             startActivity(intent)
-
+            finish()
         }
 
     }

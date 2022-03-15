@@ -1,4 +1,4 @@
-package com.moez.QKSMS.common.util
+package com.sms.moLotus.common.util
 
 import android.app.Activity
 import android.content.Context
@@ -14,8 +14,8 @@ import com.android.billingclient.api.SkuDetailsParams
 import com.android.billingclient.api.acknowledgePurchase
 import com.android.billingclient.api.queryPurchaseHistory
 import com.android.billingclient.api.querySkuDetails
-import com.moez.QKSMS.manager.AnalyticsManager
-import com.moez.QKSMS.manager.BillingManager
+import com.sms.moLotus.manager.AnalyticsManager
+import com.sms.moLotus.manager.BillingManager
 import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.Subject

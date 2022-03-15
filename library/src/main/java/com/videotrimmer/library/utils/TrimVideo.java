@@ -14,14 +14,18 @@ public class TrimVideo {
     public static int VIDEO_TRIMMER_REQ_CODE = 324;
 
     public static final String TRIM_VIDEO_OPTION = "trim_video_option",
-            TRIM_VIDEO_URI = "trim_video_uri",TRIMMED_VIDEO_PATH="trimmed_video_path";
+            TRIM_VIDEO_URI = "trim_video_uri", TRIMMED_VIDEO_PATH = "trimmed_video_path";
 
     public static ActivityBuilder activity(String uri) {
         return new ActivityBuilder(uri);
     }
 
-    public static String getTrimmedVideoPath(Intent intent){
+    public static String getTrimmedVideoPath(Intent intent) {
         return intent.getStringExtra(TRIMMED_VIDEO_PATH);
+    }
+
+    public static String getTrimmedVideoUri(Intent intent) {
+        return intent.getStringExtra(TRIM_VIDEO_URI);
     }
 
     public static final class ActivityBuilder {
@@ -34,7 +38,7 @@ public class TrimVideo {
         public ActivityBuilder(@Nullable String videoUri) {
             this.videoUri = videoUri;
             options = new TrimVideoOptions();
-            options.trimType=TrimType.DEFAULT;
+            options.trimType = TrimType.DEFAULT;
         }
 
         public ActivityBuilder setTrimType(final TrimType trimType) {
@@ -81,7 +85,7 @@ public class TrimVideo {
             validate();
             activity.startActivityForResult(getIntent(activity), VIDEO_TRIMMER_REQ_CODE);
         }
-        
+
         public void start(Fragment fragment) {
             validate();
             fragment.startActivityForResult(getIntent(fragment.getActivity()), VIDEO_TRIMMER_REQ_CODE);
@@ -98,10 +102,10 @@ public class TrimVideo {
                 throw new IllegalArgumentException("Cannot set min duration to a number < 1");
             if (options.fixedDuration < 0)
                 throw new IllegalArgumentException("Cannot set fixed duration to a number < 1");
-            if (options.trimType==TrimType.MIN_MAX_DURATION && options.minToMax==null)
+            if (options.trimType == TrimType.MIN_MAX_DURATION && options.minToMax == null)
                 throw new IllegalArgumentException("Used trim type is TrimType.MIN_MAX_DURATION." +
                         "Give the min and max duration");
-            if (options.minToMax != null){
+            if (options.minToMax != null) {
                 if ((options.minToMax[0] < 0 || options.minToMax[1] < 0))
                     throw new IllegalArgumentException("Cannot set min to max duration to a number < 1");
                 if ((options.minToMax[0] > options.minToMax[1]))

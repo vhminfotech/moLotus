@@ -1,21 +1,3 @@
-/*
- * Copyright (C) 2017 Moez Bhatti <moez.bhatti@gmail.com>
- *
- * This file is part of QKSMS.
- *
- * QKSMS is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * QKSMS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with QKSMS.  If not, see <http://www.gnu.org/licenses/>.
- */
 package com.sms.moLotus.repository
 
 import android.app.AlarmManager
@@ -25,13 +7,9 @@ import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
-import android.media.MediaMetadataRetriever
 import android.media.MediaScannerConnection
-import android.net.Uri
 import android.os.Build
 import android.os.Environment
-import android.os.Handler
-import android.os.Looper
 import android.provider.Telephony
 import android.provider.Telephony.Mms
 import android.provider.Telephony.Sms
@@ -66,11 +44,6 @@ import io.realm.Case
 import io.realm.Realm
 import io.realm.RealmResults
 import io.realm.Sort
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import okhttp3.internal.notify
-import okhttp3.internal.notifyAll
 import timber.log.Timber
 import java.io.*
 import java.util.*
@@ -79,6 +52,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.collections.ArrayList
 import kotlin.math.sqrt
+
 
 @Singleton
 class MessageRepositoryImpl @Inject constructor(
@@ -89,6 +63,8 @@ class MessageRepositoryImpl @Inject constructor(
     private val prefs: Preferences,
     private val syncRepository: SyncRepository
 ) : MessageRepository {
+
+    var messageDeliveredStatus: Boolean = false
 
     override fun getMessages(threadId: Long, query: String): RealmResults<Message> {
         return Realm.getDefaultInstance()
@@ -357,27 +333,7 @@ class MessageRepositoryImpl @Inject constructor(
                 val message = insertSentSms(subId, threadId, addresses.first(), strippedBody, now())
                 sendSms(message)
             }
-        } /*else if (attachments.isNotEmpty()) {
-
-
-            attachments
-                .mapNotNull { attachment -> attachment as? Attachment.Contact }
-                .map { attachment -> attachment.vCard.toByteArray() }
-                .map { vCard ->
-                    val transaction = Transaction(context)
-                    val recipients = addresses.map(phoneNumberUtils::normalizeNumber)
-                    transaction.sendNewMessage(
-                        subId,
-                        threadId,
-                        recipients,
-                        listOf(MMSPart("contact", ContentType.TEXT_VCARD, vCard)),
-                        null,
-                        null
-                    )
-                }
-
-
-        }*/ else { // MMS
+        } else { // MMS
             val parts = arrayListOf<MMSPart>()
 
             val maxWidth =
@@ -411,89 +367,20 @@ class MessageRepositoryImpl @Inject constructor(
             val imageBytesByAttachment = attachments
                 .mapNotNull { attachment -> attachment as? Attachment.Image }
                 .associateWith { attachment ->
-                    var uri = attachment.getUri() ?: return@associateWith byteArrayOf()
+                    val uri = attachment.getUri() ?: return@associateWith byteArrayOf()
                     when {
                         attachment.isGif(context) -> {
-                            /*true ->*/ ImageUtils.getScaledGif(context, uri, maxWidth, maxHeight)
-                            //  false -> ImageUtils.getScaledImage(context, uri, maxWidth, maxHeight)
+                            ImageUtils.getScaledGif(context, uri, maxWidth, maxHeight)
                         }
                         attachment.isVideo(context) -> {
-
-                            /*GlobalScope.launch(Dispatchers.IO) {
-                                VideoCompressor.start(
-                                    context = context, // => This is required
-                                    uris = listOf(uri), // => Source can be provided as content uris
-                                    isStreamable = true,
-                                    saveAt = Environment.DIRECTORY_MOVIES + "/VideoCompress", // => the directory to save the compressed video(s)
-                                    listener = object : CompressionListener {
-                                        override fun onProgress(index: Int, percent: Float) {
-                                            // Update UI with progress value
-                                            Log.e("ImageUtils", "percent:: $percent")
-                                        }
-
-                                        override fun onStart(index: Int) {
-                                            // Compression start
-                                            Log.e("ImageUtils", "onStart:: $index")
-
-                                        }
-
-                                        override fun onSuccess(
-                                            index: Int,
-                                            size: Long,
-                                            path: String?
-                                        ) {
-                                            // On Compression success
-                                            Log.e("ImageUtils", "onSuccess:: $size:: path:: $path")
-                                            uri = Uri.fromFile(File(path))
-                                        }
-
-                                        override fun onFailure(index: Int, failureMessage: String) {
-                                            // On Failure
-                                            Log.e("ImageUtils", "failureMessage:: $failureMessage")
-
-                                        }
-
-                                        override fun onCancelled(index: Int) {
-                                            // On Cancelled
-                                            Log.e("ImageUtils", "onCancelled::R")
-
-                                        }
-
-                                    },
-                                    configureWith = Configuration(
-                                        quality = VideoQuality.MEDIUM,
-                                        frameRate = 24, *//*Int, ignore, or null*//*
-                                        isMinBitrateCheckEnabled = false,
-                                        videoBitrate = 3677198, *//*Int, ignore, or null*//*
-                                        disableAudio = false, *//*Boolean, or ignore*//*
-                                        keepOriginalResolution = false, *//*Boolean, or ignore*//*
-                                        videoWidth = 360.0, *//*Double, ignore, or null*//*
-                                        videoHeight = 480.0 *//*Double, ignore, or null*//*
-                                    )
-                                )
-                            }
-
-                            Handler().postDelayed({
-
-                            },5000)*/
-
-                            /*  uri = com.sms.moLotus.util.VideoCompressor(context, uri).compress()!!
-                             return Handler().postDelayed({*/
-                            //GlobalScope.launch {
-
-                            ImageUtils.getScaledVideo(context, uri/*, maxWidth, maxHeight*/)
-                            //  }
-                            //   },5000).notifyAll()
-
+                            ImageUtils.getScaledVideo(context, uri)
                         }
                         attachment.isAudio(context) -> {
                             Log.e("ImageUtils", "getAudio uri ::$uri")
-
                             ImageUtils.getAudio(context, uri)
                         }
                         else -> {
                             Log.e("ImageUtils", "getImage ::$uri")
-
                             ImageUtils.getScaledImage(context, uri, maxWidth, maxHeight)
                         }
                     }
@@ -535,114 +422,119 @@ class MessageRepositoryImpl @Inject constructor(
                         var newHeight = (newWidth / aspectRatio).toInt()
 
                         attempts++
-                        scaledBytes = if (attachment.isGif(context)) {
-                            /*true -> */ImageUtils.getScaledGif(
-                                context,
-                                uri,
-                                newWidth,
-                                newHeight,
-                                80
-                            )
-                            //  false -> ImageUtils.getScaledImage(context, uri, newWidth, newHeight, 80)
-                        } else if (attachment.isVideo(context)) {
-//                            val metaRetriever = MediaMetadataRetriever()
-//                            metaRetriever.setDataSource(context, uri)
-//                            newWidth = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)!!.toInt()
-//                            newHeight = byteArrayOf(metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT).toInt().toByte())
-                            /*val metaRetriever = MediaMetadataRetriever()
-                            metaRetriever.setDataSource(context, uri)*/
-                            // newWidth = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)!!.toInt()
-                            //  newHeight = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)!!.toInt()
-                            Log.e("TAG", "uri:::: video :: $uri")
-
-                            /*GlobalScope.launch(Dispatchers.IO) {
-                                VideoCompressor.start(
-                                    context = context, // => This is required
-                                    uris = listOf(uri), // => Source can be provided as content uris
-                                    isStreamable = true,
-                                    saveAt = Environment.DIRECTORY_MOVIES + "/VideoCompress", // => the directory to save the compressed video(s)
-                                    listener = object : CompressionListener {
-                                        override fun onProgress(index: Int, percent: Float) {
-                                            // Update UI with progress value
-                                            Log.e("ImageUtils", "percent:: $percent")
-                                        }
-
-                                        override fun onStart(index: Int) {
-                                            // Compression start
-                                            Log.e("ImageUtils", "onStart:: $index")
-
-                                        }
-
-                                        override fun onSuccess(
-                                            index: Int,
-                                            size: Long,
-                                            path: String?
-                                        ) {
-                                            // On Compression success
-                                            Log.e("ImageUtils", "onSuccess:: $size:: path:: $path")
-                                            uri = Uri.fromFile(File(path))
-                                        }
-
-                                        override fun onFailure(index: Int, failureMessage: String) {
-                                            // On Failure
-                                            Log.e("ImageUtils", "failureMessage:: $failureMessage")
-
-                                        }
-
-                                        override fun onCancelled(index: Int) {
-                                            // On Cancelled
-                                            Log.e("ImageUtils", "onCancelled::R")
-
-                                        }
-
-                                    },
-                                    configureWith = Configuration(
-                                        quality = VideoQuality.MEDIUM,
-                                        frameRate = 24, *//*Int, ignore, or null*//*
-                                        isMinBitrateCheckEnabled = false,
-                                        videoBitrate = 3677198, *//*Int, ignore, or null*//*
-                                        disableAudio = false, *//*Boolean, or ignore*//*
-                                        keepOriginalResolution = false, *//*Boolean, or ignore*//*
-                                        videoWidth = 360.0, *//*Double, ignore, or null*//*
-                                        videoHeight = 480.0 *//*Double, ignore, or null*//*
-                                    )
+                        scaledBytes = when {
+                            attachment.isGif(context) -> {
+                                ImageUtils.getScaledGif(
+                                    context,
+                                    uri,
+                                    newWidth,
+                                    newHeight,
+                                    80
                                 )
-                            }*/
-
-
-                            /*val byteBuffer = ByteArrayOutputStream()
-                            //val newUri = VideoCompressor(context, uri).compress()
-                            val iStream: InputStream? = com.sms.moLotus.util.VideoCompressor(
-                                context,
-                                uri
-                            ).compress()?.let { context.contentResolver.openInputStream(it) }
-                            val bufferSize = 1024
-                            val buffer = ByteArray(bufferSize)
-                            var len = 0
-                            while (iStream?.read(buffer).also {
-                                    if (it != null) {
-                                        len = it
-                                    }
-                                } != -1) {
-                                byteBuffer.write(buffer, 0, len)
+                                //  false -> ImageUtils.getScaledImage(context, uri, newWidth, newHeight, 80)
                             }
-                            byteBuffer.toByteArray()*/
-                            /* uri = com.sms.moLotus.util.VideoCompressor(context, uri).compress()!!
-                             Log.e("TAG","uri:: $uri")
+                            attachment.isVideo(context) -> {
+                                //                            val metaRetriever = MediaMetadataRetriever()
+                                //                            metaRetriever.setDataSource(context, uri)
+                                //                            newWidth = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)!!.toInt()
+                                //                            newHeight = byteArrayOf(metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT).toInt().toByte())
+                                /*val metaRetriever = MediaMetadataRetriever()
+                                                metaRetriever.setDataSource(context, uri)*/
+                                // newWidth = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)!!.toInt()
+                                //  newHeight = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)!!.toInt()
+                                Log.e("TAG", "uri:::: video :: $uri")
 
-                             val handler =  Handler().postDelayed({
-                                 Log.e("TAG","delay")*/
-                            ImageUtils.getScaledVideo(context, uri/*, width, height, 80*/)
-                            /* },5000)
-                             Log.e("TAG","handler:: $handler")
+                                /*GlobalScope.launch(Dispatchers.IO) {
+                                                    VideoCompressor.start(
+                                                        context = context, // => This is required
+                                                        uris = listOf(uri), // => Source can be provided as content uris
+                                                        isStreamable = true,
+                                                        saveAt = Environment.DIRECTORY_MOVIES + "/VideoCompress", // => the directory to save the compressed video(s)
+                                                        listener = object : CompressionListener {
+                                                            override fun onProgress(index: Int, percent: Float) {
+                                                                // Update UI with progress value
+                                                                Log.e("ImageUtils", "percent:: $percent")
+                                                            }
 
-                             return handler.notifyAll()*/
+                                                            override fun onStart(index: Int) {
+                                                                // Compression start
+                                                                Log.e("ImageUtils", "onStart:: $index")
 
-                        } else if (attachment.isAudio(context)) {
-                            Log.e("ImageUtils", "getAudio uri ::$uri")
-                            ImageUtils.getAudio(context, uri)
-                        } else {
-                            ImageUtils.getScaledImage(context, uri, newWidth, newHeight, 80)
+                                                            }
+
+                                                            override fun onSuccess(
+                                                                index: Int,
+                                                                size: Long,
+                                                                path: String?
+                                                            ) {
+                                                                // On Compression success
+                                                                Log.e("ImageUtils", "onSuccess:: $size:: path:: $path")
+                                                                uri = Uri.fromFile(File(path))
+                                                            }
+
+                                                            override fun onFailure(index: Int, failureMessage: String) {
+                                                                // On Failure
+                                                                Log.e("ImageUtils", "failureMessage:: $failureMessage")
+
+                                                            }
+
+                                                            override fun onCancelled(index: Int) {
+                                                                // On Cancelled
+                                                                Log.e("ImageUtils", "onCancelled::R")
+
+                                                            }
+
+                                                        },
+                                                        configureWith = Configuration(
+                                                            quality = VideoQuality.MEDIUM,
+                                                            frameRate = 24, *//*Int, ignore, or null*//*
+                                                            isMinBitrateCheckEnabled = false,
+                                                            videoBitrate = 3677198, *//*Int, ignore, or null*//*
+                                                            disableAudio = false, *//*Boolean, or ignore*//*
+                                                            keepOriginalResolution = false, *//*Boolean, or ignore*//*
+                                                            videoWidth = 360.0, *//*Double, ignore, or null*//*
+                                                            videoHeight = 480.0 *//*Double, ignore, or null*//*
+                                                        )
+                                                    )
+                                                }*/
+
+
+                                /*val byteBuffer = ByteArrayOutputStream()
+                                                //val newUri = VideoCompressor(context, uri).compress()
+                                                val iStream: InputStream? = com.sms.moLotus.util.VideoCompressor(
+                                                    context,
+                                                    uri
+                                                ).compress()?.let { context.contentResolver.openInputStream(it) }
+                                                val bufferSize = 1024
+                                                val buffer = ByteArray(bufferSize)
+                                                var len = 0
+                                                while (iStream?.read(buffer).also {
+                                                        if (it != null) {
+                                                            len = it
+                                                        }
+                                                    } != -1) {
+                                                    byteBuffer.write(buffer, 0, len)
+                                                }
+                                                byteBuffer.toByteArray()*/
+                                /* uri = com.sms.moLotus.util.VideoCompressor(context, uri).compress()!!
+                                                 Log.e("TAG","uri:: $uri")
+
+                                                 val handler =  Handler().postDelayed({
+                                                     Log.e("TAG","delay")*/
+                                ImageUtils.getScaledVideo(context, uri/*, width, height, 80*/)
+                                /* },5000)
+                                                 Log.e("TAG","handler:: $handler")
+
+                                                 return handler.notifyAll()*/
+
+                            }
+                            attachment.isAudio(context) -> {
+                                Log.e("ImageUtils", "getAudio uri ::$uri")
+                                ImageUtils.getAudio(context, uri)
+                            }
+                            else -> {
+                                ImageUtils.getScaledImage(context, uri, newWidth, newHeight, 80)
+                            }
                         }
 
 
@@ -658,8 +550,7 @@ class MessageRepositoryImpl @Inject constructor(
             imageBytesByAttachment.forEach { (attachment, bytes) ->
                 parts += when {
                     attachment.isGif(context) -> {
-                        /* true ->*/ MMSPart("image", ContentType.IMAGE_GIF, bytes)
-                        //false -> MMSPart("image", ContentType.IMAGE_JPEG, bytes)
+                        MMSPart("image", ContentType.IMAGE_GIF, bytes)
                     }
                     attachment.isVideo(context) -> {
                         MMSPart("video", ContentType.VIDEO_MP4, bytes)
@@ -714,6 +605,7 @@ class MessageRepositoryImpl @Inject constructor(
         }
 
         try {
+
             smsManager.sendMultipartTextMessage(
                 message.address,
                 null,
@@ -721,6 +613,8 @@ class MessageRepositoryImpl @Inject constructor(
                 ArrayList(sentIntents),
                 ArrayList(deliveredIntents)
             )
+
+
         } catch (e: IllegalArgumentException) {
             Timber.w(e, "Message body lengths: ${parts.map { it?.length }}")
             markFailed(message.id, Telephony.MmsSms.ERR_TYPE_GENERIC)
@@ -958,17 +852,29 @@ class MessageRepositoryImpl @Inject constructor(
                     message.deliveryStatus = Sms.STATUS_COMPLETE
                     message.dateSent = System.currentTimeMillis()
                     message.read = true
+
+
                 }
+
 
                 // Update the message in the native ContentProvider
                 val values = ContentValues()
                 values.put(Sms.STATUS, Sms.STATUS_COMPLETE)
                 values.put(Sms.DATE_SENT, System.currentTimeMillis())
                 values.put(Sms.READ, true)
+
                 context.contentResolver.update(message.getUri(), values, null, null)
+                messageDeliveredStatus = true
             }
+
+
         }
     }
+
+    override fun markDeliveredStatus(): Boolean {
+        return messageDeliveredStatus
+    }
+
 
     override fun markDeliveryFailed(id: Long, resultCode: Int) {
         Realm.getDefaultInstance().use { realm ->
@@ -991,6 +897,7 @@ class MessageRepositoryImpl @Inject constructor(
                 values.put(Sms.READ, true)
                 values.put(Sms.ERROR_CODE, resultCode)
                 context.contentResolver.update(message.getUri(), values, null, null)
+                messageDeliveredStatus = false
             }
         }
     }

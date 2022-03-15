@@ -1,9 +1,9 @@
-package com.moez.QKSMS.manager
+package com.sms.moLotus.manager
 
 import android.content.Context
 import com.android.installreferrer.api.InstallReferrerClient
 import com.android.installreferrer.api.InstallReferrerStateListener
-import com.moez.QKSMS.util.Preferences
+import com.sms.moLotus.util.Preferences
 import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject
 import kotlin.coroutines.resume

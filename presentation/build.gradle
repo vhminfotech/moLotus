@@ -20,10 +20,10 @@ android {
         targetSdkVersion 31
         versionCode 1
         versionName "1.0.0"
-        setProperty("archivesBaseName", "moLotus-v${versionName}")
+//        setProperty("archivesBaseName", "moLotus-v${versionName}")
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
-        setProperty("archivesBaseName", "moLotus-v${versionName}")
+//        setProperty("archivesBaseName", "moLotus-v${versionName}")
     }
 
     signingConfigs {

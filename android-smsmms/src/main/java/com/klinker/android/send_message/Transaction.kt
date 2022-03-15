@@ -1,3 +1,19 @@
+/*
+ * Copyright 2013 Jacob Klinker
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.klinker.android.send_message
 
 import android.app.PendingIntent
@@ -6,6 +22,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.telephony.SmsManager
+import android.widget.Toast
 import androidx.core.os.bundleOf
 import com.android.mms.MmsConfig
 import com.android.mms.dom.smil.parser.SmilXmlSerializer
@@ -40,12 +57,12 @@ class Transaction @JvmOverloads constructor(private val context: Context, settin
     companion object {
         var settings: Settings = Settings()
 
-        const val MMS_SENT = "com.moez.QKSMS.MMS_SENT"
+        const val MMS_SENT = "com.sms.moLotus.MMS_SENT"
         const val EXTRA_CONTENT_URI = "content_uri"
         const val EXTRA_FILE_PATH = "file_path"
 
-        const val NOTIFY_SMS_FAILURE = "com.moez.QKSMS.NOTIFY_SMS_FAILURE"
-        const val MMS_UPDATED = "com.moez.QKSMS.MMS_UPDATED"
+        const val NOTIFY_SMS_FAILURE = "com.sms.moLotus.NOTIFY_SMS_FAILURE"
+        const val MMS_UPDATED = "com.sms.moLotus.MMS_UPDATED"
         const val MMS_ERROR = "com.klinker.android.send_message.MMS_ERROR"
         const val REFRESH = "com.klinker.android.send_message.REFRESH"
         const val MMS_PROGRESS = "com.klinker.android.send_message.MMS_PROGRESS"
@@ -95,10 +112,10 @@ class Transaction @JvmOverloads constructor(private val context: Context, settin
                 FileOutputStream(sendFile).use { writer ->
                     writer.write(PduComposer(context, sendReq).make())
                     Uri.Builder()
-                            .authority(context.packageName + ".MmsFileProvider")
-                            .path(fileName)
-                            .scheme(ContentResolver.SCHEME_CONTENT)
-                            .build()
+                        .authority(context.packageName + ".MmsFileProvider")
+                        .path(fileName)
+                        .scheme(ContentResolver.SCHEME_CONTENT)
+                        .build()
                 }
             } catch (e: IOException) {
                 Timber.e(e, "Error writing send file")
@@ -106,12 +123,12 @@ class Transaction @JvmOverloads constructor(private val context: Context, settin
             }
 
             val configOverrides = bundleOf(
-                    Pair(SmsManager.MMS_CONFIG_GROUP_MMS_ENABLED, true),
-                    Pair(SmsManager.MMS_CONFIG_MAX_MESSAGE_SIZE, MmsConfig.getMaxMessageSize()))
+                Pair(SmsManager.MMS_CONFIG_GROUP_MMS_ENABLED, true),
+                Pair(SmsManager.MMS_CONFIG_MAX_MESSAGE_SIZE, MmsConfig.getMaxMessageSize()))
 
             MmsConfig.getHttpParams()
-                    ?.takeIf { it.isNotEmpty() }
-                    ?.let { configOverrides.putString(SmsManager.MMS_CONFIG_HTTP_PARAMS, it) }
+                ?.takeIf { it.isNotEmpty() }
+                ?.let { configOverrides.putString(SmsManager.MMS_CONFIG_HTTP_PARAMS, it) }
 
             if (contentUri != null) {
                 SmsManagerFactory.createSmsManager(subId).sendMultimediaMessage(context, contentUri, null, configOverrides, sentPI)
@@ -149,8 +166,8 @@ class Transaction @JvmOverloads constructor(private val context: Context, settin
             contentLocation = "smil.xml".toByteArray()
             contentType = ContentType.APP_SMIL.toByteArray()
             data = ByteArrayOutputStream()
-                    .apply { SmilXmlSerializer.serialize(SmilHelper.createSmilDocument(req.body), this) }
-                    .toByteArray()
+                .apply { SmilXmlSerializer.serialize(SmilHelper.createSmilDocument(req.body), this) }
+                .toByteArray()
         })
 
         req.messageSize = parts.mapNotNull { it.data?.size }.sum().toLong()

@@ -89,14 +89,33 @@ class IntroActivity : AppCompatActivity() {
             ).show()
             val intent = Intent(this, VerifyOtpActivity::class.java)
             intent.putExtra("PhoneNumber", phone_number.text.toString())
-            intent.putExtra("CarrierText", carrier_provider.selectedItem.toString())
-            intent.putExtra("CarrierId", carrier_provider.selectedItemId.toInt())
             startActivity(intent)
             finish()
         })
         viewModel.errorMessage.observe(this, {
             Log.e("=====", "errorMessage:: $it")
-            toast(it.toString(), Toast.LENGTH_SHORT)
+            btnLogin.isEnabled = true
+            val conMgr = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val netInfo = conMgr.activeNetworkInfo
+            if (netInfo == null) {
+                //No internet
+                Snackbar.make(
+                    findViewById(R.id.introlinearlayout),
+                    "No Internet Connection. Please turn on your internet!",
+                    Snackbar.LENGTH_INDEFINITE
+                )
+                    .setAction("Retry") {
+                        viewModel.registerUser(
+                            etName.text.toString(),
+                            carrier_provider.selectedItemId.toInt(),
+                            phone_number.text.toString()
+                        )
+                    }
+                    .setActionTextColor(resources.getColor(android.R.color.holo_red_light))
+                    .show()
+            } else {
+                toast(it.toString(), Toast.LENGTH_SHORT)
+            }
         })
         viewModel.registerUser(
             etName.text.toString(),
@@ -110,9 +129,6 @@ class IntroActivity : AppCompatActivity() {
         setContentView(R.layout.intro_activity_main)
         CustomStringBuilder.mChatBuilder(txtMchat)
 
-
-
-
         languages.add(0, "Select carrier provider")
         viewModel =
             ViewModelProvider(this, MyViewModelFactory(MainRepository(retrofitService))).get(
@@ -121,7 +137,7 @@ class IntroActivity : AppCompatActivity() {
 
 
 
-        getOperators()
+//        getOperators()
 
 
 
@@ -201,23 +217,21 @@ class IntroActivity : AppCompatActivity() {
         btnLogin.setOnClickListener {
             btnLogin.isEnabled = false
             //val phoneNumber = inputPhoneNumber.text
-            val carrierText = carrier_provider.selectedItem.toString()
-            val carrierId = carrier_provider.selectedItemId
-
-            Log.e("==============", "carrierId::::::: $carrierId")
-
             if (etName.text.isEmpty()) {
                 btnLogin.isEnabled = true
                 showToast(message = "Name is empty")
             } else if (phone_number.text.isEmpty()) {
                 btnLogin.isEnabled = true
                 showToast(message = "Phone number is empty")
-            } else if (carrierText == "Select carrier provider") {
+            } /*else if (carrierText == "Select carrier provider") {
                 btnLogin.isEnabled = true
                 showToast(message = "Please select carrier provider")
-            } else if (carrierText != "Select carrier provider" && phone_number.text.isNotEmpty() && etName.text.isNotEmpty()) {
+            }*/ else if (/*carrierText != "Select carrier provider" &&*/ phone_number.text.isNotEmpty() && phone_number.text.length == 10 && etName.text.isNotEmpty()) {
                 btnLogin.isEnabled = false
                 registerUser()
+            } else {
+                btnLogin.isEnabled = true
+                toast("Please enter valid phone number!")
             }
         }
     }
@@ -240,8 +254,6 @@ class IntroActivity : AppCompatActivity() {
                     ).show()
                     val intent = Intent(this, VerifyOtpActivity::class.java)
                     intent.putExtra("PhoneNumber", phoneNo)
-                    intent.putExtra("CarrierText", carrierText)
-                    intent.putExtra("CarrierId", carrierId)
                     startActivity(intent)
                     finish()
                 } else {
