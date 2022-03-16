@@ -1,9 +1,6 @@
 package com.sms.moLotus.interactor
 
-import android.app.Activity
 import android.content.Context
-import android.util.Log
-import android.widget.Toast
 import com.sms.moLotus.compat.TelephonyCompat
 import com.sms.moLotus.extensions.mapNotNull
 import com.sms.moLotus.model.Attachment
@@ -54,7 +51,6 @@ class SendMessage @Inject constructor(
         .doOnNext { threadId -> conversationRepo.updateConversations(threadId) }
         .doOnNext { threadId ->
             messageRepo.markDelivered(threadId)
-
         }
         .doOnNext { threadId -> conversationRepo.markUnarchived(threadId) }
         .flatMap { updateBadge.buildObservable(Unit) } // Update the widget

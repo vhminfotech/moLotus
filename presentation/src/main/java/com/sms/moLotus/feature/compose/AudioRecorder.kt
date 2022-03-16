@@ -26,7 +26,7 @@ class AudioRecorder {
 
     fun stop() {
         try {
-            mediaRecorder!!.stop()
+            mediaRecorder?.stop()
             destroyMediaRecorder()
         } catch (e: Exception) {
             e.printStackTrace()

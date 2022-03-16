@@ -1,7 +1,12 @@
 package com.sms.moLotus.feature.gallery
 
 import android.Manifest
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatDelegate
@@ -25,15 +30,25 @@ import javax.inject.Inject
 
 class GalleryActivity : QkActivity(), GalleryView {
 
-    @Inject lateinit var dateFormatter: DateFormatter
-    @Inject lateinit var viewModelFactory: ViewModelProvider.Factory
-    @Inject lateinit var pagerAdapter: GalleryPagerAdapter
+    @Inject
+    lateinit var dateFormatter: DateFormatter
+
+    @Inject
+    lateinit var viewModelFactory: ViewModelProvider.Factory
+
+    @Inject
+    lateinit var pagerAdapter: GalleryPagerAdapter
 
     val partId by lazy { intent.getLongExtra("partId", 0L) }
 
     private val optionsItemSubject: Subject<Int> = PublishSubject.create()
     private val pageChangedSubject: Subject<MmsPart> = PublishSubject.create()
-    private val viewModel by lazy { ViewModelProviders.of(this, viewModelFactory)[GalleryViewModel::class.java] }
+    private val viewModel by lazy {
+        ViewModelProviders.of(
+            this,
+            viewModelFactory
+        )[GalleryViewModel::class.java]
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         delegate.localNightMode = AppCompatDelegate.MODE_NIGHT_YES
@@ -53,19 +68,19 @@ class GalleryActivity : QkActivity(), GalleryView {
         pagerAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
             override fun onChanged() {
                 pagerAdapter.data?.takeIf { pagerAdapter.itemCount > 0 }
-                        ?.indexOfFirst { part -> part.id == partId }
-                        ?.let { index ->
-                            onPageSelected(index)
-                            pager.setCurrentItem(index, false)
-                            pagerAdapter.unregisterAdapterDataObserver(this)
-                        }
+                    ?.indexOfFirst { part -> part.id == partId }
+                    ?.let { index ->
+                        onPageSelected(index)
+                        pager.setCurrentItem(index, false)
+                        pagerAdapter.unregisterAdapterDataObserver(this)
+                    }
             }
         })
     }
 
     fun onPageSelected(position: Int) {
         toolbarSubtitle.text = pagerAdapter.getItem(position)?.messages?.firstOrNull()?.date
-                ?.let(dateFormatter::getDetailedTimestamp)
+            ?.let(dateFormatter::getDetailedTimestamp)
         toolbarSubtitle.isVisible = toolbarTitle.text.isNotBlank()
 
         pagerAdapter.getItem(position)?.run(pageChangedSubject::onNext)
@@ -85,7 +100,23 @@ class GalleryActivity : QkActivity(), GalleryView {
     override fun pageChanged(): Observable<MmsPart> = pageChangedSubject
 
     override fun requestStoragePermission() {
-        ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 0)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (!Environment.isExternalStorageManager()) {
+                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+                intent.data =
+                    Uri.parse(String.format("package:%s", applicationContext?.packageName))
+                startActivity(intent)
+            }
+        } else {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.MANAGE_EXTERNAL_STORAGE
+                ),
+                0
+            )
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

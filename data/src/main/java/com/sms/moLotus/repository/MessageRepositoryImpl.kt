@@ -65,6 +65,8 @@ class MessageRepositoryImpl @Inject constructor(
 ) : MessageRepository {
 
     var messageDeliveredStatus: Boolean = false
+//    var messageSentStatus: Boolean = false
+//    var messageReadStatus: Boolean = false
 
     override fun getMessages(threadId: Long, query: String): RealmResults<Message> {
         return Realm.getDefaultInstance()
@@ -145,6 +147,8 @@ class MessageRepositoryImpl @Inject constructor(
             .contains("type", "image/")
             .or()
             .contains("type", "video/")
+            .or()
+            .contains("type","/audio")
             .endGroup()
             .sort("id", Sort.DESCENDING)
             .findAllAsync()
@@ -157,8 +161,7 @@ class MessageRepositoryImpl @Inject constructor(
             MimeTypeMap.getSingleton().getExtensionFromMimeType(part.type) ?: return null
         val date = part.messages?.first()?.date
         val dir = File(Environment.getExternalStorageDirectory(), "QKSMS/Media").apply { mkdirs() }
-        val fileName = part.name?.takeIf { name -> name.endsWith(extension) }
-            ?: "${part.type.split("/").last()}_$date.$extension"
+        val fileName = "$date.$extension"
         var file: File
         var index = 0
         do {
@@ -251,6 +254,7 @@ class MessageRepositoryImpl @Inject constructor(
                     message.seen = true
                     message.read = true
                 }
+                //messageReadStatus = true
             }
         }
 
@@ -268,6 +272,10 @@ class MessageRepositoryImpl @Inject constructor(
             }
         }
     }
+
+    /*override fun markReadStatus(): Boolean {
+        return messageReadStatus
+    }*/
 
     override fun markUnread(vararg threadIds: Long) {
         Realm.getDefaultInstance()?.use { realm ->
@@ -810,6 +818,8 @@ class MessageRepositoryImpl @Inject constructor(
                 // Update the message in realm
                 realm.executeTransaction {
 //                    message.boxId = Sms.MESSAGE_TYPE_SENT
+                    //messageSentStatus = true
+            //        messageReadStatus = false
                 }
 
                 // Update the message in the native ContentProvider
@@ -830,6 +840,9 @@ class MessageRepositoryImpl @Inject constructor(
                 realm.executeTransaction {
                     message.boxId = Sms.MESSAGE_TYPE_FAILED
                     message.errorCode = resultCode
+                    messageDeliveredStatus = false
+                   // messageSentStatus = false
+                  //  messageReadStatus = false
                 }
 
                 // Update the message in the native ContentProvider
@@ -852,8 +865,8 @@ class MessageRepositoryImpl @Inject constructor(
                     message.deliveryStatus = Sms.STATUS_COMPLETE
                     message.dateSent = System.currentTimeMillis()
                     message.read = true
-
-
+                    messageDeliveredStatus = true
+                   // messageReadStatus = false
                 }
 
 
@@ -864,7 +877,6 @@ class MessageRepositoryImpl @Inject constructor(
                 values.put(Sms.READ, true)
 
                 context.contentResolver.update(message.getUri(), values, null, null)
-                messageDeliveredStatus = true
             }
 
 
@@ -874,6 +886,10 @@ class MessageRepositoryImpl @Inject constructor(
     override fun markDeliveredStatus(): Boolean {
         return messageDeliveredStatus
     }
+
+    /*override fun markSentStatus(): Boolean {
+        return messageSentStatus
+    }*/
 
 
     override fun markDeliveryFailed(id: Long, resultCode: Int) {
@@ -888,6 +904,8 @@ class MessageRepositoryImpl @Inject constructor(
                     message.dateSent = System.currentTimeMillis()
                     message.read = true
                     message.errorCode = resultCode
+                    messageDeliveredStatus = false
+
                 }
 
                 // Update the message in the native ContentProvider
@@ -897,7 +915,6 @@ class MessageRepositoryImpl @Inject constructor(
                 values.put(Sms.READ, true)
                 values.put(Sms.ERROR_CODE, resultCode)
                 context.contentResolver.update(message.getUri(), values, null, null)
-                messageDeliveredStatus = false
             }
         }
     }

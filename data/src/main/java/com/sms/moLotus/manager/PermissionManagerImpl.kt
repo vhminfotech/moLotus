@@ -21,8 +21,12 @@ package com.sms.moLotus.manager
 import android.Manifest
 import android.app.role.RoleManager
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
+import android.os.Environment
+import android.provider.Settings
 import android.provider.Telephony
 import androidx.core.content.ContextCompat
 import javax.inject.Inject
@@ -31,7 +35,8 @@ class PermissionManagerImpl @Inject constructor(private val context: Context) : 
 
     override fun isDefaultSms(): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            context.getSystemService(RoleManager::class.java)?.isRoleHeld(RoleManager.ROLE_SMS) == true
+            context.getSystemService(RoleManager::class.java)
+                ?.isRoleHeld(RoleManager.ROLE_SMS) == true
         } else {
             Telephony.Sms.getDefaultSmsPackage(context) == context.packageName
         }
@@ -58,11 +63,18 @@ class PermissionManagerImpl @Inject constructor(private val context: Context) : 
     }
 
     override fun hasStorage(): Boolean {
-        return hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            !Environment.isExternalStorageManager()
+        } else {
+            hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        }
     }
 
     private fun hasPermission(permission: String): Boolean {
-        return ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
+        return ContextCompat.checkSelfPermission(
+            context,
+            permission
+        ) == PackageManager.PERMISSION_GRANTED
     }
 
 }

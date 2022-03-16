@@ -13,6 +13,7 @@ import android.os.*
 import android.provider.ContactsContract
 import android.provider.MediaStore
 import android.provider.OpenableColumns
+import android.provider.Settings
 import android.text.Editable
 import android.text.TextWatcher
 import android.text.format.DateFormat
@@ -20,7 +21,6 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
@@ -606,8 +606,8 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
             !state.editingMode && state.selectedMessages > 0
         toolbar.menu.findItem(R.id.forward)?.isVisible =
             !state.editingMode && state.selectedMessages == 1
-        /*toolbar.menu.findItem(R.id.share)?.isVisible =
-            !state.editingMode && state.selectedMessages == 1*/
+        toolbar.menu.findItem(R.id.share)?.isVisible =
+            !state.editingMode && state.selectedMessages == 1
 //        toolbar.menu.findItem(R.id.previous)?.isVisible = state.selectedMessages == 0 && state.query.isNotEmpty()
 //        toolbar.menu.findItem(R.id.next)?.isVisible = state.selectedMessages == 0 && state.query.isNotEmpty()
         toolbar.menu.findItem(R.id.clear)?.isVisible =
@@ -679,11 +679,25 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
     }
 
     override fun requestStoragePermission() {
-        ActivityCompat.requestPermissions(
-            this,
-            arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-            0
-        )
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (!Environment.isExternalStorageManager()) {
+                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+                intent.data =
+                    Uri.parse(String.format("package:%s", applicationContext?.packageName))
+                startActivity(intent)
+            }
+        } else {
+
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.MANAGE_EXTERNAL_STORAGE
+                ),
+                0
+            )
+        }
     }
 
     override fun requestSmsPermission() {
@@ -843,6 +857,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
     override fun setDraft(draft: String) {
         message.setText(draft)
         message.setSelection(draft.length)
+
     }
 
     override fun scrollToMessage(id: Long) {
@@ -850,6 +865,10 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
             ?.indexOfLast { message -> message.id == id }
             ?.takeIf { position -> position != -1 }
             ?.let(messageList::scrollToPosition)
+    }
+
+    override fun scrollToLastPosition() {
+        messageList.scrollToPosition(messageAdapter.itemCount - 1)
     }
 
     override fun showQksmsPlusSnackbar(message: Int) {
@@ -877,9 +896,10 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when {
             requestCode == SelectContactRequestCode -> {
-                chipsSelectedIntent.onNext(data?.getSerializableExtra(ContactsActivity.ChipsKey)
-                    ?.let { serializable -> serializable as? HashMap<String, String?> }
-                    ?: hashMapOf())
+                chipsSelectedIntent.onNext(
+                    data?.getSerializableExtra(ContactsActivity.ChipsKey)
+                        ?.let { serializable -> serializable as? HashMap<String, String?> }
+                        ?: hashMapOf())
             }
             requestCode == TakePhotoRequestCode && resultCode == Activity.RESULT_OK -> {
                 Log.e("======", "data ::: ${(data?.data)}")
@@ -961,15 +981,15 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                 if (data?.data != null) {
                     var fileSize: Int? = 0
                     var finalUri: Uri? = null
-                    val duration = getVideoDuration(data?.data.toString(), this)
+                    val duration = getVideoDuration(data.data.toString(), this)
                     if (duration > 15000) {
-                        TrimVideo.activity(data?.data.toString())
+                        TrimVideo.activity(data.data.toString())
                             .setCompressOption(CompressOption(24, 160))
                             .setTrimType(TrimType.FIXED_DURATION)
                             .setFixedDuration(15)
                             .start(this)
                     } else {
-                        data?.data?.let { returnUri ->
+                        data.data?.let { returnUri ->
                             contentResolver.query(returnUri, null, null, null, null)
                         }?.use { cursor ->
                             val sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE)
@@ -1044,9 +1064,6 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                             }
                         }
                 }
-
-
-
 
 
                 /*data?.clipData?.itemCount
@@ -1137,7 +1154,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
-        cameraDestination = savedInstanceState?.getParcelable(CameraDestinationKey)
+        cameraDestination = savedInstanceState.getParcelable(CameraDestinationKey)
         super.onRestoreInstanceState(savedInstanceState)
     }
 

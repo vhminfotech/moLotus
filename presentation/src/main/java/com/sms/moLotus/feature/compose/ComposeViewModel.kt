@@ -1,6 +1,5 @@
 package com.sms.moLotus.feature.compose
 
-import android.app.Activity
 import android.app.Dialog
 import android.content.Context
 import android.net.Uri
@@ -13,7 +12,6 @@ import android.view.View
 import android.view.Window
 import android.view.WindowManager
 import android.widget.FrameLayout
-import android.widget.Toast
 import androidx.core.content.getSystemService
 import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
@@ -24,14 +22,12 @@ import com.sms.moLotus.common.util.MessageDetailsFormatter
 import com.sms.moLotus.common.util.extensions.makeToast
 import com.sms.moLotus.compat.SubscriptionManagerCompat
 import com.sms.moLotus.compat.TelephonyCompat
+import com.sms.moLotus.extensions.*
+import com.sms.moLotus.interactor.*
 import com.sms.moLotus.manager.ActiveConversationManager
 import com.sms.moLotus.manager.BillingManager
 import com.sms.moLotus.manager.PermissionManager
-import com.sms.moLotus.model.Attachment
-import com.sms.moLotus.model.Attachments
-import com.sms.moLotus.model.Conversation
-import com.sms.moLotus.model.Message
-import com.sms.moLotus.model.Recipient
+import com.sms.moLotus.model.*
 import com.sms.moLotus.repository.ContactRepository
 import com.sms.moLotus.repository.ConversationRepository
 import com.sms.moLotus.repository.MessageRepository
@@ -52,13 +48,11 @@ import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
 import kotlinx.android.synthetic.main.compose_activity.*
+import kotlinx.android.synthetic.main.layout_send_paid_message.*
 import timber.log.Timber
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Named
-import com.sms.moLotus.extensions.*
-import com.sms.moLotus.interactor.*
-import kotlinx.android.synthetic.main.layout_send_paid_message.*
 
 
 class ComposeViewModel @Inject constructor(
@@ -378,16 +372,9 @@ class ComposeViewModel @Inject constructor(
 
                 messages?.firstOrNull()?.let { messageRepo.getMessage(it) }?.let { message ->
                     val images =
-                        message.parts.filter { it.isImage() || it.isAudio() || it.isVideo() }
+                        message.parts.filter { it.isImage() || it.isAudio() || it.isVideo() || it.isVCard() }
                             .mapNotNull { it.getUri() }
                     navigator.showCompose(message.getText(), images)
-                    /*val images =
-                        message.parts.filter { it.isVideo() || it.isVCard() || it.isAudio() || it.isImage() }
-                            .mapNotNull {
-                                Log.e("message", "==uri====${it.getUri()}")
-                                it.getUri()
-                            }*/
-
                 }
             }
             .autoDisposable(view.scope())
@@ -397,21 +384,71 @@ class ComposeViewModel @Inject constructor(
         view.optionsItemIntent
             .filter { it == R.id.share }
             .withLatestFrom(view.messagesSelectedIntent) { _, messages ->
-                Log.e("message", "======${messages}")
                 messages?.firstOrNull()?.let { messageRepo.getMessage(it) }?.let { message ->
-                    Log.e("message", "======${message.parts}")
-                    val images =
-                        message.parts.filter { it.isVideo() || it.isVCard() || it.isAudio() || it.isImage() }
-                            .mapNotNull {
-                                Log.e("message", "==uri====${it.getUri()}")
-                                it.getUri()
+
+                    Log.e("======", "message:::: ${message.id}")
+
+                    message.parts.filter { it.isImage() || it.isAudio() || it.isVideo() || it.isVCard() }
+                        .mapNotNull {
+                            if (permissionManager.hasStorage()) {
+                                messageRepo.savePart(it.id)?.let { it1 ->
+                                    navigator.shareFile(
+                                        message.getText(),
+                                        it1
+                                    )
+                                }
+                            }else{
+                                view.requestStoragePermission()
                             }
-                    navigator.shareToOtherApps(message.getText(), images)
-//                    navigator.shareToOtherApps(message.getText(), images)
+                        }
+
+                    /*if (message.parts.isEmpty()) {
+                        navigator.shareToOtherApps(
+                            message.getText(),
+                            null
+                        )
+                    } else {
+                        message.parts.filter { it.isImage() || it.isAudio() || it.isVideo() || it.isVCard() }
+                            .mapNotNull {
+                                val mimeType = activity.contentResolver.getType(it.getUri())
+                                when {
+                                    ContentType.isImageType(mimeType) || ContentType.isAudioType(
+                                        mimeType
+                                    ) || ContentType.isVideoType(mimeType) -> {
+                                        Attachment.Image(it.getUri())
+                                        navigator.shareToOtherApps(
+                                            message.getText(),
+                                            it.getUri()
+                                        )
+                                    }
+
+                                    ContentType.TEXT_VCARD.equals(mimeType, true) -> {
+                                        val inputStream =
+                                            activity.contentResolver.openInputStream(it.getUri())
+                                        val text = inputStream?.reader(Charset.forName("utf-8"))
+                                            ?.readText()
+                                        text?.let(Attachment::Contact)
+                                        navigator.shareToOtherApps(
+                                            message.getText(),
+                                            it.getUri()
+                                        )
+                                    }
+
+                                    else -> {
+                                        Attachment.Image(it.getUri())
+                                        navigator.shareToOtherApps(
+                                            message.getText(),
+                                            it.getUri()
+                                        )
+                                    }
+                                }
+                            }
+                    }*/
                 }
-            }
+            }.doOnError { throwable -> Log.e("ONERROR", "== ${throwable.message}") }
             .autoDisposable(view.scope())
             .subscribe { view.clearSelection() }
+
 
         // Show the previous search result
 //        view.optionsItemIntent
@@ -473,20 +510,20 @@ class ComposeViewModel @Inject constructor(
         // Media attachment clicks
         view.messagePartClickIntent
             .mapNotNull(messageRepo::getPart)
-            .filter { part -> part.isImage() || part.isVideo() || part.isAudio() }
+            .filter { part -> part.isImage() || part.isVideo() /*|| part.isAudio()*/ }
             .autoDisposable(view.scope())
             .subscribe { part ->
-                if (part.isAudio()) {
-                    navigator.showAudioMedia(part.getUri())
-                } else {
-                    navigator.showMedia(part.id)
-                }
+                /* if (part.isAudio()) {
+                     navigator.showAudioMedia(part.getUri())
+                 } else {*/
+                navigator.showMedia(part.id)
+                //   }
             }
 
         // Non-media attachment clicks
         view.messagePartClickIntent
             .mapNotNull(messageRepo::getPart)
-            .filter { part -> !part.isImage() && !part.isVideo() && !part.isAudio() }
+            .filter { part -> !part.isImage() && !part.isVideo()/* && !part.isAudio()*/ }
             .autoDisposable(view.scope())
             .subscribe { part ->
                 if (permissionManager.hasStorage()) {
@@ -784,12 +821,18 @@ class ComposeViewModel @Inject constructor(
                     sendMessage(view, state, attachments, conversation, chips, body)
                 }
 
-
             }.observeOn(AndroidSchedulers.mainThread()).doOnNext {
-                /*if (messageRepo.markDeliveredStatus()) {
-                    Toast.makeText(context, "Message Delivered", Toast.LENGTH_SHORT).show()
-                    Log.e("========", "Message Delivered!!!!!!!!!!!!")
-                }*/
+                /* Log.e("========", messageRepo.markDeliveredStatus().toString())
+                 when {
+                     messageRepo.markDeliveredStatus() -> {
+                         Toast.makeText(context, "Message Delivered", Toast.LENGTH_SHORT).show()
+                         Log.e("========", "Message Delivered!!!!!!!!!!!!")
+                     }
+
+                     else -> {
+                         Toast.makeText(context, "Message Failed", Toast.LENGTH_SHORT).show()
+                     }
+                 }*/
             }
             .autoDisposable(view.scope())
             .subscribe()
@@ -1002,12 +1045,12 @@ class ComposeViewModel @Inject constructor(
         }
 
         view.setDraft("")
+        view.scrollToLastPosition()
         this.attachments.onNext(ArrayList())
 
         if (state.editingMode) {
             newState { copy(editingMode = false, hasError = !sendAsGroup) }
         }
-
 
     }
 

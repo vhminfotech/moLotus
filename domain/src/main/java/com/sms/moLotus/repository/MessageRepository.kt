@@ -100,6 +100,10 @@ interface MessageRepository {
 
     fun markDeliveredStatus(): Boolean
 
+    /*fun markSentStatus(): Boolean
+
+    fun markReadStatus(): Boolean*/
+
     fun markDeliveryFailed(id: Long, resultCode: Int)
 
     fun deleteMessages(vararg messageIds: Long)

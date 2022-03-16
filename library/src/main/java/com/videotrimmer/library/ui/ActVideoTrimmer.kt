@@ -14,6 +14,7 @@ import android.net.Uri
 import android.os.*
 import android.provider.MediaStore
 import android.provider.OpenableColumns
+import android.provider.Settings
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -735,14 +736,26 @@ class ActVideoTrimmer : AppCompatActivity() {
     }
 
     private fun checkStoragePermission(): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            checkPermission(
-                Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.ACCESS_MEDIA_LOCATION
+        return when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> {
+                if (!Environment.isExternalStorageManager()) {
+                    val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+                    intent.data = Uri.parse(String.format("package:%s", applicationContext?.packageName))
+                    startActivity(intent)
+                }
+                Environment.isExternalStorageManager()
+            }
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
+                checkPermission(
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.MANAGE_EXTERNAL_STORAGE,
+                    Manifest.permission.ACCESS_MEDIA_LOCATION
+                )
+            }
+            else -> checkPermission(
+                Manifest.permission.READ_EXTERNAL_STORAGE
             )
-        } else checkPermission(
-            Manifest.permission.READ_EXTERNAL_STORAGE
-        )
+        }
     }
 
     private fun checkPermission(vararg permissions: String): Boolean {

@@ -2,13 +2,20 @@ package com.sms.moLotus.feature.backup
 
 import android.Manifest
 import android.app.Activity
+import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Typeface
+import android.net.Uri
+import android.os.Build
+import android.os.Build.VERSION.SDK_INT
+import android.os.Environment
+import android.provider.Settings
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.view.children
 import androidx.core.view.isVisible
+import com.google.common.reflect.Reflection.getPackageName
 import com.jakewharton.rxbinding2.view.clicks
 import com.sms.moLotus.R
 import com.sms.moLotus.common.base.QkController
@@ -171,7 +178,22 @@ class BackupController : QkController<BackupView, BackupState, BackupPresenter>(
     override fun fabClicks(): Observable<*> = fab.clicks()
 
     override fun requestStoragePermission() {
-        ActivityCompat.requestPermissions(activity!!, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 0)
+        if (SDK_INT >= Build.VERSION_CODES.R) {
+            if (!Environment.isExternalStorageManager()) {
+                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+                intent.data = Uri.parse(String.format("package:%s", applicationContext?.packageName))
+                startActivity(intent)
+            }
+        } else {
+            ActivityCompat.requestPermissions(
+                activity!!,
+                arrayOf(
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.MANAGE_EXTERNAL_STORAGE
+                ),
+                0
+            )
+        }
     }
 
     override fun selectFile() = backupFilesDialog.show()

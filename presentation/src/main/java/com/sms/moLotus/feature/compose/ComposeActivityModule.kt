@@ -19,22 +19,24 @@ class ComposeActivityModule {
 
     @Provides
     @Named("query")
-    fun provideQuery(activity: ComposeActivity): String = activity.intent.extras?.getString("query") ?: ""
+    fun provideQuery(activity: ComposeActivity): String =
+        activity.intent.extras?.getString("query") ?: ""
 
     @Provides
     @Named("threadId")
-    fun provideThreadId(activity: ComposeActivity): Long = activity.intent.extras?.getLong("threadId") ?: 0L
+    fun provideThreadId(activity: ComposeActivity): Long =
+        activity.intent.extras?.getLong("threadId") ?: 0L
 
     @Provides
     @Named("addresses")
     fun provideAddresses(activity: ComposeActivity): List<String> {
         return activity.intent
-                ?.decodedDataString()
-                ?.substringAfter(':') // Remove scheme
-                ?.substringBefore("?") // Remove query
-                ?.split(",", ";")
-                ?.filter { number -> number.isNotEmpty() }
-                ?: listOf()
+            ?.decodedDataString()
+            ?.substringAfter(':') // Remove scheme
+            ?.substringBefore("?") // Remove query
+            ?.split(",", ";")
+            ?.filter { number -> number.isNotEmpty() }
+            ?: listOf()
     }
 
     @Provides
@@ -46,12 +48,12 @@ class ComposeActivityModule {
         }
 
         return subject + (activity.intent.extras?.getString(Intent.EXTRA_TEXT)
-                ?: activity.intent.extras?.getString("sms_body")
-                ?: activity.intent?.decodedDataString()
-                        ?.substringAfter('?') // Query string
-                        ?.takeIf { it.startsWith("body") }
-                        ?.substringAfter('=')
-                ?: "")
+            ?: activity.intent.extras?.getString("sms_body")
+            ?: activity.intent?.decodedDataString()
+                ?.substringAfter('?') // Query string
+                ?.takeIf { it.startsWith("body") }
+                ?.substringAfter('=')
+            ?: "")
     }
 
     @Provides
@@ -67,13 +69,48 @@ class ComposeActivityModule {
                     Attachment.Image(uri)
                 }
 
+                ContentType.isVideoType(mimeType) -> {
+                    Attachment.Image(uri)
+                }
+
+                ContentType.isAudioType(mimeType) -> {
+                    Attachment.Image(uri)
+                }
+
                 ContentType.TEXT_VCARD.equals(mimeType, true) -> {
                     val inputStream = activity.contentResolver.openInputStream(uri)
                     val text = inputStream?.reader(Charset.forName("utf-8"))?.readText()
                     text?.let(Attachment::Contact)
+
+                    /*   val cr: ContentResolver = activity.contentResolver
+                       var stream: InputStream? = null
+                       try {
+                           stream = cr.openInputStream(uri)
+                       } catch (e: FileNotFoundException) {
+                           // TODO Auto-generated catch block
+                           e.printStackTrace()
+                       }
+
+                       val fileContent = StringBuffer("")
+                       var ch: Int = 0
+                       try {
+                           while (stream?.read()
+                                   .also {
+                                       if (it != null) {
+                                           ch = it
+                                       }
+                                   } != -1
+                           ) fileContent.append(ch.toChar())
+                       } catch (e: IOException) {
+                           // TODO Auto-generated catch block
+                           e.printStackTrace()
+                       }
+                       val data = String(fileContent)
+                       Log.e("==============", "data: $data")
+                       data?.let(Attachment::Contact)*/
                 }
 
-                else -> null
+                else -> Attachment.Image(uri)
             }
         })
     }

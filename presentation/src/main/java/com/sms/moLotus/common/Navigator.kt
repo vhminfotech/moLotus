@@ -12,7 +12,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
-import android.os.StrictMode
 import android.provider.ContactsContract
 import android.provider.MediaStore
 import android.provider.Settings
@@ -22,12 +21,12 @@ import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.core.content.FileProvider
 import com.sms.moLotus.BuildConfig
-import com.sms.moLotus.feature.intro.IntroActivity2
 import com.sms.moLotus.feature.backup.BackupActivity
 import com.sms.moLotus.feature.blocking.BlockingActivity
 import com.sms.moLotus.feature.compose.ComposeActivity
 import com.sms.moLotus.feature.conversationinfo.ConversationInfoActivity
 import com.sms.moLotus.feature.gallery.GalleryActivity
+import com.sms.moLotus.feature.intro.IntroActivity2
 import com.sms.moLotus.feature.notificationprefs.NotificationPrefsActivity
 import com.sms.moLotus.feature.plus.PlusActivity
 import com.sms.moLotus.feature.scheduled.ScheduledActivity
@@ -41,11 +40,15 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
-import java.lang.Exception
 import javax.inject.Inject
 import javax.inject.Singleton
-import androidx.core.content.ContextCompat.startActivity
-import androidx.core.content.ContextCompat.startActivity
+import androidx.core.app.ActivityCompat.startActivityForResult
+import androidx.test.core.app.ApplicationProvider
+
+import androidx.test.core.app.ApplicationProvider.getApplicationContext
+
+
+
 
 
 @Singleton
@@ -98,28 +101,25 @@ class Navigator @Inject constructor(
     fun showCompose(body: String? = null, images: List<Uri>? = null) {
         val intent = Intent(context, ComposeActivity::class.java)
         intent.putExtra(Intent.EXTRA_TEXT, body)
-
         images?.takeIf { it.isNotEmpty() }?.let {
             intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, ArrayList(images))
         }
-
         startActivity(intent)
     }
 
-    fun shareToOtherApps(body: String? = null, images: List<Uri>? = null) {
-        val intent = Intent(Intent.ACTION_SEND)
-        intent.putExtra(Intent.EXTRA_TEXT, body)
-        Log.e("=========", "uri:: ${Uri.parse(images.toString())}")
-
-        intent.putExtra(Intent.EXTRA_STREAM, Uri.parse(images.toString()))
-
-        intent.type = "*/*"
-        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        intent.addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
-        /*images?.takeIf { it.isNotEmpty() }?.let {
-            intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, ArrayList(images))
-        }*/
-        startActivity(Intent.createChooser(intent, "Share"))
+    fun shareToOtherApps(body: String? = null, uri: Uri?) {
+        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "*/*"
+            flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+            flags = Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            putExtra(Intent.EXTRA_TEXT, body)
+            if (uri != null) {
+                putExtra(Intent.EXTRA_STREAM, uri)
+            }
+        }
+        startActivity(Intent.createChooser(shareIntent, "Share"))
     }
 
     fun sendVideoOrAudio(body: String? = null, images: List<Uri>? = null) {
@@ -395,15 +395,25 @@ class Navigator @Inject constructor(
         startActivityExternal(intent)
     }
 
-    fun shareFile(file: File) {
+    fun shareFile(body: String?,file: File) {
         val data = FileProvider.getUriForFile(context, "com.sms.moLotus.fileprovider", file)
-        val type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(file.name.split(".").last())
-        val intent = Intent(Intent.ACTION_SEND)
-            .setType(type)
-            .putExtra(Intent.EXTRA_STREAM, data)
-            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+//        val type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(file.name.split(".").last())
+        /* val intent = Intent(Intent.ACTION_SEND)
+             .setType(type)
+             .putExtra(Intent.EXTRA_STREAM, data)
+             .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)*/
+        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+            type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(file.name.split(".").last())
+            flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+            flags = Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            putExtra(Intent.EXTRA_TEXT, body)
+            putExtra(Intent.EXTRA_STREAM, data)
 
-        startActivityExternal(intent)
+        }
+        startActivity(Intent.createChooser(shareIntent, "Share"))
+        //startActivityExternal(intent)
     }
 
     fun showNotificationSettings(threadId: Long = 0) {
