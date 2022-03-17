@@ -64,7 +64,7 @@ class PermissionManagerImpl @Inject constructor(private val context: Context) : 
 
     override fun hasStorage(): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            !Environment.isExternalStorageManager()
+            !Environment.isExternalStorageManager() or hasPermission(Manifest.permission.MANAGE_EXTERNAL_STORAGE)
         } else {
             hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
         }

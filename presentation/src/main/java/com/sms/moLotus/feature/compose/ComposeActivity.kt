@@ -5,8 +5,11 @@ import android.animation.LayoutTransition
 import android.app.Activity
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.ContentResolver
 import android.content.ContentValues
+import android.content.Context
 import android.content.Intent
+import android.database.Cursor
 import android.graphics.Color
 import android.net.Uri
 import android.os.*
@@ -27,12 +30,14 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker.PERMISSION_GRANTED
 import androidx.core.view.isVisible
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import com.devlomi.record_view.OnRecordListener
 import com.devlomi.record_view.RecordButton
 import com.devlomi.record_view.RecordPermissionHandler
 import com.google.android.flexbox.FlexboxLayoutManager
+import com.google.android.gms.common.util.IOUtils
 import com.google.android.material.snackbar.Snackbar
 import com.jakewharton.rxbinding2.view.clicks
 import com.jakewharton.rxbinding2.widget.textChanges
@@ -68,12 +73,18 @@ import kotlinx.android.synthetic.main.compose_activity.toolbarTitle
 import kotlinx.android.synthetic.main.main_activity.*
 import kotlinx.coroutines.*
 import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.collections.HashMap
+import androidx.core.app.ActivityCompat.startActivityForResult
+
+
+
 
 class ComposeActivity : QkThemedActivity(), ComposeView {
 
@@ -85,6 +96,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         private const val AttachVideoRequestCode = 4
         private const val TakeVideoRequestCode = 5
         private const val AddAudioRequestCode = 6
+        private const val AttachDocumentRequestCode = 7
 
         private const val CameraDestinationKey = "camera_destination"
 
@@ -147,8 +159,8 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
     override val takeVideoIntent by lazy {
         Observable.merge(takeVideo.clicks(), takeVideoLabel.clicks())
     }
-    override val addAudioIntent by lazy {
-        Observable.merge(addAudio.clicks(), addAudioLabel.clicks())
+    override val addDocumentsIntent by lazy {
+        Observable.merge(addDocuments.clicks(), addDocumentsLabel.clicks())
     }
     override val scheduleIntent by lazy {
 //        Observable.merge(schedule.clicks(), scheduleLabel.clicks())
@@ -177,6 +189,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
     }
 
     private var cameraDestination: Uri? = null
+    private var videoDestination: Uri? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
@@ -189,14 +202,15 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         audioRecorder = AudioRecorder()
         record_button.setRecordView(record_view)
         onMessageTyped()
+
         recordClicked()
 
         video.visibility = View.GONE
         videoLabel.visibility = View.GONE
         takeVideo.visibility = View.GONE
         takeVideoLabel.visibility = View.GONE
-        addAudio.visibility = View.GONE
-        addAudioLabel.visibility = View.GONE
+        addDocuments.visibility = View.GONE
+        addDocumentsLabel.visibility = View.GONE
 
 
 
@@ -319,7 +333,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                 record_view.visibility = View.VISIBLE
                 record_view?.setBackgroundColor(resources.getColor(R.color.bubbleLight))
                 recordFile = File(
-                    Environment.getExternalStorageDirectory(), /*UUID.randomUUID().toString()*/
+                    Environment.getExternalStorageDirectory().absolutePath , /*UUID.randomUUID().toString()*/
                     "audio_" + SimpleDateFormat(
                         "yyyyMMdd_HHmmss",
                         Locale.getDefault()
@@ -363,10 +377,10 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                 ).show()*/
                 var uri: Uri? = null
                 try {
-                    uri = recordFile?.absoluteFile?.let {
-                        getAudioContentUri(
-                            it,
-                            this@ComposeActivity
+                    uri = recordFile?.absolutePath?.let {
+                        getContentUri2(
+
+                            this@ComposeActivity, it
                         )
                     }
                     //Log.d( "record_view", "onFinish Limit Reached? $limitReached == recordFile::${recordFile?.path} time:: $time :::: uri::::$uri" )
@@ -395,17 +409,40 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
                 return@RecordPermissionHandler true
             }
-            val recordPermissionAvailable = ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.RECORD_AUDIO
-            ) === PERMISSION_GRANTED
-            if (recordPermissionAvailable) {
-                return@RecordPermissionHandler true
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R){
+                if (ContextCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.RECORD_AUDIO
+                    ) === PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.MANAGE_EXTERNAL_STORAGE
+                    ) === PERMISSION_GRANTED
+                ) {
+                    return@RecordPermissionHandler true
+                }
+            }else {
+                if (ContextCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.RECORD_AUDIO
+                    ) === PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    ) === PERMISSION_GRANTED
+                ) {
+                    return@RecordPermissionHandler true
+                }
             }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R){
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                intent.data = Uri.parse(String.format("package:%s", applicationContext?.packageName))
+                startActivity(intent)
+            }else{
             ActivityCompat.requestPermissions(
                 this, arrayOf(Manifest.permission.RECORD_AUDIO),
                 0
             )
+                }
             false
         })
     }
@@ -636,16 +673,16 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                 videoLabel.visibility = View.VISIBLE
                 takeVideo.visibility = View.VISIBLE
                 takeVideoLabel.visibility = View.VISIBLE
-                addAudio.visibility = View.GONE
-                addAudioLabel.visibility = View.GONE
+                addDocuments.visibility = View.VISIBLE
+                addDocumentsLabel.visibility = View.VISIBLE
                 135f
             } else {
                 video.visibility = View.GONE
                 videoLabel.visibility = View.GONE
                 takeVideo.visibility = View.GONE
                 takeVideoLabel.visibility = View.GONE
-                addAudio.visibility = View.GONE
-                addAudioLabel.visibility = View.GONE
+                addDocuments.visibility = View.GONE
+                addDocumentsLabel.visibility = View.GONE
                 0f
             }
         ).start()
@@ -681,20 +718,25 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
     override fun requestStoragePermission() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            if (!Environment.isExternalStorageManager()) {
+            /*if (!Environment.isExternalStorageManager()) {
                 val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
                 intent.data =
                     Uri.parse(String.format("package:%s", applicationContext?.packageName))
                 startActivity(intent)
-            }
+            }else{*/
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(
+                        Manifest.permission.MANAGE_EXTERNAL_STORAGE),
+                    0
+                )
+          //  }
         } else {
 
             ActivityCompat.requestPermissions(
                 this,
                 arrayOf(
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.MANAGE_EXTERNAL_STORAGE
-                ),
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE),
                 0
             )
         }
@@ -816,7 +858,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
     }
 
     override fun requestTakeVideo() {
-        cameraDestination = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+        videoDestination = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
             .let { timestamp ->
                 ContentValues().apply {
                     put(
@@ -840,9 +882,22 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
             }
         val intent = Intent(MediaStore.ACTION_VIDEO_CAPTURE).putExtra(
             MediaStore.EXTRA_OUTPUT,
-            cameraDestination
+            videoDestination
         )
         startActivityForResult(Intent.createChooser(intent, null), TakeVideoRequestCode)
+    }
+
+    override fun addDocuments() {
+        val intent = Intent()
+        intent.action = Intent.ACTION_OPEN_DOCUMENT
+        intent.type = "application/*"
+        intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+        intent.flags = Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+        intent.putExtra("return-data", true)
+        startActivityForResult(
+            Intent.createChooser(intent, "Complete action using"),
+            AttachDocumentRequestCode
+        )
     }
 
     override fun addAudio() {
@@ -973,6 +1028,12 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                 data?.data?.let(contactSelectedIntent::onNext)
             }
 
+            requestCode == AttachDocumentRequestCode && resultCode == Activity.RESULT_OK -> {
+                Log.e("======", "iAttachDocumentRequestCode ::: ${data?.data}")
+
+                data?.data?.let(attachmentSelectedIntent::onNext)
+            }
+
             requestCode == AttachVideoRequestCode && resultCode == Activity.RESULT_OK -> {
 
                 Log.e("======", "data ::: ${(data?.data)}")
@@ -1077,11 +1138,15 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
 
             requestCode == TrimVideo.VIDEO_TRIMMER_REQ_CODE && data != null -> {
                 Log.e("======", "TrimVideo data ::: ${TrimVideo.getTrimmedVideoPath(data)}")
-                val uri = getVideoContentUri(
+                Log.e("======", "TrimVideo data ::: ${data?.data}")
+
+
+
+
+                val uri = getContentUri1(this,TrimVideo.getTrimmedVideoPath(data))/*getVideoContentUri(
                     File(TrimVideo.getTrimmedVideoPath(data)),
                     this
-                )
-
+                )*/
 
                 Log.e("======", "TrimVideo uri ::: $uri")
 
@@ -1093,10 +1158,10 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
             requestCode == TakeVideoRequestCode && resultCode == Activity.RESULT_OK -> {
                 var fileSize: Int? = 0
                 var finalUri: Uri? = null
-                val duration: Int = getVideoDuration(cameraDestination.toString(), this)
+                val duration: Int = getVideoDuration(videoDestination.toString(), this)
                 // Log.e("COMPOSEActivity", "duration:: $duration")
                 if (duration > 15000) {
-                    cameraDestination?.let { returnUri ->
+                    videoDestination?.let { returnUri ->
                         TrimVideo.activity(returnUri.toString())
                             .setCompressOption(CompressOption(24, 160))
                             .setTrimType(TrimType.FIXED_DURATION)
@@ -1104,7 +1169,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                             .start(this)
                     }
                 } else {
-                    cameraDestination?.let { returnUri ->
+                    videoDestination?.let { returnUri ->
                         contentResolver.query(returnUri, null, null, null, null)
                     }?.use { cursor ->
                         val sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE)
@@ -1120,17 +1185,17 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                             progressDialog.show(this@ComposeActivity)
 
                             GlobalScope.launch(Dispatchers.IO) {
-                                VideoCompressor.compress(this@ComposeActivity, cameraDestination!!)
+                                VideoCompressor.compress(this@ComposeActivity, videoDestination!!)
                             }
 
-                            Handler().postDelayed({
+                            Handler(Looper.getMainLooper()).postDelayed({
                                 progressDialog.dialog.dismiss()
                                 finalUri = VideoCompressor.newUri
                                 finalUri?.let(attachmentSelectedIntent::onNext)
                             }, 12000)
 
                         } else {
-                            cameraDestination?.let(attachmentSelectedIntent::onNext)
+                            videoDestination?.let(attachmentSelectedIntent::onNext)
                         }
                     }
 
@@ -1147,6 +1212,68 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         }
     }
 
+    fun getContentUri1(context: Context, absPath: String): Uri? {
+        Log.e("=============", "getImageContentUri: $absPath")
+        val cursor: Cursor? = context.getContentResolver().query(
+            MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+            arrayOf(MediaStore.Video.Media._ID),
+            MediaStore.Video.Media.DATA + "=? ",
+            arrayOf(absPath),
+            null
+        )
+        return if (cursor != null && cursor.moveToFirst()) {
+            val id: Int = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns._ID))
+            Uri.withAppendedPath(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, id.toString())
+        } else if (absPath.isNotEmpty()) {
+            val values = ContentValues()
+            values.put(MediaStore.Video.Media.DATA, absPath)
+            values.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
+
+            context.contentResolver.insert(
+                MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values
+            )
+        } else {
+            null
+        }
+    }
+
+    fun getContentUri2(context: Context, absPath: String): Uri? {
+        val cursor: Cursor? = context.getContentResolver().query(
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+            arrayOf(MediaStore.Audio.Media._ID),
+            MediaStore.Audio.Media.DATA + "=? ",
+            arrayOf(absPath),
+            null
+        )
+        return if (cursor != null && cursor.moveToFirst()) {
+            val id: Int = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns._ID))
+            Uri.withAppendedPath(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id.toString())
+        } else if (absPath.isNotEmpty()) {
+            val values = ContentValues()
+            values.put(MediaStore.Audio.Media.DATA, absPath)
+            values.put(MediaStore.Audio.Media.MIME_TYPE, "audio/aac")
+
+            context.contentResolver.insert(
+                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, values
+            )
+        } else {
+            null
+        }
+    }
+
+    fun ContentResolver.getFileName(fileUri: Uri): String {
+
+        var name = ""
+        val returnCursor = this.query(fileUri, null, null, null, null)
+        if (returnCursor != null) {
+            val nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+            returnCursor.moveToFirst()
+            name = returnCursor.getString(nameIndex)
+            returnCursor.close()
+        }
+
+        return name
+    }
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putParcelable(CameraDestinationKey, cameraDestination)

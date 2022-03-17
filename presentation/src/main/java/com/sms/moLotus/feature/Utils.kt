@@ -22,8 +22,60 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 object Utils {
-    fun getVideoContentUri(imageFile: File, context: Context): Uri? {
-        val filePath = imageFile.absolutePath
+    fun getVideoContentUri(file: File, context: Context): Uri? {
+        val builder: StrictMode.VmPolicy.Builder = StrictMode.VmPolicy.Builder()
+        StrictMode.setVmPolicy(builder.build())
+        val filePath = file.absolutePath
+        val cursor: Cursor? =
+            context.contentResolver.query(
+                MediaStore.Video.Media.EXTERNAL_CONTENT_URI, arrayOf(
+                    MediaStore.Video.Media.DISPLAY_NAME,
+                    MediaStore.Video.Media.SIZE,
+                    MediaStore.Video.Media.DATE_TAKEN,
+                    MediaStore.Video.Media._ID,
+                    MediaStore.MediaColumns.DATA
+                ),
+                MediaStore.Video.Media.DATA + "=? ", arrayOf(filePath), null
+            )
+        return if (cursor != null && cursor.moveToFirst()) {
+            val id = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA))
+            cursor.close()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                Uri.withAppendedPath(
+                    MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY),
+                    "" + id
+                )
+            } else {
+                Uri.withAppendedPath(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, "" + id)
+            }
+        } else {
+            if (file.exists()) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    val resolver: ContentResolver = context.contentResolver
+                    val picCollection = MediaStore.Video.Media
+                        .getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+                    val picDetail = ContentValues()
+                    picDetail.put(MediaStore.Video.Media.DISPLAY_NAME, file.name)
+                    picDetail.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
+                    picDetail.put(
+                        MediaStore.Video.Media.RELATIVE_PATH,
+                        Environment.DIRECTORY_DCIM
+                    )
+                    picDetail.put(MediaStore.Video.Media.IS_PENDING, 0)
+                    return resolver.insert(picCollection, picDetail)
+                } else {
+                    val values = ContentValues()
+                    values.put(MediaStore.Video.Media.DATA, filePath)
+                    values.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
+                    context.contentResolver.insert(
+                        MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values
+                    )
+                }
+            } else {
+                null
+            }
+        }
+       /* val filePath = imageFile.absolutePath
         val cursor = context.contentResolver.query(
             MediaStore.Video.Media.EXTERNAL_CONTENT_URI, arrayOf(MediaStore.Video.Media._ID),
             MediaStore.Video.Media.DATA + "=? ", arrayOf(filePath), null
@@ -62,7 +114,7 @@ object Utils {
             } else {
                 null
             }
-        }
+        }*/
     }
     /*fun getVideoContentUri(file: File, context: Context): Uri? {
         *//*val filePath = file.absolutePath

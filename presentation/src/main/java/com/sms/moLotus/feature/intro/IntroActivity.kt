@@ -223,10 +223,15 @@ class IntroActivity : AppCompatActivity() {
             } else if (phone_number.text.isEmpty()) {
                 btnLogin.isEnabled = true
                 showToast(message = "Phone number is empty")
-            } /*else if (carrierText == "Select carrier provider") {
+            }else if(phone_number.text.length <= 7 || phone_number.text.length > 14) {
                 btnLogin.isEnabled = true
-                showToast(message = "Please select carrier provider")
-            }*/ else if (/*carrierText != "Select carrier provider" &&*/ phone_number.text.isNotEmpty() && phone_number.text.length == 10 && etName.text.isNotEmpty()) {
+
+                toast("Please enter valid phone number having 7 to 14 digits!")
+            /*else if (carrierText == "Select carrier provider") {
+                               btnLogin.isEnabled = true
+                               showToast(message = "Please select carrier provider")
+                           }*/
+            } else if (/*carrierText != "Select carrier provider" &&*/ phone_number.text.isNotEmpty() && phone_number.text.length >= 7 && etName.text.isNotEmpty()) {
                 btnLogin.isEnabled = false
                 registerUser()
             } else {

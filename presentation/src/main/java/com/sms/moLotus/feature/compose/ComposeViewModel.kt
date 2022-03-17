@@ -390,16 +390,16 @@ class ComposeViewModel @Inject constructor(
 
                     message.parts.filter { it.isImage() || it.isAudio() || it.isVideo() || it.isVCard() }
                         .mapNotNull {
-                            if (permissionManager.hasStorage()) {
+                           // if (permissionManager.hasStorage()) {
                                 messageRepo.savePart(it.id)?.let { it1 ->
                                     navigator.shareFile(
                                         message.getText(),
                                         it1
                                     )
                                 }
-                            }else{
+                           /* }else{
                                 view.requestStoragePermission()
-                            }
+                            }*/
                         }
 
                     /*if (message.parts.isEmpty()) {
@@ -640,10 +640,10 @@ class ComposeViewModel @Inject constructor(
             .autoDisposable(view.scope())
             .subscribe { view.requestTakeVideo() }
 
-        view.addAudioIntent
+        view.addDocumentsIntent
             .doOnNext { newState { copy(attaching = false) } }
             .autoDisposable(view.scope())
-            .subscribe { view.addAudio() }
+            .subscribe { view.addDocuments() }
 
 
         // Choose a time to schedule the message

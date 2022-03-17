@@ -588,7 +588,16 @@ class ActVideoTrimmer : AppCompatActivity() {
                 (fName) + getFileDateTime() + "." + TrimmerUtils.getFileExtension(this, uri));*/
     private val outputFile: File
         get() {
-            val uri = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+            return File(
+                Environment.getExternalStorageDirectory().absolutePath + "/" + SimpleDateFormat(
+                    "yyyyMMdd_HHmmss",
+                    Locale.getDefault()
+                ).format(
+                    Date()
+                ) + ".mp4"
+            )
+
+            /*val uri = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
                 .let { timestamp ->
                     ContentValues().apply {
                         put(
@@ -609,7 +618,7 @@ class ActVideoTrimmer : AppCompatActivity() {
                             cv
                         )
                     }
-                }
+                }*/
             /*val newFile = File(
                 Environment.getExternalStorageDirectory(),  *//*Environment.DIRECTORY_MOVIES +*//*
                 "/videoCompress.mp4"
@@ -644,7 +653,7 @@ class ActVideoTrimmer : AppCompatActivity() {
 
 
 
-            return getFile(this, uri)
+             //getFile(this, uri)
         }
 
 
@@ -742,13 +751,26 @@ class ActVideoTrimmer : AppCompatActivity() {
                     val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
                     intent.data = Uri.parse(String.format("package:%s", applicationContext?.packageName))
                     startActivity(intent)
+                    finish()
+                    Environment.isExternalStorageManager()
+
+                }else{
+                    ActivityCompat.requestPermissions(
+                        this,
+                        arrayOf(
+                            Manifest.permission.MANAGE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE),
+                        0
+                    )
+                    checkPermission(
+                        Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.ACCESS_MEDIA_LOCATION
+                    )
                 }
-                Environment.isExternalStorageManager()
+
             }
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
                 checkPermission(
                     Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.MANAGE_EXTERNAL_STORAGE,
                     Manifest.permission.ACCESS_MEDIA_LOCATION
                 )
             }

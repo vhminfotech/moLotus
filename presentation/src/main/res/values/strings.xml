@@ -417,6 +417,7 @@
     <string name="notification_message_failed_title">Message not sent</string>
     <string name="notification_message_failed_text">The message to %s failed to send</string>
     <string name="add_audio">Add Audio</string>
+    <string name="add_documents">Add Documents</string>
     <string name="splash_name">mChat</string>
     <string name="enter_otp">Enter OTP</string>
     <string name="verify_otp">Verify OTP</string>
