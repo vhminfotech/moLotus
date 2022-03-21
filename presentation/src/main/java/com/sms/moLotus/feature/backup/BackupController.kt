@@ -179,7 +179,7 @@ class BackupController : QkController<BackupView, BackupState, BackupPresenter>(
 
     override fun requestStoragePermission() {
         if (SDK_INT >= Build.VERSION_CODES.R) {
-            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+            val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
             intent.data = Uri.parse(String.format("package:%s", applicationContext?.packageName))
             startActivity(intent)
            /* if (!Environment.isExternalStorageManager()) {

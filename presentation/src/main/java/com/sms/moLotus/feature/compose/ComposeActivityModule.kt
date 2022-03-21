@@ -16,7 +16,6 @@ import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
 import java.net.URLDecoder
-import java.nio.charset.Charset
 import javax.inject.Named
 
 @Module
@@ -67,8 +66,13 @@ class ComposeActivityModule {
         val uris = mutableListOf<Uri>()
         activity.intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)?.run(uris::add)
         activity.intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM)?.run(uris::addAll)
+
         return Attachments(uris.mapNotNull { uri ->
+            Log.e("==========","uris:: $uri")
+
             val mimeType = activity.contentResolver.getType(uri)
+            Log.e("==========","mimeType:: $mimeType")
+
             when {
                 ContentType.isImageType(mimeType) -> {
                     Attachment.Image(uri)
@@ -87,32 +91,32 @@ class ComposeActivityModule {
                     val text = inputStream?.reader(Charset.forName("utf-8"))?.readText()
                     text?.let(Attachment::Contact)*/
 
-                       val cr: ContentResolver = activity.contentResolver
-                       var stream: InputStream? = null
-                       try {
-                           stream = cr.openInputStream(uri)
-                       } catch (e: FileNotFoundException) {
-                           // TODO Auto-generated catch block
-                           e.printStackTrace()
-                       }
+                    val cr: ContentResolver = activity.contentResolver
+                    var stream: InputStream? = null
+                    try {
+                        stream = cr.openInputStream(uri)
+                    } catch (e: FileNotFoundException) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace()
+                    }
 
-                       val fileContent = StringBuffer("")
-                       var ch: Int = 0
-                       try {
-                           while (stream?.read()
-                                   .also {
-                                       if (it != null) {
-                                           ch = it
-                                       }
-                                   } != -1
-                           ) fileContent.append(ch.toChar())
-                       } catch (e: IOException) {
-                           // TODO Auto-generated catch block
-                           e.printStackTrace()
-                       }
-                       val data = String(fileContent)
-                       Log.e("==============", "data: $data")
-                       data?.let(Attachment::Contact)
+                    val fileContent = StringBuffer("")
+                    var ch: Int = 0
+                    try {
+                        while (stream?.read()
+                                .also {
+                                    if (it != null) {
+                                        ch = it
+                                    }
+                                } != -1
+                        ) fileContent.append(ch.toChar())
+                    } catch (e: IOException) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace()
+                    }
+                    val data = String(fileContent)
+                    Log.e("==============", "data: $data")
+                    data?.let(Attachment::Contact)
                 }
 
                 else -> Attachment.Image(uri)

@@ -132,6 +132,35 @@ object ImageUtils {
         return@runBlocking bbytes
     }
 
+    fun getFile(
+        context: Context,
+        uri: Uri
+    ): ByteArray = runBlocking {
+        val baos = ByteArrayOutputStream()
+        var fis: InputStream? = null
+        try {
+            fis = context.contentResolver.openInputStream(uri)
+            val bufferSize = 1024
+            val buffer = ByteArray(bufferSize)
+            var len = 0
+            while (fis?.read(buffer).also {
+                    if (it != null) {
+                        len = it
+                    }
+                } != -1) {
+                baos.write(buffer, 0, len)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Log.e("ImageUtils", "error::: ${e.message}")
+
+        }
+        val bbytes = baos.toByteArray()
+        Log.e("ImageUtils", "byteBuffer ::$bbytes")
+
+        return@runBlocking bbytes
+    }
+
     fun readData(callback: (ByteArray) -> Unit, uri: Uri, context: Context) {
         val byteBuffer = ByteArrayOutputStream()
         GlobalScope.async {

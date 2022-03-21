@@ -3,7 +3,6 @@ package com.sms.moLotus.feature.compose
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.ImageView
 import com.bumptech.glide.Glide
 import com.sms.moLotus.R
 import com.sms.moLotus.common.base.QkAdapter
@@ -60,12 +59,19 @@ class AttachmentAdapter @Inject constructor(
 
         when (val attachment = getItem(position)) {
             is Attachment.Image -> {
-                if (attachment.isAudio(context)){
+                if (attachment.isAudio(context)) {
                     Glide.with(context)
                         .load(R.drawable.ic_baseline_mic_24)
                         .into(holder.thumbnail)
 
-                }else {
+                } else if (attachment.isDoc(context) || attachment.isXlDoc(context) || attachment.isWordDoc(
+                        context
+                    )
+                ) {
+                    Glide.with(context)
+                        .load(R.drawable.ic_outline_file_copy_24)
+                        .into(holder.thumbnail)
+                } else {
                     Glide.with(context)
                         .load(attachment.getUri())
                         .into(holder.thumbnail)

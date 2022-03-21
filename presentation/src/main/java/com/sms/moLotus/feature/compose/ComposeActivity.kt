@@ -16,7 +16,6 @@ import android.os.*
 import android.provider.ContactsContract
 import android.provider.MediaStore
 import android.provider.OpenableColumns
-import android.provider.Settings
 import android.text.Editable
 import android.text.TextWatcher
 import android.text.format.DateFormat
@@ -30,14 +29,12 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker.PERMISSION_GRANTED
 import androidx.core.view.isVisible
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import com.devlomi.record_view.OnRecordListener
 import com.devlomi.record_view.RecordButton
 import com.devlomi.record_view.RecordPermissionHandler
 import com.google.android.flexbox.FlexboxLayoutManager
-import com.google.android.gms.common.util.IOUtils
 import com.google.android.material.snackbar.Snackbar
 import com.jakewharton.rxbinding2.view.clicks
 import com.jakewharton.rxbinding2.widget.textChanges
@@ -49,8 +46,6 @@ import com.sms.moLotus.common.util.extensions.*
 import com.sms.moLotus.customview.CustomProgressDialog
 import com.sms.moLotus.feature.FileUtils
 import com.sms.moLotus.feature.Utils.compressImage
-import com.sms.moLotus.feature.Utils.getAudioContentUri
-import com.sms.moLotus.feature.Utils.getVideoContentUri
 import com.sms.moLotus.feature.Utils.getVideoDuration
 import com.sms.moLotus.feature.compose.editing.ChipsAdapter
 import com.sms.moLotus.feature.contacts.ContactsActivity
@@ -73,17 +68,12 @@ import kotlinx.android.synthetic.main.compose_activity.toolbarTitle
 import kotlinx.android.synthetic.main.main_activity.*
 import kotlinx.coroutines.*
 import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.collections.HashMap
-import androidx.core.app.ActivityCompat.startActivityForResult
-
-
 
 
 class ComposeActivity : QkThemedActivity(), ComposeView {
@@ -333,7 +323,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                 record_view.visibility = View.VISIBLE
                 record_view?.setBackgroundColor(resources.getColor(R.color.bubbleLight))
                 recordFile = File(
-                    Environment.getExternalStorageDirectory().absolutePath , /*UUID.randomUUID().toString()*/
+                    Environment.getExternalStorageDirectory().absolutePath, /*UUID.randomUUID().toString()*/
                     "audio_" + SimpleDateFormat(
                         "yyyyMMdd_HHmmss",
                         Locale.getDefault()
@@ -409,7 +399,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
                 return@RecordPermissionHandler true
             }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R){
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 if (ContextCompat.checkSelfPermission(
                         this,
                         Manifest.permission.RECORD_AUDIO
@@ -420,7 +410,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                 ) {
                     return@RecordPermissionHandler true
                 }
-            }else {
+            } else {
                 if (ContextCompat.checkSelfPermission(
                         this,
                         Manifest.permission.RECORD_AUDIO
@@ -433,16 +423,25 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                 }
             }
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R){
-                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                intent.data = Uri.parse(String.format("package:%s", applicationContext?.packageName))
-                startActivity(intent)
-            }else{
-            ActivityCompat.requestPermissions(
-                this, arrayOf(Manifest.permission.RECORD_AUDIO),
-                0
-            )
-                }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(
+                        Manifest.permission.RECORD_AUDIO,
+                        Manifest.permission.MANAGE_EXTERNAL_STORAGE
+                    ),
+                    0
+                )
+            } else {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(
+                        Manifest.permission.RECORD_AUDIO,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    ),
+                    0
+                )
+            }
             false
         })
     }
@@ -724,19 +723,21 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                     Uri.parse(String.format("package:%s", applicationContext?.packageName))
                 startActivity(intent)
             }else{*/
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(
-                        Manifest.permission.MANAGE_EXTERNAL_STORAGE),
-                    0
-                )
-          //  }
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(
+                    Manifest.permission.MANAGE_EXTERNAL_STORAGE
+                ),
+                0
+            )
+            //  }
         } else {
 
             ActivityCompat.requestPermissions(
                 this,
                 arrayOf(
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                ),
                 0
             )
         }
@@ -857,7 +858,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         startActivityForResult(Intent.createChooser(intent, null), AttachVideoRequestCode)
     }
 
-    override fun requestTakeVideo() {
+    /*override fun requestTakeVideo() {
         videoDestination = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
             .let { timestamp ->
                 ContentValues().apply {
@@ -885,12 +886,18 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
             videoDestination
         )
         startActivityForResult(Intent.createChooser(intent, null), TakeVideoRequestCode)
+    }*/
+
+    override fun requestTakeVideo() {
+        val intent = Intent(MediaStore.ACTION_VIDEO_CAPTURE)
+        startActivityForResult(Intent.createChooser(intent, null), TakeVideoRequestCode)
     }
 
     override fun addDocuments() {
         val intent = Intent()
         intent.action = Intent.ACTION_OPEN_DOCUMENT
         intent.type = "application/*"
+        intent.putExtra(Intent.EXTRA_LOCAL_ONLY, false)
         intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
         intent.flags = Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
         intent.putExtra("return-data", true)
@@ -957,8 +964,6 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                         ?: hashMapOf())
             }
             requestCode == TakePhotoRequestCode && resultCode == Activity.RESULT_OK -> {
-                Log.e("======", "data ::: ${(data?.data)}")
-                Log.e("======", "clipdata ::: ${(data?.clipData)}")
                 /*val uri =cameraDestination?.let { FileUtils.getFileFromUri(this, it) }
                     ?.let { compressImage(it, this) }
                 Log.e("======", "image uri ::: $uri")*/
@@ -976,9 +981,6 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
             }
 
             requestCode == AttachPhotoRequestCode && resultCode == Activity.RESULT_OK -> {
-
-                Log.e("======", "data ::: ${(data?.data)}")
-                Log.e("======", "clipdata ::: ${(data?.clipData)}")
 
                 /*val uri = data?.data?.let {
                     Log.e("=====","file path::: ${FileUtils.getFileFromUri(this, it)}")
@@ -1030,6 +1032,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
 
             requestCode == AttachDocumentRequestCode && resultCode == Activity.RESULT_OK -> {
                 Log.e("======", "iAttachDocumentRequestCode ::: ${data?.data}")
+
 
                 data?.data?.let(attachmentSelectedIntent::onNext)
             }
@@ -1141,9 +1144,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                 Log.e("======", "TrimVideo data ::: ${data?.data}")
 
 
-
-
-                val uri = getContentUri1(this,TrimVideo.getTrimmedVideoPath(data))/*getVideoContentUri(
+                val uri = getContentUri1(this, TrimVideo.getTrimmedVideoPath(data))/*getVideoContentUri(
                     File(TrimVideo.getTrimmedVideoPath(data)),
                     this
                 )*/
@@ -1156,8 +1157,8 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
             }
 
             requestCode == TakeVideoRequestCode && resultCode == Activity.RESULT_OK -> {
-                var fileSize: Int? = 0
-                var finalUri: Uri? = null
+               /* var fileSize: Int? = 0
+//                var finalUri: Uri? = null
                 val duration: Int = getVideoDuration(videoDestination.toString(), this)
                 // Log.e("COMPOSEActivity", "duration:: $duration")
                 if (duration > 15000) {
@@ -1190,12 +1191,60 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
 
                             Handler(Looper.getMainLooper()).postDelayed({
                                 progressDialog.dialog.dismiss()
+                                videoDestination = VideoCompressor.newUri
+                                videoDestination?.let(attachmentSelectedIntent::onNext)
+                            }, 12000)
+
+                        } else {
+                            videoDestination?.let(attachmentSelectedIntent::onNext)
+                        }
+                    }
+
+                    //data?.data?.let(attachmentSelectedIntent::onNext)
+                }
+            }*/
+
+
+                var fileSize: Int? = 0
+                var finalUri: Uri? = null
+                val duration: Int = getVideoDuration(data?.data.toString(), this)
+                // Log.e("COMPOSEActivity", "duration:: $duration")
+                if (duration > 15000) {
+                    data?.data?.let { returnUri ->
+                        TrimVideo.activity(returnUri.toString())
+                            .setCompressOption(CompressOption(24, 160))
+                            .setTrimType(TrimType.FIXED_DURATION)
+                            .setFixedDuration(15)
+                            .start(this)
+                    }
+                } else {
+                    data?.data?.let { returnUri ->
+                        contentResolver.query(returnUri, null, null, null, null)
+                    }?.use { cursor ->
+                        val sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE)
+                        cursor.moveToFirst()
+                        fileSize = android.text.format.Formatter.formatShortFileSize(
+                            this,
+                            cursor.getLong(sizeIndex)
+                        ).filter { it.isDigit() }.toInt()
+
+                        Log.e("======", "file size in int ::: $fileSize")
+
+                        if (fileSize!! > 1) {
+                            progressDialog.show(this@ComposeActivity)
+
+                            GlobalScope.launch(Dispatchers.IO) {
+                                VideoCompressor.compress(this@ComposeActivity, data.data!!)
+                            }
+
+                            Handler().postDelayed({
+                                progressDialog.dialog.dismiss()
                                 finalUri = VideoCompressor.newUri
                                 finalUri?.let(attachmentSelectedIntent::onNext)
                             }, 12000)
 
                         } else {
-                            videoDestination?.let(attachmentSelectedIntent::onNext)
+                            data.data?.let(attachmentSelectedIntent::onNext)
                         }
                     }
 

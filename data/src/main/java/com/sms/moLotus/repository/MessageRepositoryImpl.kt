@@ -148,7 +148,9 @@ class MessageRepositoryImpl @Inject constructor(
             .or()
             .contains("type", "video/")
             .or()
-            .contains("type","/audio")
+            .contains("type", "audio/")
+            .or()
+            .contains("type", "application/")
             .endGroup()
             .sort("id", Sort.DESCENDING)
             .findAllAsync()
@@ -383,6 +385,11 @@ class MessageRepositoryImpl @Inject constructor(
                         attachment.isVideo(context) -> {
                             ImageUtils.getScaledVideo(context, uri)
                         }
+                        attachment.isDoc(context) || attachment.isWordDoc(context) || attachment.isXlDoc(
+                            context
+                        ) -> {
+                            ImageUtils.getFile(context, uri)
+                        }
                         attachment.isAudio(context) -> {
                             Log.e("ImageUtils", "getAudio uri ::$uri")
                             ImageUtils.getAudio(context, uri)
@@ -536,6 +543,11 @@ class MessageRepositoryImpl @Inject constructor(
                                                  return handler.notifyAll()*/
 
                             }
+                            attachment.isDoc(context) || attachment.isWordDoc(context) || attachment.isXlDoc(
+                                context
+                            ) -> {
+                                ImageUtils.getFile(context, uri)
+                            }
                             attachment.isAudio(context) -> {
                                 Log.e("ImageUtils", "getAudio uri ::$uri")
                                 ImageUtils.getAudio(context, uri)
@@ -562,6 +574,25 @@ class MessageRepositoryImpl @Inject constructor(
                     }
                     attachment.isVideo(context) -> {
                         MMSPart("video", ContentType.VIDEO_MP4, bytes)
+                    }
+                    attachment.isDoc(context) -> {
+                        MMSPart("pdfDocument", "application/pdf", bytes)
+                    }
+                    attachment.isWordDoc(context) -> {
+                        MMSPart("wordDocument", "application/msword", bytes)
+                        MMSPart(
+                            "wordDocument",
+                            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                            bytes
+                        )
+                    }
+                    attachment.isXlDoc(context) -> {
+                        MMSPart(
+                            "xlsDocument",
+                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            bytes
+                        )
+                        MMSPart("xlsDocument", "application/vnd.ms-excel", bytes)
                     }
                     attachment.isAudio(context) -> {
                         MMSPart("audio", ContentType.AUDIO_AAC, bytes)
@@ -819,7 +850,7 @@ class MessageRepositoryImpl @Inject constructor(
                 realm.executeTransaction {
 //                    message.boxId = Sms.MESSAGE_TYPE_SENT
                     //messageSentStatus = true
-            //        messageReadStatus = false
+                    //        messageReadStatus = false
                 }
 
                 // Update the message in the native ContentProvider
@@ -841,8 +872,8 @@ class MessageRepositoryImpl @Inject constructor(
                     message.boxId = Sms.MESSAGE_TYPE_FAILED
                     message.errorCode = resultCode
                     messageDeliveredStatus = false
-                   // messageSentStatus = false
-                  //  messageReadStatus = false
+                    // messageSentStatus = false
+                    //  messageReadStatus = false
                 }
 
                 // Update the message in the native ContentProvider
@@ -866,7 +897,7 @@ class MessageRepositoryImpl @Inject constructor(
                     message.dateSent = System.currentTimeMillis()
                     message.read = true
                     messageDeliveredStatus = true
-                   // messageReadStatus = false
+                    // messageReadStatus = false
                 }
 
 

@@ -27,6 +27,13 @@ fun MmsPart.isImage() = ContentType.isImageType(type)
 
 fun MmsPart.isVideo() = ContentType.isVideoType(type)
 
+fun MmsPart.isDoc() = "application/pdf" == type
+fun MmsPart.isWordDoc() =
+    "application/msword" == type || "application/vnd.openxmlformats-officedocument.wordprocessingml.document" == type
+
+fun MmsPart.isXLDoc() =
+    "application/vnd.ms-excel" == type || "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" == type
+
 fun MmsPart.isAudio() = ContentType.isAudioType(type)
 
 fun MmsPart.isText() = ContentType.TEXT_PLAIN == type

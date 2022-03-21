@@ -27,8 +27,11 @@ import io.realm.annotations.PrimaryKey
 
 open class MmsPart : RealmObject() {
 
-    @PrimaryKey var id: Long = 0
-    @Index var messageId: Long = 0
+    @PrimaryKey
+    var id: Long = 0
+
+    @Index
+    var messageId: Long = 0
     var type: String = ""
     var seq: Int = -1
     var name: String? = null
@@ -45,6 +48,9 @@ open class MmsPart : RealmObject() {
         type.startsWith("image") -> "Photo"
         type.startsWith("video") -> "Video"
         type.startsWith("audio") -> "Audio"
+        type == "application/pdf" -> "PDF Document"
+        type == "application/msword" || type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document" -> "Word Document"
+        type == "application/vnd.ms-excel" || type == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" -> "XLS Document"
         else -> null
     }
 

@@ -371,9 +371,12 @@ class ComposeViewModel @Inject constructor(
             .withLatestFrom(view.messagesSelectedIntent) { _, messages ->
 
                 messages?.firstOrNull()?.let { messageRepo.getMessage(it) }?.let { message ->
+                    Log.e("==========","message:: $message")
+
                     val images =
-                        message.parts.filter { it.isImage() || it.isAudio() || it.isVideo() || it.isVCard() }
+                        message.parts.filter { it.isImage() || it.isAudio() || it.isVideo() || it.isVCard() ||  it.isDoc() || it.isWordDoc() || it.isXLDoc()}
                             .mapNotNull { it.getUri() }
+                    Log.e("===========","images :::::::::: $images")
                     navigator.showCompose(message.getText(), images)
                 }
             }
@@ -388,7 +391,7 @@ class ComposeViewModel @Inject constructor(
 
                     Log.e("======", "message:::: ${message.id}")
 
-                    message.parts.filter { it.isImage() || it.isAudio() || it.isVideo() || it.isVCard() }
+                    message.parts.filter { it.isImage() || it.isAudio() || it.isVideo() || it.isVCard() ||  it.isDoc()|| it.isWordDoc() || it.isXLDoc()}
                         .mapNotNull {
                            // if (permissionManager.hasStorage()) {
                                 messageRepo.savePart(it.id)?.let { it1 ->

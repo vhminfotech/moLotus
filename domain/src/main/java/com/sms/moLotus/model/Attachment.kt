@@ -61,6 +61,46 @@ sealed class Attachment {
                 uri?.let(context.contentResolver::getType) == "audio/aac"
             }
         }
+
+        fun isDoc(context: Context): Boolean {
+            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1 && inputContent != null) {
+                inputContent.description.hasMimeType("application/pdf")
+            } else {
+                uri?.let(context.contentResolver::getType) == "application/pdf"
+            }
+        }
+
+        fun isWordDoc(context: Context): Boolean {
+            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1 && inputContent != null) {
+                inputContent.description.hasMimeType(
+                    "application/msword"
+                ) || inputContent.description.hasMimeType(
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                )
+            } else {
+                uri?.let(context.contentResolver::getType) == "application/msword" || uri?.let(
+                    context.contentResolver::getType
+                ) == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            }
+        }
+
+        fun isXlDoc(context: Context): Boolean {
+            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1 && inputContent != null) {
+                inputContent.description.hasMimeType(
+                    "application/vnd.ms-excel"
+                ) || inputContent.description.hasMimeType(
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
+            } else {
+                uri?.let(
+                    context.contentResolver::getType
+                ) == "application/vnd.ms-excel" || uri?.let(
+                    context.contentResolver::getType
+                ) == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            }
+        }
+
+
     }
 
     data class Contact(val vCard: String) : Attachment()

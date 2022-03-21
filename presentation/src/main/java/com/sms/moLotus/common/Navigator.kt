@@ -101,6 +101,7 @@ class Navigator @Inject constructor(
     fun showCompose(body: String? = null, images: List<Uri>? = null) {
         val intent = Intent(context, ComposeActivity::class.java)
         intent.putExtra(Intent.EXTRA_TEXT, body)
+        Log.e("==========","images:: $images")
         images?.takeIf { it.isNotEmpty() }?.let {
             intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, ArrayList(images))
         }

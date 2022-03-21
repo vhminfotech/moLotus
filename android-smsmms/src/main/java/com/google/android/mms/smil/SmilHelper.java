@@ -1,14 +1,18 @@
 package com.google.android.mms.smil;
 
+import android.util.Log;
+
 import com.android.mms.dom.smil.SmilDocumentImpl;
 import com.google.android.mms.ContentType;
 import com.google.android.mms.pdu_alt.PduBody;
 import com.google.android.mms.pdu_alt.PduPart;
+
 import org.w3c.dom.smil.SMILDocument;
 import org.w3c.dom.smil.SMILElement;
 import org.w3c.dom.smil.SMILLayoutElement;
 import org.w3c.dom.smil.SMILMediaElement;
 import org.w3c.dom.smil.SMILParElement;
+
 import timber.log.Timber;
 
 
@@ -18,6 +22,7 @@ public class SmilHelper {
     public static final String ELEMENT_TAG_IMAGE = "img";
     public static final String ELEMENT_TAG_AUDIO = "audio";
     public static final String ELEMENT_TAG_VIDEO = "video";
+    public static final String ELEMENT_TAG_APPLICATION = "application";
     public static final String ELEMENT_TAG_VCARD = "vcard";
 
     public static SMILDocument createSmilDocument(PduBody pb) {
@@ -82,16 +87,20 @@ public class SmilHelper {
                         ELEMENT_TAG_AUDIO, document, part.generateLocation());
                 par.appendChild(audioElement);
                 hasMedia = true;
-            } else if (contentType.equals(ContentType.TEXT_VCARD)) {
+            } else if (contentType.equals("application/*")){
+                document.getBody();
+                hasMedia = true;
+            }else if (contentType.equals(ContentType.TEXT_VCARD)) {
                 SMILMediaElement textElement = createMediaElement(
                         ELEMENT_TAG_VCARD, document, part.generateLocation());
                 par.appendChild(textElement);
                 hasMedia = true;
             } else {
-                Timber.e("creating_smil_document", "unknown mimetype");
+                //document.getBody();
+                //hasMedia = true;
+                Log.e("creating_smil_document", "unknown mimetype");
             }
         }
-
         return document;
     }
 
@@ -112,7 +121,7 @@ public class SmilHelper {
     }
 
     public static String escapeXML(String str) {
-        return str.replaceAll("&","&amp;")
+        return str.replaceAll("&", "&amp;")
                 .replaceAll("<", "&lt;")
                 .replaceAll(">", "&gt;")
                 .replaceAll("\"", "&quot;")
