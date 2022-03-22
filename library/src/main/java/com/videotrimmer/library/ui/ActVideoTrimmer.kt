@@ -2,7 +2,6 @@ package com.videotrimmer.library.ui
 
 import android.Manifest
 import android.app.Dialog
-import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -12,7 +11,6 @@ import android.graphics.PorterDuffColorFilter
 import android.media.MediaFormat
 import android.net.Uri
 import android.os.*
-import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.provider.Settings
 import android.util.Log
@@ -35,23 +33,23 @@ import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.bumptech.glide.request.RequestOptions
 import com.crystal.crystalrangeseekbar.widgets.CrystalRangeSeekbar
 import com.crystal.crystalrangeseekbar.widgets.CrystalSeekbar
-import com.linkedin.android.litr.MediaTransformer
-import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.source.MediaSource
+import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
-import com.linkedin.android.litr.io.MediaRange
-import com.linkedin.android.litr.TransformationOptions
-import com.linkedin.android.litr.utils.CodecUtils
+import com.linkedin.android.litr.MediaTransformer
 import com.linkedin.android.litr.TransformationListener
+import com.linkedin.android.litr.TransformationOptions
 import com.linkedin.android.litr.analytics.TrackTransformationInfo
+import com.linkedin.android.litr.io.MediaRange
+import com.linkedin.android.litr.utils.CodecUtils
 import com.videotrimmer.library.R
 import com.videotrimmer.library.utils.*
 import com.videotrimmer.library.utils.FileUtils
@@ -59,8 +57,6 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
-import java.lang.Exception
-import java.lang.IllegalArgumentException
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -588,8 +584,11 @@ class ActVideoTrimmer : AppCompatActivity() {
                 (fName) + getFileDateTime() + "." + TrimmerUtils.getFileExtension(this, uri));*/
     private val outputFile: File
         get() {
+
+            val dir = File(Environment.getExternalStorageDirectory(), "MCHAT/Media").apply { mkdirs() }
+
             return File(
-                Environment.getExternalStorageDirectory().absolutePath + "/" + SimpleDateFormat(
+                dir, SimpleDateFormat(
                     "yyyyMMdd_HHmmss",
                     Locale.getDefault()
                 ).format(
@@ -652,8 +651,7 @@ class ActVideoTrimmer : AppCompatActivity() {
                 (fName) + getFileDateTime() + "." + TrimmerUtils.getFileExtension(this, uri));*/
 
 
-
-             //getFile(this, uri)
+            //getFile(this, uri)
         }
 
 
@@ -749,16 +747,19 @@ class ActVideoTrimmer : AppCompatActivity() {
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> {
                 if (!Environment.isExternalStorageManager()) {
                     val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-                    intent.data = Uri.parse(String.format("package:%s", applicationContext?.packageName))
+                    intent.data =
+                        Uri.parse(String.format("package:%s", applicationContext?.packageName))
                     startActivity(intent)
                     finish()
                     Environment.isExternalStorageManager()
 
-                }else{
+                } else {
                     ActivityCompat.requestPermissions(
                         this,
                         arrayOf(
-                            Manifest.permission.MANAGE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE),
+                            Manifest.permission.MANAGE_EXTERNAL_STORAGE,
+                            Manifest.permission.READ_EXTERNAL_STORAGE
+                        ),
                         0
                     )
                     checkPermission(

@@ -612,10 +612,6 @@
         app:layout_constraintStart_toEndOf="@id/takeVideo"
         app:layout_constraintTop_toTopOf="@id/takeVideo" />
 
-
-
-
-
     <ImageView
         android:id="@+id/addDocuments"
         android:layout_width="40dp"
@@ -625,12 +621,12 @@
         android:backgroundTint="?attr/bubbleColor"
         android:contentDescription="@string/compose_camera_cd"
         android:elevation="4dp"
-        android:padding="7dp"
+        android:padding="8dp"
         android:src="@drawable/ic_baseline_attach_file_24"
         android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@id/attach"
-        app:layout_constraintEnd_toEndOf="@id/attach"
-        app:layout_constraintStart_toStartOf="@id/attach"
+        app:layout_constraintBottom_toTopOf="@id/addAudio"
+        app:layout_constraintEnd_toEndOf="@id/addAudio"
+        app:layout_constraintStart_toStartOf="@id/addAudio"
         app:tint="?android:attr/textColorSecondary" />
 
     <com.sms.moLotus.common.widget.QkTextView
@@ -650,6 +646,42 @@
         app:layout_constraintBottom_toBottomOf="@id/addDocuments"
         app:layout_constraintStart_toEndOf="@id/addDocuments"
         app:layout_constraintTop_toTopOf="@id/addDocuments" />
+
+
+    <ImageView
+        android:id="@+id/addAudio"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/circle"
+        android:backgroundTint="?attr/bubbleColor"
+        android:contentDescription="@string/compose_camera_cd"
+        android:elevation="4dp"
+        android:padding="7dp"
+        android:src="@drawable/ic_baseline_mic_24"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/attach"
+        app:layout_constraintEnd_toEndOf="@id/attach"
+        app:layout_constraintStart_toStartOf="@id/attach"
+        app:tint="?android:attr/textColorSecondary" />
+
+    <com.sms.moLotus.common.widget.QkTextView
+        android:id="@+id/addAudioLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="32dp"
+        android:layout_marginStart="8dp"
+        android:background="@drawable/rounded_rectangle_4dp"
+        android:backgroundTint="?attr/bubbleColor"
+        android:elevation="4dp"
+        android:gravity="center_vertical"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:text="@string/add_audio"
+        android:textColor="?android:attr/textColorPrimary"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/addAudio"
+        app:layout_constraintStart_toEndOf="@id/addAudio"
+        app:layout_constraintTop_toTopOf="@id/addAudio" />
 
     <ImageView
         android:id="@+id/attach"

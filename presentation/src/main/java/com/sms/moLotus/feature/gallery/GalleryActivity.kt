@@ -101,19 +101,12 @@ class GalleryActivity : QkActivity(), GalleryView {
 
     override fun requestStoragePermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-           /* if (!Environment.isExternalStorageManager()) {
+            if (!Environment.isExternalStorageManager()) {
                 val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
                 intent.data =
                     Uri.parse(String.format("package:%s", applicationContext?.packageName))
                 startActivity(intent)
-            }else{*/
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(
-                        Manifest.permission.MANAGE_EXTERNAL_STORAGE),
-                    0
-                )
-          //  }
+            }
         } else {
             ActivityCompat.requestPermissions(
                 this,

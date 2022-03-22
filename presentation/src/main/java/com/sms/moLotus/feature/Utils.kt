@@ -17,12 +17,67 @@ import androidx.exifinterface.media.ExifInterface
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.io.IOException
 import java.lang.Exception
+import java.nio.channels.FileChannel
 import java.text.SimpleDateFormat
 import java.util.*
 
 object Utils {
-    fun getVideoContentUri(file: File, context: Context): Uri? {
+
+    fun getVideoContentUri(context: Context, absPath: String): Uri? {
+        Log.e("=============", "getImageContentUri: $absPath")
+        val cursor: Cursor? = context.getContentResolver().query(
+            MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+            arrayOf(MediaStore.Video.Media._ID),
+            MediaStore.Video.Media.DATA + "=? ",
+            arrayOf(absPath),
+            null
+        )
+        return if (cursor != null && cursor.moveToFirst()) {
+            val id: Int = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns._ID))
+            Uri.withAppendedPath(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, id.toString())
+        } else if (absPath.isNotEmpty()) {
+            val values = ContentValues()
+            values.put(MediaStore.Video.Media.DATA, absPath)
+            values.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
+
+            context.contentResolver.insert(
+                MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values
+            )
+        } else {
+            null
+        }
+    }
+
+    fun getAudioContentUri(context: Context, absPath: String): Uri? {
+        val cursor: Cursor? = context.getContentResolver().query(
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+            arrayOf(MediaStore.Audio.Media._ID),
+            MediaStore.Audio.Media.DATA + "=? ",
+            arrayOf(absPath),
+            null
+        )
+        return if (cursor != null && cursor.moveToFirst()) {
+            val id: Int = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns._ID))
+            Uri.withAppendedPath(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id.toString())
+        } else if (absPath.isNotEmpty()) {
+            val values = ContentValues()
+            values.put(MediaStore.Audio.Media.DATA, absPath)
+            values.put(MediaStore.Audio.Media.MIME_TYPE, "audio/aac")
+
+            context.contentResolver.insert(
+                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, values
+            )
+        } else {
+            null
+        }
+    }
+
+
+
+
+    fun getVideoContentUri1(file: File, context: Context): Uri? {
         val builder: StrictMode.VmPolicy.Builder = StrictMode.VmPolicy.Builder()
         StrictMode.setVmPolicy(builder.build())
         val filePath = file.absolutePath
@@ -203,7 +258,7 @@ object Utils {
         }
     }*/
 
-    fun getAudioContentUri(file: File, context: Context): Uri? {
+    fun getAudioContentUri1(file: File, context: Context): Uri? {
         /* val builder: StrictMode.VmPolicy.Builder = StrictMode.VmPolicy.Builder()
          StrictMode.setVmPolicy(builder.build())
          val filePath = file.absolutePath
@@ -393,5 +448,44 @@ object Utils {
         val duration: Int = mp.duration
         mp.release()
         return duration
+    }
+
+    fun copyFileOrDirectory(srcDir: String?, dstDir: String?) {
+        try {
+            val src = File(srcDir)
+            val dst = File(dstDir, src.nameWithoutExtension +".aac")
+            if (src.isDirectory) {
+                val files = src.list()
+                val filesLength = files.size
+                for (i in 0 until filesLength) {
+                    val src1 = File(src, files[i]).path
+                    val dst1 = dst.path
+                    copyFileOrDirectory(src1, dst1)
+                }
+            } else {
+                copyFile(src, dst)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    @Throws(IOException::class)
+    fun copyFile(sourceFile: File?, destFile: File) : File{
+        if (!destFile.parentFile.exists()) destFile.parentFile.mkdirs()
+        if (!destFile.exists()) {
+            destFile.createNewFile()
+        }
+        var source: FileChannel? = null
+        var destination: FileChannel? = null
+        try {
+            source = FileInputStream(sourceFile).channel
+            destination = FileOutputStream(destFile).channel
+            destination.transferFrom(source, 0, source.size())
+        } finally {
+            source?.close()
+            destination?.close()
+        }
+       return destFile
     }
 }

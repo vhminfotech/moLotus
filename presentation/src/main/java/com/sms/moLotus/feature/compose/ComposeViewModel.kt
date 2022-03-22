@@ -6,7 +6,6 @@ import android.net.Uri
 import android.os.Vibrator
 import android.provider.ContactsContract
 import android.telephony.SmsMessage
-import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.Window
@@ -18,20 +17,17 @@ import com.sms.moLotus.R
 import com.sms.moLotus.common.Navigator
 import com.sms.moLotus.common.base.QkViewModel
 import com.sms.moLotus.common.util.ClipboardUtils
-import com.sms.moLotus.common.util.MessageDetailsFormatter
 import com.sms.moLotus.common.util.extensions.makeToast
 import com.sms.moLotus.compat.SubscriptionManagerCompat
 import com.sms.moLotus.compat.TelephonyCompat
 import com.sms.moLotus.extensions.*
 import com.sms.moLotus.interactor.*
 import com.sms.moLotus.manager.ActiveConversationManager
-import com.sms.moLotus.manager.BillingManager
 import com.sms.moLotus.manager.PermissionManager
 import com.sms.moLotus.model.*
 import com.sms.moLotus.repository.ContactRepository
 import com.sms.moLotus.repository.ConversationRepository
 import com.sms.moLotus.repository.MessageRepository
-import com.sms.moLotus.repository.SyncRepository
 import com.sms.moLotus.util.ActiveSubscriptionObservable
 import com.sms.moLotus.util.PhoneNumberUtils
 import com.sms.moLotus.util.Preferences
@@ -66,12 +62,10 @@ class ComposeViewModel @Inject constructor(
     private val activity: ComposeActivity,
     private val activeConversationManager: ActiveConversationManager,
     private val addScheduledMessage: AddScheduledMessage,
-    private val billingManager: BillingManager,
     private val cancelMessage: CancelDelayedMessage,
     private val conversationRepo: ConversationRepository,
     private val deleteMessages: DeleteMessages,
     private val markRead: MarkRead,
-    private val messageDetailsFormatter: MessageDetailsFormatter,
     private val messageRepo: MessageRepository,
     private val navigator: Navigator,
     private val permissionManager: PermissionManager,
@@ -80,9 +74,6 @@ class ComposeViewModel @Inject constructor(
     private val retrySending: RetrySending,
     private val sendMessage: SendMessage,
     private val subscriptionManager: SubscriptionManagerCompat,
-    private val syncManager: SyncRepository,
-    private val syncRepo: SyncRepository,
-    private val syncMessage: SyncMessage
 ) : QkViewModel<ComposeView, ComposeState>(
     ComposeState(
         editingMode = threadId == 0L && addresses.isEmpty(),
@@ -371,12 +362,9 @@ class ComposeViewModel @Inject constructor(
             .withLatestFrom(view.messagesSelectedIntent) { _, messages ->
 
                 messages?.firstOrNull()?.let { messageRepo.getMessage(it) }?.let { message ->
-                    Log.e("==========","message:: $message")
-
                     val images =
-                        message.parts.filter { it.isImage() || it.isAudio() || it.isVideo() || it.isVCard() ||  it.isDoc() || it.isWordDoc() || it.isXLDoc()}
+                        message.parts.filter { it.isImage() || it.isAudio() || it.isVideo() || it.isVCard() || it.isDoc() || it.isWordDoc() || it.isXLDoc() }
                             .mapNotNull { it.getUri() }
-                    Log.e("===========","images :::::::::: $images")
                     navigator.showCompose(message.getText(), images)
                 }
             }
@@ -388,21 +376,18 @@ class ComposeViewModel @Inject constructor(
             .filter { it == R.id.share }
             .withLatestFrom(view.messagesSelectedIntent) { _, messages ->
                 messages?.firstOrNull()?.let { messageRepo.getMessage(it) }?.let { message ->
-
-                    Log.e("======", "message:::: ${message.id}")
-
-                    message.parts.filter { it.isImage() || it.isAudio() || it.isVideo() || it.isVCard() ||  it.isDoc()|| it.isWordDoc() || it.isXLDoc()}
+                    message.parts.filter { it.isImage() || it.isAudio() || it.isVideo() || it.isVCard() || it.isDoc() || it.isWordDoc() || it.isXLDoc() }
                         .mapNotNull {
-                           // if (permissionManager.hasStorage()) {
-                                messageRepo.savePart(it.id)?.let { it1 ->
-                                    navigator.shareFile(
-                                        message.getText(),
-                                        it1
-                                    )
-                                }
-                           /* }else{
-                                view.requestStoragePermission()
-                            }*/
+                            // if (permissionManager.hasStorage()) {
+                            messageRepo.savePart(it.id)?.let { it1 ->
+                                navigator.shareFile(
+                                    message.getText(),
+                                    it1
+                                )
+                            }
+                            /* }else{
+                                 view.requestStoragePermission()
+                             }*/
                         }
 
                     /*if (message.parts.isEmpty()) {
@@ -448,7 +433,7 @@ class ComposeViewModel @Inject constructor(
                             }
                     }*/
                 }
-            }.doOnError { throwable -> Log.e("ONERROR", "== ${throwable.message}") }
+            }.doOnError { throwable -> Timber.e("ONERROR", "== ${throwable.message}") }
             .autoDisposable(view.scope())
             .subscribe { view.clearSelection() }
 
@@ -513,20 +498,20 @@ class ComposeViewModel @Inject constructor(
         // Media attachment clicks
         view.messagePartClickIntent
             .mapNotNull(messageRepo::getPart)
-            .filter { part -> part.isImage() || part.isVideo() /*|| part.isAudio()*/ }
+            .filter { part -> part.isImage() || part.isVideo() || part.isAudio() }
             .autoDisposable(view.scope())
             .subscribe { part ->
-                /* if (part.isAudio()) {
-                     navigator.showAudioMedia(part.getUri())
-                 } else {*/
-                navigator.showMedia(part.id)
-                //   }
+                if (part.isAudio()) {
+                    navigator.showAudioMedia(part.getUri())
+                } else {
+                    navigator.showMedia(part.id)
+                }
             }
 
         // Non-media attachment clicks
         view.messagePartClickIntent
             .mapNotNull(messageRepo::getPart)
-            .filter { part -> !part.isImage() && !part.isVideo()/* && !part.isAudio()*/ }
+            .filter { part -> !part.isImage() && !part.isVideo() && !part.isAudio() }
             .autoDisposable(view.scope())
             .subscribe { part ->
                 if (permissionManager.hasStorage()) {
@@ -600,7 +585,7 @@ class ComposeViewModel @Inject constructor(
         // Attach a photo from camera
         view.cameraIntent
             .autoDisposable(view.scope())
-            .subscribe({ s ->
+            .subscribe({
                 run {
                     if (permissionManager.hasStorage()) {
                         newState { copy(attaching = false) }
@@ -611,7 +596,7 @@ class ComposeViewModel @Inject constructor(
                 }
             }
             ) { throwable ->
-                Log.e(
+                Timber.e(
                     "ERROR",
                     "Throwable " + throwable.message
                 )
@@ -647,6 +632,11 @@ class ComposeViewModel @Inject constructor(
             .doOnNext { newState { copy(attaching = false) } }
             .autoDisposable(view.scope())
             .subscribe { view.addDocuments() }
+
+        view.addAudioIntent
+            .doOnNext { newState { copy(attaching = false) } }
+            .autoDisposable(view.scope())
+            .subscribe { view.addAudio() }
 
 
         // Choose a time to schedule the message
@@ -954,7 +944,7 @@ class ComposeViewModel @Inject constructor(
         // Navigate back
         view.optionsItemIntent
             .filter { it == android.R.id.home }
-            .map { Unit }
+            .map { }
             .mergeWith(view.backPressedIntent)
             .withLatestFrom(state) { _, state ->
                 when {

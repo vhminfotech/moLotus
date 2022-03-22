@@ -58,6 +58,7 @@ class FileBinder @Inject constructor(colors: Colors, private val context: Contex
 
         holder.containerView.setOnClickListener { clicks.onNext(part.id) }
 
+        //added one 9 extra for MB calculation i.e. changed 9999999 to 99999999 at line 69
         Observable.just(part.getUri())
                 .map(context.contentResolver::openInputStream)
                 .map { inputStream -> inputStream.use { it.available() } }
@@ -65,7 +66,7 @@ class FileBinder @Inject constructor(colors: Colors, private val context: Contex
                     when (bytes) {
                         in 0..999 -> "$bytes B"
                         in 1000..999999 -> "${"%.1f".format(bytes / 1000f)} KB"
-                        in 1000000..9999999 -> "${"%.1f".format(bytes / 1000000f)} MB"
+                        in 1000000..99999999 -> "${"%.1f".format(bytes / 1000000f)} MB"
                         else -> "${"%.1f".format(bytes / 1000000000f)} GB"
                     }
                 }

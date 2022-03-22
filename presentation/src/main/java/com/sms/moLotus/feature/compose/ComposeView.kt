@@ -29,6 +29,7 @@ interface ComposeView : QkView<ComposeState> {
     val videoGalleryIntent: Observable<*>
     val takeVideoIntent: Observable<*>
     val addDocumentsIntent: Observable<*>
+    val addAudioIntent: Observable<*>
     val scheduleIntent: Unit
     val attachContactIntent: Observable<*>
     val attachmentSelectedIntent: Observable<Uri>

@@ -1,29 +1,28 @@
 package com.sms.moLotus.feature.compose
 
+//import android.util.Log
 import android.Manifest
 import android.animation.LayoutTransition
 import android.app.Activity
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
-import android.content.ContentResolver
 import android.content.ContentValues
-import android.content.Context
 import android.content.Intent
-import android.database.Cursor
 import android.graphics.Color
 import android.net.Uri
 import android.os.*
 import android.provider.ContactsContract
 import android.provider.MediaStore
 import android.provider.OpenableColumns
+import android.provider.Settings
 import android.text.Editable
 import android.text.TextWatcher
 import android.text.format.DateFormat
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -44,8 +43,12 @@ import com.sms.moLotus.common.base.QkThemedActivity
 import com.sms.moLotus.common.util.DateFormatter
 import com.sms.moLotus.common.util.extensions.*
 import com.sms.moLotus.customview.CustomProgressDialog
+import com.sms.moLotus.feature.Constants.FOLDER_NAME
 import com.sms.moLotus.feature.FileUtils
+import com.sms.moLotus.feature.Utils
 import com.sms.moLotus.feature.Utils.compressImage
+import com.sms.moLotus.feature.Utils.getAudioContentUri
+import com.sms.moLotus.feature.Utils.getVideoContentUri
 import com.sms.moLotus.feature.Utils.getVideoDuration
 import com.sms.moLotus.feature.compose.editing.ChipsAdapter
 import com.sms.moLotus.feature.contacts.ContactsActivity
@@ -71,11 +74,10 @@ import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.collections.HashMap
 
-
+@RequiresApi(Build.VERSION_CODES.M)
 class ComposeActivity : QkThemedActivity(), ComposeView {
 
     companion object {
@@ -137,25 +139,28 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
             attachingBackground.clicks()
         )
     }
-    override val cameraIntent by lazy {
+    override val cameraIntent: Observable<*> by lazy {
         Observable.merge(camera.clicks(), cameraLabel.clicks())
     }
-    override val galleryIntent by lazy {
+    override val galleryIntent: Observable<*> by lazy {
         Observable.merge(gallery.clicks(), galleryLabel.clicks())
     }
-    override val videoGalleryIntent by lazy {
+    override val videoGalleryIntent: Observable<*> by lazy {
         Observable.merge(video.clicks(), videoLabel.clicks())
     }
-    override val takeVideoIntent by lazy {
+    override val takeVideoIntent: Observable<*> by lazy {
         Observable.merge(takeVideo.clicks(), takeVideoLabel.clicks())
     }
-    override val addDocumentsIntent by lazy {
+    override val addDocumentsIntent: Observable<*> by lazy {
         Observable.merge(addDocuments.clicks(), addDocumentsLabel.clicks())
+    }
+    override val addAudioIntent: Observable<*> by lazy {
+        Observable.merge(addAudio.clicks(), addAudioLabel.clicks())
     }
     override val scheduleIntent by lazy {
 //        Observable.merge(schedule.clicks(), scheduleLabel.clicks())
     }
-    override val attachContactIntent by lazy {
+    override val attachContactIntent: Observable<*> by lazy {
         Observable.merge(contact.clicks(), contactLabel.clicks())
     }
     override val attachmentSelectedIntent: Subject<Uri> = PublishSubject.create()
@@ -179,7 +184,6 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
     }
 
     private var cameraDestination: Uri? = null
-    private var videoDestination: Uri? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
@@ -191,6 +195,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         recordButton = record_button
         audioRecorder = AudioRecorder()
         record_button.setRecordView(record_view)
+
         onMessageTyped()
 
         recordClicked()
@@ -201,6 +206,8 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         takeVideoLabel.visibility = View.GONE
         addDocuments.visibility = View.GONE
         addDocumentsLabel.visibility = View.GONE
+        addAudio.visibility = View.GONE
+        addAudioLabel.visibility = View.GONE
 
 
 
@@ -238,39 +245,15 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
             messageBackground.setBackgroundTint(resolveThemeColor(R.attr.bubbleColor))
         }
 
-        /*contentView.layoutTransition = LayoutTransition().apply {
-            disableTransitionType(LayoutTransition.CHANGING)
-        }
+        /*val wordTwo: Spannable = SpannableString("mChat")
+        wordTwo.setSpan(
+            ForegroundColorSpan(Color.parseColor("#ff6b13")),
+            0,
+            wordTwo.length,
+            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+        message.append("\n\n\n\n$wordTwo")*/
 
-        chipsAdapter.view = chips
-
-        chips.itemAnimator = null
-        chips.layoutManager = FlexboxLayoutManager(this)
-
-        messageAdapter.autoScrollToStart(messageList)
-        messageAdapter.emptyView = messagesEmpty
-
-        messageList.setHasFixedSize(true)
-        messageList.adapter = messageAdapter
-
-        attachments.adapter = attachmentAdapter
-
-        message.supportsInputContent = true
-
-        theme
-            .doOnNext { loading.setTint(it.theme) }
-            .doOnNext { attach.setBackgroundTint(it.theme) }
-            .doOnNext { attach.setTint(it.textPrimary) }
-            .doOnNext { messageAdapter.theme = it }
-            .autoDisposable(scope())
-            .subscribe()
-
-        window.callback = ComposeWindowCallback(window.callback, this)
-
-        // These theme attributes don't apply themselves on API 21
-        if (Build.VERSION.SDK_INT <= 22) {
-            messageBackground.setBackgroundTint(resolveThemeColor(R.attr.bubbleColor))
-        }*/
     }
 
     private fun onMessageTyped() {
@@ -300,7 +283,6 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
     }
 
     private fun recordClicked() {
-
         record_button.visibility = View.VISIBLE
         record_button.setOnRecordClickListener {
             //  Toast.makeText(this, "RECORD BUTTON CLICKED", Toast.LENGTH_SHORT).show()
@@ -321,9 +303,14 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         record_view.setOnRecordListener(object : OnRecordListener {
             override fun onStart() {
                 record_view.visibility = View.VISIBLE
-                record_view?.setBackgroundColor(resources.getColor(R.color.bubbleLight))
+                record_view?.setBackgroundColor(resources.getColor(R.color.bubbleLight, getTheme()))
+                val dir = File(
+                    Environment.getExternalStorageDirectory(),
+                    FOLDER_NAME
+                ).apply { mkdirs() }
+
                 recordFile = File(
-                    Environment.getExternalStorageDirectory().absolutePath, /*UUID.randomUUID().toString()*/
+                    dir,
                     "audio_" + SimpleDateFormat(
                         "yyyyMMdd_HHmmss",
                         Locale.getDefault()
@@ -348,7 +335,12 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
             override fun onCancel() {
                 stopRecording(true)
                 record_view.visibility = View.GONE
-                record_view?.setBackgroundColor(resources.getColor(android.R.color.transparent))
+                record_view?.setBackgroundColor(
+                    resources.getColor(
+                        android.R.color.transparent,
+                        getTheme()
+                    )
+                )
                 Toast.makeText(this@ComposeActivity, "Recording cancelled", Toast.LENGTH_SHORT)
                     .show()
                 //Log.d("record_view", "onCancel")
@@ -357,19 +349,12 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
             override fun onFinish(recordTime: Long, limitReached: Boolean) {
                 record_view.visibility = View.GONE
                 record_button.visibility = View.GONE
-
                 stopRecording(false)
-                val time = getHumanTimeText(recordTime)
-                /*Toast.makeText(
-                    this@ComposeActivity,
-                    "onFinishRecord - Recorded Time is: " + time + " File saved at " + recordFile?.path,
-                    Toast.LENGTH_SHORT
-                ).show()*/
+
                 var uri: Uri? = null
                 try {
                     uri = recordFile?.absolutePath?.let {
-                        getContentUri2(
-
+                        getAudioContentUri(
                             this@ComposeActivity, it
                         )
                     }
@@ -403,10 +388,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                 if (ContextCompat.checkSelfPermission(
                         this,
                         Manifest.permission.RECORD_AUDIO
-                    ) === PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
-                        this,
-                        Manifest.permission.MANAGE_EXTERNAL_STORAGE
-                    ) === PERMISSION_GRANTED
+                    ) == PERMISSION_GRANTED && Environment.isExternalStorageManager()
                 ) {
                     return@RecordPermissionHandler true
                 }
@@ -414,10 +396,10 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                 if (ContextCompat.checkSelfPermission(
                         this,
                         Manifest.permission.RECORD_AUDIO
-                    ) === PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
+                    ) == PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
                         this,
                         Manifest.permission.WRITE_EXTERNAL_STORAGE
-                    ) === PERMISSION_GRANTED
+                    ) == PERMISSION_GRANTED
                 ) {
                     return@RecordPermissionHandler true
                 }
@@ -427,11 +409,16 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                 ActivityCompat.requestPermissions(
                     this,
                     arrayOf(
-                        Manifest.permission.RECORD_AUDIO,
-                        Manifest.permission.MANAGE_EXTERNAL_STORAGE
+                        Manifest.permission.RECORD_AUDIO
                     ),
                     0
                 )
+                if (!Environment.isExternalStorageManager()) {
+                    val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+                    intent.data =
+                        Uri.parse(String.format("package:%s", applicationContext?.packageName))
+                    startActivity(intent)
+                }
             } else {
                 ActivityCompat.requestPermissions(
                     this,
@@ -575,15 +562,14 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         }
     }
 
-
-    private fun getHumanTimeText(milliseconds: Long): String? {
+    /*private fun getHumanTimeText(milliseconds: Long): String? {
         return java.lang.String.format(
             "%02d:%02d",
             TimeUnit.MILLISECONDS.toMinutes(milliseconds),
             TimeUnit.MILLISECONDS.toSeconds(milliseconds) -
                     TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(milliseconds))
         )
-    }
+    }*/
 
     override fun onStart() {
         super.onStart()
@@ -625,7 +611,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         // Don't set the adapters unless needed
         if (state.editingMode && chips.adapter == null) chips.adapter = chipsAdapter
         toolbar.setNavigationIcon(R.drawable.ic_baseline_arrow_back_24)
-        toolbarTitle?.setTextColor(resources.getColor(R.color.white))
+        toolbarTitle?.setTextColor(resources.getColor(R.color.white, getTheme()))
 //        toolbar.setNavigationIcon(R.drawable.ic_baseline_clear_24)
 
         toolbar.menu.findItem(R.id.add)?.isVisible = state.editingMode
@@ -674,6 +660,8 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                 takeVideoLabel.visibility = View.VISIBLE
                 addDocuments.visibility = View.VISIBLE
                 addDocumentsLabel.visibility = View.VISIBLE
+                addAudio.visibility = View.VISIBLE
+                addAudioLabel.visibility = View.VISIBLE
                 135f
             } else {
                 video.visibility = View.GONE
@@ -682,6 +670,8 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                 takeVideoLabel.visibility = View.GONE
                 addDocuments.visibility = View.GONE
                 addDocumentsLabel.visibility = View.GONE
+                addAudio.visibility = View.GONE
+                addAudioLabel.visibility = View.GONE
                 0f
             }
         ).start()
@@ -717,12 +707,12 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
     override fun requestStoragePermission() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            /*if (!Environment.isExternalStorageManager()) {
+            if (!Environment.isExternalStorageManager()) {
                 val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
                 intent.data =
                     Uri.parse(String.format("package:%s", applicationContext?.packageName))
                 startActivity(intent)
-            }else{*/
+            }/*else{
             ActivityCompat.requestPermissions(
                 this,
                 arrayOf(
@@ -730,9 +720,8 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                 ),
                 0
             )
-            //  }
+            //  }*/
         } else {
-
             ActivityCompat.requestPermissions(
                 this,
                 arrayOf(
@@ -759,7 +748,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
             { _, year, month, day ->
                 TimePickerDialog(
                     this,
-                    TimePickerDialog.OnTimeSetListener { _, hour, minute ->
+                    { _, hour, minute ->
                         calendar.set(Calendar.YEAR, year)
                         calendar.set(Calendar.MONTH, month)
                         calendar.set(Calendar.DAY_OF_MONTH, day)
@@ -909,17 +898,19 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
 
     override fun addAudio() {
         val intent = Intent(Intent.ACTION_PICK)
-            .putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
             .addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
             .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            .setType("audio/3gp")
-        startActivityForResult(intent, AddAudioRequestCode)
+            .setType("audio/*")
+            .putExtra("return-data", true)
+        startActivityForResult(
+            Intent.createChooser(intent, "Complete action using"),
+            AddAudioRequestCode
+        )
     }
 
     override fun setDraft(draft: String) {
         message.setText(draft)
         message.setSelection(draft.length)
-
     }
 
     override fun scrollToMessage(id: Long) {
@@ -974,7 +965,6 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                     val uri = cameraDestination?.let {
                         FileUtils.getUriRealPath(this, it)
                     }?.let { compressImage(File(it), this) }
-                    Log.e("======", "image uri ::: $uri")
                     uri?.let(attachmentSelectedIntent::onNext)
                 }
 //                cameraDestination?.let(attachmentSelectedIntent::onNext)
@@ -995,7 +985,6 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                         val uri = data.data?.let {
                             FileUtils.getUriRealPath(this, it)
                         }?.let { compressImage(File(it), this) }
-                        Log.e("======", "image uri ::: $uri")
                         uri?.let(attachmentSelectedIntent::onNext)
                     }
 
@@ -1020,7 +1009,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                             }
 
                         uri?.let(attachmentSelectedIntent::onNext)
-                        Log.e("======", "image uri ::: $uri")
+//                        Log.e("======", "image uri ::: $uri")
                     }
 
                 }
@@ -1031,20 +1020,13 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
             }
 
             requestCode == AttachDocumentRequestCode && resultCode == Activity.RESULT_OK -> {
-                Log.e("======", "iAttachDocumentRequestCode ::: ${data?.data}")
-
-
                 data?.data?.let(attachmentSelectedIntent::onNext)
             }
 
             requestCode == AttachVideoRequestCode && resultCode == Activity.RESULT_OK -> {
 
-                Log.e("======", "data ::: ${(data?.data)}")
-                Log.e("======", "clipdata ::: ${(data?.clipData)}")
-                Log.e("======", "clipdata ::: ${(data?.clipData)}")
                 if (data?.data != null) {
-                    var fileSize: Int? = 0
-                    var finalUri: Uri? = null
+                    var fileSize: Int
                     val duration = getVideoDuration(data.data.toString(), this)
                     if (duration > 15000) {
                         TrimVideo.activity(data.data.toString())
@@ -1062,15 +1044,15 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                                 this,
                                 cursor.getLong(sizeIndex)
                             ).filter { it.isDigit() }.toInt()
-                            if (fileSize!! > 1) {
+                            if (fileSize > 1) {
                                 progressDialog.show(this@ComposeActivity)
                                 GlobalScope.launch(Dispatchers.IO) {
                                     VideoCompressor.compress(this@ComposeActivity, data.data!!)
                                 }
                                 Handler(Looper.getMainLooper()).postDelayed({
                                     progressDialog.dialog.dismiss()
-                                    finalUri = VideoCompressor.newUri
-                                    finalUri?.let(attachmentSelectedIntent::onNext)
+
+                                    VideoCompressor.newUri?.let(attachmentSelectedIntent::onNext)
                                 }, 11000)
                             } else {
                                 data.data?.let(attachmentSelectedIntent::onNext)
@@ -1081,8 +1063,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                     data?.clipData?.itemCount
                         ?.let { count -> 0 until count }
                         ?.mapNotNull { i ->
-                            var fileSize: Int? = 0
-                            var finalUri: Uri? = null
+                            var fileSize: Int?
                             val duration =
                                 getVideoDuration(
                                     data.clipData?.getItemAt(i)?.uri.toString(),
@@ -1116,8 +1097,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                                         }
                                         Handler(Looper.getMainLooper()).postDelayed({
                                             progressDialog.dialog.dismiss()
-                                            finalUri = VideoCompressor.newUri
-                                            finalUri?.let(attachmentSelectedIntent::onNext)
+                                            VideoCompressor.newUri?.let(attachmentSelectedIntent::onNext)
                                         }, 11000)
                                     } else {
                                         data.clipData?.getItemAt(i)?.uri?.let(
@@ -1140,73 +1120,60 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
             }
 
             requestCode == TrimVideo.VIDEO_TRIMMER_REQ_CODE && data != null -> {
-                Log.e("======", "TrimVideo data ::: ${TrimVideo.getTrimmedVideoPath(data)}")
-                Log.e("======", "TrimVideo data ::: ${data?.data}")
-
-
-                val uri = getContentUri1(this, TrimVideo.getTrimmedVideoPath(data))/*getVideoContentUri(
-                    File(TrimVideo.getTrimmedVideoPath(data)),
-                    this
-                )*/
-
-                Log.e("======", "TrimVideo uri ::: $uri")
-
+                val uri = getVideoContentUri(this, TrimVideo.getTrimmedVideoPath(data))
                 uri?.let(attachmentSelectedIntent::onNext)
-
-
             }
 
             requestCode == TakeVideoRequestCode && resultCode == Activity.RESULT_OK -> {
-               /* var fileSize: Int? = 0
-//                var finalUri: Uri? = null
-                val duration: Int = getVideoDuration(videoDestination.toString(), this)
-                // Log.e("COMPOSEActivity", "duration:: $duration")
-                if (duration > 15000) {
-                    videoDestination?.let { returnUri ->
-                        TrimVideo.activity(returnUri.toString())
-                            .setCompressOption(CompressOption(24, 160))
-                            .setTrimType(TrimType.FIXED_DURATION)
-                            .setFixedDuration(15)
-                            .start(this)
-                    }
-                } else {
-                    videoDestination?.let { returnUri ->
-                        contentResolver.query(returnUri, null, null, null, null)
-                    }?.use { cursor ->
-                        val sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE)
-                        cursor.moveToFirst()
-                        fileSize = android.text.format.Formatter.formatShortFileSize(
-                            this,
-                            cursor.getLong(sizeIndex)
-                        ).filter { it.isDigit() }.toInt()
+                /* var fileSize: Int? = 0
+ //                var finalUri: Uri? = null
+                 val duration: Int = getVideoDuration(videoDestination.toString(), this)
+                 // Log.e("COMPOSEActivity", "duration:: $duration")
+                 if (duration > 15000) {
+                     videoDestination?.let { returnUri ->
+                         TrimVideo.activity(returnUri.toString())
+                             .setCompressOption(CompressOption(24, 160))
+                             .setTrimType(TrimType.FIXED_DURATION)
+                             .setFixedDuration(15)
+                             .start(this)
+                     }
+                 } else {
+                     videoDestination?.let { returnUri ->
+                         contentResolver.query(returnUri, null, null, null, null)
+                     }?.use { cursor ->
+                         val sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE)
+                         cursor.moveToFirst()
+                         fileSize = android.text.format.Formatter.formatShortFileSize(
+                             this,
+                             cursor.getLong(sizeIndex)
+                         ).filter { it.isDigit() }.toInt()
 
-                        Log.e("======", "file size in int ::: $fileSize")
+                         Log.e("======", "file size in int ::: $fileSize")
 
-                        if (fileSize!! > 1) {
-                            progressDialog.show(this@ComposeActivity)
+                         if (fileSize!! > 1) {
+                             progressDialog.show(this@ComposeActivity)
 
-                            GlobalScope.launch(Dispatchers.IO) {
-                                VideoCompressor.compress(this@ComposeActivity, videoDestination!!)
-                            }
+                             GlobalScope.launch(Dispatchers.IO) {
+                                 VideoCompressor.compress(this@ComposeActivity, videoDestination!!)
+                             }
 
-                            Handler(Looper.getMainLooper()).postDelayed({
-                                progressDialog.dialog.dismiss()
-                                videoDestination = VideoCompressor.newUri
-                                videoDestination?.let(attachmentSelectedIntent::onNext)
-                            }, 12000)
+                             Handler(Looper.getMainLooper()).postDelayed({
+                                 progressDialog.dialog.dismiss()
+                                 videoDestination = VideoCompressor.newUri
+                                 videoDestination?.let(attachmentSelectedIntent::onNext)
+                             }, 12000)
 
-                        } else {
-                            videoDestination?.let(attachmentSelectedIntent::onNext)
-                        }
-                    }
+                         } else {
+                             videoDestination?.let(attachmentSelectedIntent::onNext)
+                         }
+                     }
 
-                    //data?.data?.let(attachmentSelectedIntent::onNext)
-                }
-            }*/
+                     //data?.data?.let(attachmentSelectedIntent::onNext)
+                 }
+             }*/
 
 
-                var fileSize: Int? = 0
-                var finalUri: Uri? = null
+                var fileSize: Int?
                 val duration: Int = getVideoDuration(data?.data.toString(), this)
                 // Log.e("COMPOSEActivity", "duration:: $duration")
                 if (duration > 15000) {
@@ -1227,9 +1194,6 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                             this,
                             cursor.getLong(sizeIndex)
                         ).filter { it.isDigit() }.toInt()
-
-                        Log.e("======", "file size in int ::: $fileSize")
-
                         if (fileSize!! > 1) {
                             progressDialog.show(this@ComposeActivity)
 
@@ -1237,10 +1201,9 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                                 VideoCompressor.compress(this@ComposeActivity, data.data!!)
                             }
 
-                            Handler().postDelayed({
+                            Handler(Looper.getMainLooper()).postDelayed({
                                 progressDialog.dialog.dismiss()
-                                finalUri = VideoCompressor.newUri
-                                finalUri?.let(attachmentSelectedIntent::onNext)
+                                VideoCompressor.newUri?.let(attachmentSelectedIntent::onNext)
                             }, 12000)
 
                         } else {
@@ -1253,75 +1216,32 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
             }
 
             requestCode == AddAudioRequestCode && resultCode == Activity.RESULT_OK -> {
-                //Log.e("COMPOSITEACTIVITY", "audio uri:: ${data?.data}")
-                data?.data?.let(attachmentSelectedIntent::onNext)
+                val path = data?.data?.let { FileUtils.getUriRealPath(this, it) }
+                val dir = File(
+                    Environment.getExternalStorageDirectory(),
+                    FOLDER_NAME
+                ).apply { mkdirs() }
+                //Log.e("========", "path::: $path")
+                val to = File(
+                    dir,
+                    "audio_" + SimpleDateFormat(
+                        "yyyyMMdd_HHmmss",
+                        Locale.getDefault()
+                    ).format(Date()) + ".aac"
+                )
+
+                Utils.copyFile(File(path.toString()), to).absolutePath.let {
+                    getAudioContentUri(
+                        this,
+                        it
+                    )?.let(attachmentSelectedIntent::onNext)
+                }
+
+
             }
 
             else -> super.onActivityResult(requestCode, resultCode, data)
         }
-    }
-
-    fun getContentUri1(context: Context, absPath: String): Uri? {
-        Log.e("=============", "getImageContentUri: $absPath")
-        val cursor: Cursor? = context.getContentResolver().query(
-            MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
-            arrayOf(MediaStore.Video.Media._ID),
-            MediaStore.Video.Media.DATA + "=? ",
-            arrayOf(absPath),
-            null
-        )
-        return if (cursor != null && cursor.moveToFirst()) {
-            val id: Int = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns._ID))
-            Uri.withAppendedPath(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, id.toString())
-        } else if (absPath.isNotEmpty()) {
-            val values = ContentValues()
-            values.put(MediaStore.Video.Media.DATA, absPath)
-            values.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
-
-            context.contentResolver.insert(
-                MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values
-            )
-        } else {
-            null
-        }
-    }
-
-    fun getContentUri2(context: Context, absPath: String): Uri? {
-        val cursor: Cursor? = context.getContentResolver().query(
-            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-            arrayOf(MediaStore.Audio.Media._ID),
-            MediaStore.Audio.Media.DATA + "=? ",
-            arrayOf(absPath),
-            null
-        )
-        return if (cursor != null && cursor.moveToFirst()) {
-            val id: Int = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns._ID))
-            Uri.withAppendedPath(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id.toString())
-        } else if (absPath.isNotEmpty()) {
-            val values = ContentValues()
-            values.put(MediaStore.Audio.Media.DATA, absPath)
-            values.put(MediaStore.Audio.Media.MIME_TYPE, "audio/aac")
-
-            context.contentResolver.insert(
-                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, values
-            )
-        } else {
-            null
-        }
-    }
-
-    fun ContentResolver.getFileName(fileUri: Uri): String {
-
-        var name = ""
-        val returnCursor = this.query(fileUri, null, null, null, null)
-        if (returnCursor != null) {
-            val nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-            returnCursor.moveToFirst()
-            name = returnCursor.getString(nameIndex)
-            returnCursor.close()
-        }
-
-        return name
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

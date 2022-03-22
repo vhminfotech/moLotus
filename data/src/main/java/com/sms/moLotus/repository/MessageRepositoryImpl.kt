@@ -157,12 +157,14 @@ class MessageRepositoryImpl @Inject constructor(
     }
 
     override fun savePart(id: Long): File? {
+        Log.e("======", "id:: ${id}")
+
         val part = getPart(id) ?: return null
 
         val extension =
             MimeTypeMap.getSingleton().getExtensionFromMimeType(part.type) ?: return null
         val date = part.messages?.first()?.date
-        val dir = File(Environment.getExternalStorageDirectory(), "QKSMS/Media").apply { mkdirs() }
+        val dir = File(Environment.getExternalStorageDirectory(), "MCHAT/Media").apply { mkdirs() }
         val fileName = "$date.$extension"
         var file: File
         var index = 0
@@ -177,6 +179,8 @@ class MessageRepositoryImpl @Inject constructor(
             index++
         } while (file.exists())
 
+        Log.e("======", "uri:: ${part.getUri()}")
+
         try {
             FileOutputStream(file).use { outputStream ->
                 context.contentResolver.openInputStream(part.getUri())?.use { inputStream ->
@@ -185,12 +189,19 @@ class MessageRepositoryImpl @Inject constructor(
             }
         } catch (e: FileNotFoundException) {
             e.printStackTrace()
+            Log.e("======", "err:: ${e.message}")
+
         } catch (e: IOException) {
             e.printStackTrace()
+            Log.e("======", "err:: ${e.message}")
+        } catch (e: java.lang.Exception) {
+            e.printStackTrace()
+
+            Log.e("======", "err:: ${e.message}")
         }
+        Log.e("======", "file:: ${file.path}")
 
         MediaScannerConnection.scanFile(context, arrayOf(file.path), null, null)
-
         return file.takeIf { it.exists() }
     }
 
