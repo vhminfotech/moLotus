@@ -1,12 +1,9 @@
 package com.sms.moLotus.util
 
-import android.content.ContentResolver
 import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
 import android.net.Uri
-import android.os.Build
-import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
 import com.abedelazizshe.lightcompressorlibrary.CompressionListener
@@ -14,20 +11,16 @@ import com.abedelazizshe.lightcompressorlibrary.VideoCompressor
 import com.abedelazizshe.lightcompressorlibrary.VideoQuality
 import com.abedelazizshe.lightcompressorlibrary.config.Configuration
 import kotlinx.coroutines.runBlocking
-import java.io.File
 
 object VideoCompressor {
-
     var isComplete: Boolean? = false
     var newUri: Uri ?=null
-
     fun compress(context: Context, uri: Uri): Uri? = runBlocking {
-
         VideoCompressor.start(
             context = context, // => This is required
             uris = listOf(uri), // => Source can be provided as content uris
             isStreamable = true,
-            saveAt = context.cacheDir?.absolutePath /*Environment.DIRECTORY_MOVIES + "/VideoCompress"*/, // => the directory to save the compressed video(s)
+            saveAt = context.externalCacheDir?.absolutePath /*Environment.DIRECTORY_MOVIES + "/VideoCompress"*/, // => the directory to save the compressed video(s)
             listener = object : CompressionListener {
                 override fun onProgress(index: Int, percent: Float) {
                     // Update UI with progress value
@@ -37,7 +30,6 @@ object VideoCompressor {
                 override fun onStart(index: Int) {
                     // Compression start
                     Log.e("ImageUtils", "onStart:: $index")
-
                 }
 
                 override fun onSuccess(
@@ -47,24 +39,19 @@ object VideoCompressor {
                 ) {
                     // On Compression success
                     Log.e("ImageUtils", "onSuccess:: $size:: path:: $path")
-
                     isComplete = true
-                    newUri = getContentUri(File(path), context)!!
-
+                    newUri = path?.let { getVideoContentUri( context, it) }
                     Log.e("ImageUtils", "onSuccess:: $newUri")
-
                 }
 
                 override fun onFailure(index: Int, failureMessage: String) {
                     // On Failure
                     Log.e("ImageUtils", "failureMessage:: $failureMessage")
-
                 }
 
                 override fun onCancelled(index: Int) {
                     // On Cancelled
                     Log.e("ImageUtils", "onCancelled:")
-
                 }
 
             },
@@ -79,48 +66,29 @@ object VideoCompressor {
                 null /*Double, ignore, or null*/
             )
         )
-
-
         newUri
     }
 
-    fun getContentUri(file: File, context: Context): Uri? {
-        val filePath = file.absolutePath
+    fun getVideoContentUri(context: Context, absPath: String): Uri? {
         val cursor: Cursor? = context.contentResolver.query(
-            MediaStore.Video.Media.EXTERNAL_CONTENT_URI, arrayOf(MediaStore.Video.Media._ID),
-            MediaStore.Video.Media.DATA + "=? ", arrayOf(filePath), null
+            MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+            arrayOf(MediaStore.Video.Media._ID),
+            MediaStore.Video.Media.DATA + "=? ",
+            arrayOf(absPath),
+            null
         )
         return if (cursor != null && cursor.moveToFirst()) {
-            val id = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns._ID))
-            cursor.close()
-            Uri.withAppendedPath(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, "" + id)
+            val id: Int = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns._ID))
+            Uri.withAppendedPath(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, id.toString())
+        } else if (absPath.isNotEmpty()) {
+            val values = ContentValues()
+            values.put(MediaStore.Video.Media.DATA, absPath)
+            values.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
+            context.contentResolver.insert(
+                MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values
+            )
         } else {
-            if (file.exists()) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    val resolver: ContentResolver = context.contentResolver
-                    val picCollection = MediaStore.Video.Media
-                        .getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
-                    val picDetail = ContentValues()
-                    picDetail.put(MediaStore.Video.Media.DISPLAY_NAME, file?.name)
-                    picDetail.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
-                    picDetail.put(
-                        MediaStore.Video.Media.RELATIVE_PATH,
-                        Environment.DIRECTORY_MOVIES
-                    )
-                    picDetail.put(MediaStore.Video.Media.IS_PENDING, 0)
-                    val finalUri: Uri? = resolver.insert(picCollection, picDetail)
-                    finalUri
-                } else {
-                    val values = ContentValues()
-                    values.put(MediaStore.Video.Media.DATA, filePath)
-                    values.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
-                    context.contentResolver.insert(
-                        MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values
-                    )
-                }
-            } else {
-                null
-            }
+            null
         }
     }
 }

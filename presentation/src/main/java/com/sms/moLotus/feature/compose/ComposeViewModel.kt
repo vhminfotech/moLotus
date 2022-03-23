@@ -3,9 +3,12 @@ package com.sms.moLotus.feature.compose
 import android.app.Dialog
 import android.content.Context
 import android.net.Uri
+import android.os.Build
+import android.os.VibrationEffect
 import android.os.Vibrator
 import android.provider.ContactsContract
 import android.telephony.SmsMessage
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.Window
@@ -376,62 +379,20 @@ class ComposeViewModel @Inject constructor(
             .filter { it == R.id.share }
             .withLatestFrom(view.messagesSelectedIntent) { _, messages ->
                 messages?.firstOrNull()?.let { messageRepo.getMessage(it) }?.let { message ->
-                    message.parts.filter { it.isImage() || it.isAudio() || it.isVideo() || it.isVCard() || it.isDoc() || it.isWordDoc() || it.isXLDoc() }
-                        .mapNotNull {
-                            // if (permissionManager.hasStorage()) {
-                            messageRepo.savePart(it.id)?.let { it1 ->
-                                navigator.shareFile(
-                                    message.getText(),
-                                    it1
-                                )
-                            }
-                            /* }else{
-                                 view.requestStoragePermission()
-                             }*/
-                        }
-
-                    /*if (message.parts.isEmpty()) {
-                        navigator.shareToOtherApps(
-                            message.getText(),
-                            null
-                        )
-                    } else {
-                        message.parts.filter { it.isImage() || it.isAudio() || it.isVideo() || it.isVCard() }
+                    Log.e("========", "message.parts::: ${message.parts}")
+                    if (message.parts.isNotEmpty()) {
+                        message.parts.filter { it.isImage() || it.isAudio() || it.isVideo() || it.isVCard() || it.isDoc() || it.isWordDoc() || it.isXLDoc() }
                             .mapNotNull {
-                                val mimeType = activity.contentResolver.getType(it.getUri())
-                                when {
-                                    ContentType.isImageType(mimeType) || ContentType.isAudioType(
-                                        mimeType
-                                    ) || ContentType.isVideoType(mimeType) -> {
-                                        Attachment.Image(it.getUri())
-                                        navigator.shareToOtherApps(
-                                            message.getText(),
-                                            it.getUri()
-                                        )
-                                    }
-
-                                    ContentType.TEXT_VCARD.equals(mimeType, true) -> {
-                                        val inputStream =
-                                            activity.contentResolver.openInputStream(it.getUri())
-                                        val text = inputStream?.reader(Charset.forName("utf-8"))
-                                            ?.readText()
-                                        text?.let(Attachment::Contact)
-                                        navigator.shareToOtherApps(
-                                            message.getText(),
-                                            it.getUri()
-                                        )
-                                    }
-
-                                    else -> {
-                                        Attachment.Image(it.getUri())
-                                        navigator.shareToOtherApps(
-                                            message.getText(),
-                                            it.getUri()
-                                        )
-                                    }
+                                messageRepo.savePart(it.id)?.let { it1 ->
+                                    navigator.shareFile(
+                                        message.getText(),
+                                        it1
+                                    )
                                 }
                             }
-                    }*/
+                    } else {
+                        navigator.shareToOtherApps(message.getText())
+                    }
                 }
             }.doOnError { throwable -> Timber.e("ONERROR", "== ${throwable.message}") }
             .autoDisposable(view.scope())
@@ -779,7 +740,12 @@ class ComposeViewModel @Inject constructor(
                 }
 
                 if (subscription != null) {
-                    context.getSystemService<Vibrator>()?.vibrate(40)
+                    if (Build.VERSION.SDK_INT >= 26) {
+                        context.getSystemService<Vibrator>()
+                            ?.vibrate(VibrationEffect.createOneShot(40, 10))
+                    } else {
+                        context.getSystemService<Vibrator>()?.vibrate(40)
+                    }
                     context.makeToast(
                         context.getString(
                             R.string.compose_sim_changed_toast,
@@ -1090,7 +1056,7 @@ class ComposeViewModel @Inject constructor(
         val lookupKey =
             context.contentResolver.query(contactData, null, null, null, null)?.use { cursor ->
                 cursor.moveToFirst()
-                cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.LOOKUP_KEY))
+                cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.Contacts.LOOKUP_KEY))
             }
 
         val vCardUri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_VCARD_URI, lookupKey)

@@ -541,7 +541,8 @@
         android:textColor="?android:attr/textColorPrimary"
         app:layout_constraintBottom_toBottomOf="@id/camera"
         app:layout_constraintStart_toEndOf="@id/gallery"
-        app:layout_constraintTop_toTopOf="@id/camera" />
+        app:layout_constraintTop_toTopOf="@id/camera"
+        />
 
     <ImageView
         android:id="@+id/video"
