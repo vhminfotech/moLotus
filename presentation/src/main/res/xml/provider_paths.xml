@@ -24,4 +24,8 @@
     <external-cache-path
         name="external_cache"
         path="." />
+    <external-files-path name="Download" path="Download/" />
+    <external-path
+        name="pathName"
+        path="pathValue"/>
 </paths>

@@ -4,20 +4,12 @@ import android.content.ContentResolver
 import android.content.ContentUris
 import android.content.Context
 import android.database.Cursor
-import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.DocumentsContract
 import android.provider.MediaStore
-import android.provider.OpenableColumns
 import android.util.Log
-import java.io.BufferedInputStream
-import java.io.BufferedOutputStream
-import java.io.File
-import java.io.FileOutputStream
-import java.lang.Exception
-import kotlin.Throws
 
 
 object FileUtils {
@@ -26,9 +18,6 @@ object FileUtils {
     fun getUriRealPath(ctx: Context, uri: Uri): String? {
         var ret: String? = ""
         ret = getUriRealPathAboveKitkat(ctx, uri)
-
-
-
 
         Log.e("======", "getUriRealPath ::: $ret")
         return ret
@@ -86,7 +75,7 @@ The method is only applied to the android SDK version number that is bigger than
                         // Get where clause with real document id.
                         val whereClause = MediaStore.Images.Media._ID + " = " + realDocId
                         ret =
-                            getImageRealPath(ctx.getContentResolver(), mediaContentUri, whereClause)
+                            getImageRealPath(ctx.contentResolver, mediaContentUri, whereClause)
                     }
                 } else if (isDownloadDoc(uriAuthority)) {
                     // Build download URI.
@@ -94,7 +83,7 @@ The method is only applied to the android SDK version number that is bigger than
                     // Append download document id at URI end.
                     val downloadUriAppendId =
                         ContentUris.withAppendedId(downloadUri, java.lang.Long.valueOf(documentId))
-                    ret = getImageRealPath(ctx.getContentResolver(), downloadUriAppendId, null)
+                    ret = getImageRealPath(ctx.contentResolver, downloadUriAppendId, null)
                 } else if (isExternalStoreDoc(uriAuthority)) {
                     val idArr = documentId.split(":".toRegex()).toTypedArray()
                     if (idArr.size == 2) {
@@ -224,6 +213,9 @@ Check whether google photos provide this document, if true means this image is c
                     }
                     uri === MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY) -> {
                         columnName = MediaStore.Images.Media.DATA
+                    }
+                    uri === MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY) -> {
+                        columnName = MediaStore.Audio.Media.DATA
                     }
                     uri === MediaStore.Audio.Media.EXTERNAL_CONTENT_URI -> {
                         columnName = MediaStore.Audio.Media.DATA

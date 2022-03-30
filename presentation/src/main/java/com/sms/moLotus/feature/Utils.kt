@@ -13,15 +13,14 @@ import android.os.Environment
 import android.os.StrictMode
 import android.provider.MediaStore
 import android.util.Log
-import androidx.exifinterface.media.ExifInterface
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.io.IOException
-import java.lang.Exception
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import java.io.*
+import java.net.HttpURLConnection
 import java.nio.channels.FileChannel
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 object Utils {
 
@@ -487,5 +486,67 @@ object Utils {
             destination?.close()
         }
        return destFile
+    }
+
+    @Throws(IOException::class)
+    fun copyFileStream(dest: File, uri: Uri, context: Context) : File?{
+        var `is`: InputStream? = null
+        var os: OutputStream? = null
+        try {
+            `is` = context.contentResolver.openInputStream(uri)
+            os = FileOutputStream(dest)
+            val buffer = ByteArray(1024)
+            var length: Int = 0
+            while (`is`?.read(buffer).also {
+                    if (it != null) {
+                        length = it
+                    }
+                }!! > 0) {
+                os.write(buffer, 0, length)
+            }
+        } catch (e: java.lang.Exception) {
+            e.printStackTrace()
+        } finally {
+            `is`?.close()
+            os?.close()
+        }
+        return dest
+    }
+
+    fun download(url: String, file: File): io.reactivex.Observable<Int> {
+        var okHttpClient = OkHttpClient()
+
+        val okHttpBuilder = okHttpClient.newBuilder()
+            .connectTimeout(10000, TimeUnit.SECONDS)
+            .readTimeout(20000, TimeUnit.SECONDS)
+        okHttpClient = okHttpBuilder.build()
+        return io.reactivex.Observable.create<Int> { emitter ->
+            val request = Request.Builder().url(url).build()
+            val response = okHttpClient.newCall(request).execute()
+            val body = response.body
+            val responseCode = response.code
+            if (responseCode >= HttpURLConnection.HTTP_OK &&
+                responseCode < HttpURLConnection.HTTP_MULT_CHOICE &&
+                body != null) {
+                val length = body.contentLength()
+                body.byteStream().apply {
+                    file.outputStream().use { fileOut ->
+                        var bytesCopied = 0
+                        val buffer = ByteArray(1024)
+                        var bytes = read(buffer)
+                        while (bytes >= 0) {
+                            fileOut.write(buffer, 0, bytes)
+                            bytesCopied += bytes
+                            bytes = read(buffer)
+                            emitter.onNext(
+                                ((bytesCopied * 100)/length).toInt())
+                        }
+                    }
+                    emitter.onComplete()
+                }
+            } else {
+                // Report the error
+            }
+        }
     }
 }

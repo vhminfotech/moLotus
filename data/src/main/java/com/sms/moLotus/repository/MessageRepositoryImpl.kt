@@ -16,6 +16,7 @@ import android.provider.Telephony.Sms
 import android.telephony.SmsManager
 import android.util.Log
 import android.webkit.MimeTypeMap
+import android.widget.Toast
 import androidx.core.content.contentValuesOf
 import com.google.android.mms.ContentType
 import com.google.android.mms.MMSPart
@@ -607,6 +608,7 @@ class MessageRepositoryImpl @Inject constructor(
                     }
                     attachment.isAudio(context) -> {
                         MMSPart("audio", ContentType.AUDIO_AAC, bytes)
+                        MMSPart("audio", ContentType.AUDIO_MP3, bytes)
                     }
                     else -> {
                         MMSPart("image", ContentType.IMAGE_JPEG, bytes)
@@ -899,8 +901,11 @@ class MessageRepositoryImpl @Inject constructor(
     override fun markDelivered(id: Long) {
         Realm.getDefaultInstance().use { realm ->
             realm.refresh()
+            Log.e("=========","markDelivered")
 
             val message = realm.where(Message::class.java).equalTo("id", id).findFirst()
+            Log.e("=========","message:: $message")
+
             message?.let {
                 // Update the message in realm
                 realm.executeTransaction {
@@ -909,6 +914,7 @@ class MessageRepositoryImpl @Inject constructor(
                     message.read = true
                     messageDeliveredStatus = true
                     // messageReadStatus = false
+                    Log.e("=========","delivered:: ${message}")
                 }
 
 
@@ -919,9 +925,12 @@ class MessageRepositoryImpl @Inject constructor(
                 values.put(Sms.READ, true)
 
                 context.contentResolver.update(message.getUri(), values, null, null)
+
+                Log.e("=========","delivered:: ${values}")
+                Log.e("=========","delivered:: ${message.getUri()}")
+                //Toast.makeText(context, "Message Delivered", Toast.LENGTH_SHORT).show()
+
             }
-
-
         }
     }
 
@@ -957,6 +966,8 @@ class MessageRepositoryImpl @Inject constructor(
                 values.put(Sms.READ, true)
                 values.put(Sms.ERROR_CODE, resultCode)
                 context.contentResolver.update(message.getUri(), values, null, null)
+                Log.e("=========", "Failed:: ${message.getUri()}")
+                Toast.makeText(context, "Message Failed", Toast.LENGTH_SHORT).show()
             }
         }
     }

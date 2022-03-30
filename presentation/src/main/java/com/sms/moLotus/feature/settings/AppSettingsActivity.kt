@@ -1,10 +1,12 @@
 package com.sms.moLotus.feature.settings
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Dialog
+import android.app.ProgressDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.Gravity
@@ -12,32 +14,44 @@ import android.view.Window
 import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
 import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
 import com.sms.moLotus.common.Navigator
+import com.sms.moLotus.extension.checkSelfPermissionCompat
+import com.sms.moLotus.extension.requestPermissionsCompat
+import com.sms.moLotus.extension.shouldShowRequestPermissionRationaleCompat
 import com.sms.moLotus.extension.toast
 import com.sms.moLotus.feature.intro.APNDetailsActivity
-import com.sms.moLotus.feature.intro.IntroActivity2
 import com.sms.moLotus.feature.retrofit.MainRepository
 import com.sms.moLotus.feature.retrofit.MainViewModel
 import com.sms.moLotus.feature.retrofit.MyViewModelFactory
 import com.sms.moLotus.feature.retrofit.RetrofitService
+import com.sms.moLotus.feature.settings.autodownloadapk.UpdateApp
 import kotlinx.android.synthetic.main.activity_app_settings.*
 import kotlinx.android.synthetic.main.layout_add_signature.*
 import kotlinx.android.synthetic.main.layout_check_for_updates.*
 import kotlinx.android.synthetic.main.layout_header.*
+
 
 class AppSettingsActivity : AppCompatActivity() {
     lateinit var navigator: Navigator
     lateinit var viewModel: MainViewModel
     private val retrofitService = RetrofitService.getInstance()
     private var versionCode: Int = 0
+    val apkUrl = "https://vhminfotech.com/mChat.apk"
+    var progressDialog: ProgressDialog? = null
+
+    companion object {
+        const val PERMISSION_REQUEST_STORAGE = 0
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_app_settings)
+        progressDialog = ProgressDialog(this)
         viewModel =
             ViewModelProvider(this, MyViewModelFactory(MainRepository(retrofitService))).get(
                 MainViewModel::class.java
@@ -88,7 +102,6 @@ class AppSettingsActivity : AppCompatActivity() {
             val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.molotus.com/"))
             startActivity(intent)
         }
-
         llCheckForUpdates?.setOnClickListener {
             if (versionCode >= info.versionCode) {
                 openAppUpdateDialog()
@@ -125,6 +138,7 @@ class AppSettingsActivity : AppCompatActivity() {
         dialog.show()
     }
 
+    @SuppressLint("AutoDispose")
     private fun openAppUpdateDialog() {
         val dialog = Dialog(this)
         dialog.setCancelable(true)
@@ -138,12 +152,13 @@ class AppSettingsActivity : AppCompatActivity() {
         window?.attributes = wlp
 
         dialog.txtUpdate?.setOnClickListener {
-            dialog.dismiss()
 
+            // check storage permission granted if yes then start downloading file
+            checkStoragePermission()
+            dialog.dismiss()
         }
         dialog.txtRemind?.setOnClickListener {
             dialog.dismiss()
-
         }
         dialog.show()
     }
@@ -156,7 +171,7 @@ class AppSettingsActivity : AppCompatActivity() {
         viewModel.errorMessage.observe(this, {
             Log.e("=====", "errorMessage:: $it")
             Snackbar.make(
-                findViewById(R.id.introlinearlayout),
+                findViewById(R.id.mainLayout),
                 "No Internet Connection. Please turn on your internet!",
                 Snackbar.LENGTH_INDEFINITE
             )
@@ -167,5 +182,62 @@ class AppSettingsActivity : AppCompatActivity() {
                 .show()
         })
         viewModel.getVersionCode()
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == PERMISSION_REQUEST_STORAGE) {
+            // Request for camera permission.
+            if (grantResults.size == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // start downloading
+                runOnUiThread {
+                    val updateApp = UpdateApp()
+                    updateApp.setContext(this, progressDialog)
+                    updateApp.execute(apkUrl)
+                }
+            } else {
+                // Permission request was denied.
+                toast(getString(R.string.storage_permission_denied))
+            }
+        }
+    }
+
+    private fun checkStoragePermission() {
+        // Check if the storage permission has been granted
+        if (checkSelfPermissionCompat(Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            // start downloading
+            runOnUiThread {
+                val updateApp = UpdateApp()
+                updateApp.setContext(this, progressDialog)
+                updateApp.execute(apkUrl)
+            }
+        } else {
+            // Permission is missing and must be requested.
+            requestStoragePermission()
+        }
+    }
+
+    private fun requestStoragePermission() {
+        if (shouldShowRequestPermissionRationaleCompat(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            toast(getString(R.string.storage_access_required))
+
+
+            requestPermissionsCompat(
+                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                PERMISSION_REQUEST_STORAGE
+            )
+
+        } else {
+            requestPermissionsCompat(
+                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                PERMISSION_REQUEST_STORAGE
+            )
+        }
     }
 }

@@ -7,7 +7,9 @@ import android.app.Activity
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.ContentValues
+import android.content.Context
 import android.content.Intent
+import android.database.Cursor
 import android.graphics.Color
 import android.net.Uri
 import android.os.*
@@ -44,7 +46,7 @@ import com.sms.moLotus.common.util.DateFormatter
 import com.sms.moLotus.common.util.extensions.*
 import com.sms.moLotus.customview.CustomProgressDialog
 import com.sms.moLotus.feature.Constants.FOLDER_NAME
-import com.sms.moLotus.feature.FileUtils
+import com.sms.moLotus.feature.FileUtilsGetPath
 import com.sms.moLotus.feature.Utils
 import com.sms.moLotus.feature.Utils.compressImage
 import com.sms.moLotus.feature.Utils.getAudioContentUri
@@ -70,12 +72,12 @@ import kotlinx.android.synthetic.main.compose_activity.toolbar
 import kotlinx.android.synthetic.main.compose_activity.toolbarTitle
 import kotlinx.android.synthetic.main.main_activity.*
 import kotlinx.coroutines.*
-import java.io.File
-import java.io.IOException
+import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
 import kotlin.collections.HashMap
+
 
 @RequiresApi(Build.VERSION_CODES.M)
 class ComposeActivity : QkThemedActivity(), ComposeView {
@@ -124,7 +126,8 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
     override val chipDeletedIntent: Subject<Recipient> by lazy { chipsAdapter.chipDeleted }
     override val menuReadyIntent: Observable<Unit> = menu.map { }
     override val optionsItemIntent: Subject<Int> = PublishSubject.create()
-    override val sendAsGroupIntent by lazy { sendAsGroupBackground.clicks() }
+
+    //override val sendAsGroupIntent by lazy { sendAsGroupBackground.clicks() }
     override val messageClickIntent: Subject<Long> by lazy { messageAdapter.clicks }
     override val messagePartClickIntent: Subject<Long> by lazy { messageAdapter.partClicks }
     override val messagesSelectedIntent by lazy { messageAdapter.selectionChanges }
@@ -190,7 +193,6 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.compose_activity)
         showBackButton(true)
-
         viewModel.bindView(this)
         recordButton = record_button
         audioRecorder = AudioRecorder()
@@ -639,7 +641,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
 
         loading.setVisible(state.loading)
 
-        sendAsGroup.setVisible(state.editingMode && state.selectedChips.size >= 2)
+//        sendAsGroup.setVisible(state.editingMode && state.selectedChips.size >= 2)
         sendAsGroupSwitch.isChecked = state.sendAsGroup
 
         messageList.setVisible(!state.editingMode || state.sendAsGroup || state.selectedChips.size == 1)
@@ -658,8 +660,8 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                 videoLabel.visibility = View.VISIBLE
                 takeVideo.visibility = View.VISIBLE
                 takeVideoLabel.visibility = View.VISIBLE
-                addDocuments.visibility = View.VISIBLE
-                addDocumentsLabel.visibility = View.VISIBLE
+                addDocuments.visibility = View.GONE
+                addDocumentsLabel.visibility = View.GONE
                 addAudio.visibility = View.VISIBLE
                 addAudioLabel.visibility = View.VISIBLE
                 135f
@@ -896,11 +898,26 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         )
     }
 
+//   override fun addAudio() {
+//        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+//            .addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+//            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+//            .setType("audio/*")
+//        .addCategory(Intent.CATEGORY_OPENABLE)
+//
+//        .putExtra("return-data", true)
+//        startActivityForResult(
+//            Intent.createChooser(intent, "Complete action using"),
+//            AddAudioRequestCode
+//        )
+//    }
+
     override fun addAudio() {
-        val intent = Intent(Intent.ACTION_PICK)
+        val intent = Intent(Intent.ACTION_GET_CONTENT)
             .addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
             .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             .setType("audio/*")
+            .addCategory(Intent.CATEGORY_OPENABLE)
             .putExtra("return-data", true)
         startActivityForResult(
             Intent.createChooser(intent, "Complete action using"),
@@ -963,7 +980,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                     cameraDestination?.let(attachmentSelectedIntent::onNext)
                 } else {
                     val uri = cameraDestination?.let {
-                        FileUtils.getUriRealPath(this, it)
+                        FileUtilsGetPath.getPath(this, it)
                     }?.let { compressImage(File(it), this) }
                     uri?.let(attachmentSelectedIntent::onNext)
                 }
@@ -983,7 +1000,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                         data.data?.let(attachmentSelectedIntent::onNext)
                     } else {
                         val uri = data.data?.let {
-                            FileUtils.getUriRealPath(this, it)
+                            FileUtilsGetPath.getPath(this, it)
                         }?.let { compressImage(File(it), this) }
                         uri?.let(attachmentSelectedIntent::onNext)
                     }
@@ -1004,7 +1021,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                             ?.let { count -> 0 until count }
                             ?.mapNotNull { i ->
                                 uri = data.clipData?.getItemAt(i)?.uri?.let {
-                                    FileUtils.getUriRealPath(this, it)
+                                    FileUtilsGetPath.getPath(this, it)
                                 }?.let { compressImage(File(it), this) }
                             }
 
@@ -1216,12 +1233,10 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
             }
 
             requestCode == AddAudioRequestCode && resultCode == Activity.RESULT_OK -> {
-                val path = data?.data?.let { FileUtils.getUriRealPath(this, it) }
                 val dir = File(
                     Environment.getExternalStorageDirectory(),
                     FOLDER_NAME
                 ).apply { mkdirs() }
-                //Log.e("========", "path::: $path")
                 val to = File(
                     dir,
                     "audio_" + SimpleDateFormat(
@@ -1229,20 +1244,26 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                         Locale.getDefault()
                     ).format(Date()) + ".aac"
                 )
-
-                Utils.copyFile(File(path.toString()), to).absolutePath.let {
-                    getAudioContentUri(
-                        this,
-                        it
-                    )?.let(attachmentSelectedIntent::onNext)
+                try {
+                    if (data != null) {
+                        data.data?.let {
+                            Utils.copyFileStream(to, it, this)?.absolutePath?.let { it1 ->
+                                getAudioContentUri(
+                                    this,
+                                    it1
+                                )}?.let(attachmentSelectedIntent::onNext)
+                        }
+                    }
+                } catch (e: java.lang.Exception) {
+                    e.printStackTrace()
                 }
-
-
             }
 
             else -> super.onActivityResult(requestCode, resultCode, data)
         }
     }
+
+
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putParcelable(CameraDestinationKey, cameraDestination)

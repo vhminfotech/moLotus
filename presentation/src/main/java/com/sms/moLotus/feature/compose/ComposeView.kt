@@ -16,7 +16,7 @@ interface ComposeView : QkView<ComposeState> {
     val chipDeletedIntent: Subject<Recipient>
     val menuReadyIntent: Observable<Unit>
     val optionsItemIntent: Observable<Int>
-    val sendAsGroupIntent: Observable<*>
+//    val sendAsGroupIntent: Observable<*>
     val messageClickIntent: Subject<Long>
     val messagePartClickIntent: Subject<Long>
     val messagesSelectedIntent: Observable<List<Long>>

@@ -64,7 +64,7 @@
         android:layout_height="wrap_content"
         android:visibility="gone"
         app:constraint_referenced_ids="sendAsGroupBackground,sendAsGroupTitle,sendAsGroupSummary,sendAsGroupSwitch,sendAsGroupShadow"
-        tools:visibility="visible" />
+        tools:visibility="gone" />
 
     <View
         android:id="@+id/sendAsGroupBackground"
@@ -106,7 +106,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
-        android:checked="true"
+        android:checked="false"
         android:clickable="false"
         app:layout_constraintBottom_toBottomOf="@id/sendAsGroupBackground"
         app:layout_constraintEnd_toEndOf="@id/sendAsGroupBackground"

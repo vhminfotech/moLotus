@@ -23,6 +23,11 @@
     <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION" />
     <uses-permission android:name="android.permission.WRITE_SMS" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+        <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <uses-permission
+        android:name="android.permission.READ_LOGS"
+        tools:ignore="ProtectedPermissions" />
+
     <uses-permission
         android:name="android.permission.WRITE_SETTINGS"
         tools:ignore="ProtectedPermissions" />
@@ -30,6 +35,9 @@
         android:name="android.permission.CHANGE_CONFIGURATION"
         tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission
+        android:name="android.permission.INSTALL_PACKAGES"
+        tools:ignore="ProtectedPermissions" />
 
     <application
         android:name=".common.QKApplication"
@@ -48,7 +56,7 @@
         <activity
             android:name=".feature.intro.AppIntroActivity"
             android:exported="true"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
 
         <receiver
             android:name=".feature.authentication.MySMSBroadcastReceiver"
@@ -60,9 +68,9 @@
         </receiver>
 
         <activity
-            android:theme="@style/AppTheme1"
             android:name=".feature.authentication.VerifyOtpActivity"
-            android:exported="true" />
+            android:exported="true"
+            android:theme="@style/AppTheme1" />
         <activity
             android:name=".feature.splash.SplashActivity"
             android:exported="true"
@@ -86,7 +94,9 @@
         <activity
             android:name=".feature.intro.IntroActivity"
             android:theme="@style/AppTheme1" />
-        <activity android:name=".feature.intro.IntroActivity2"  android:theme="@style/AppTheme1"/>
+        <activity
+            android:name=".feature.intro.IntroActivity2"
+            android:theme="@style/AppTheme1" />
         <activity
             android:name=".feature.main.MainActivity"
             android:exported="true"
@@ -217,8 +227,8 @@
             android:name=".receiver.MmsUpdatedReceiver"
             android:taskAffinity="com.sms.moLotus.MMS_UPDATED" />
         <receiver
-            android:exported="true"
             android:name=".receiver.MmsReceivedReceiver"
+            android:exported="true"
             android:taskAffinity="com.klinker.android.messaging.MMS_RECEIVED" />
         <receiver android:name=".receiver.MarkArchivedReceiver" />
         <receiver android:name=".receiver.BlockThreadReceiver" />

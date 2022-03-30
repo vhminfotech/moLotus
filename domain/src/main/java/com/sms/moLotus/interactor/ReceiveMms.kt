@@ -74,7 +74,6 @@ class ReceiveMms @Inject constructor(
                         is BlockingClient.Action.Unblock -> conversationRepo.markUnblocked(message.threadId)
                         else -> Unit
                     }
-
                     message
                 }
                 .doOnNext { message ->
@@ -92,5 +91,4 @@ class ReceiveMms @Inject constructor(
                 .doOnNext(notificationManager::update) // Update the notification
                 .flatMap { updateBadge.buildObservable(Unit) } // Update the badge
     }
-
 }

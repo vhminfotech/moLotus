@@ -19,6 +19,7 @@ import com.sms.moLotus.feature.main.MainActivity
 import kotlinx.android.synthetic.main.activity_splash.*
 import kotlinx.android.synthetic.main.activity_splash.txtMchat
 import kotlinx.android.synthetic.main.intro_activity_main.*
+import timber.log.Timber
 
 
 class SplashActivity : AppCompatActivity() {
@@ -35,6 +36,8 @@ class SplashActivity : AppCompatActivity() {
 
         // we used the postDelayed(Runnable, time) method
         // to send a message with a delayed time.
+
+        Timber.e("======== ${PreferenceHelper.getPreference(this, "UserLoggedIn")}")
         Handler(Looper.getMainLooper()).postDelayed({
             if (!PreferenceHelper.getPreference(this, "INTRO")) {
                 val intent = Intent(this, AppIntroActivity::class.java)

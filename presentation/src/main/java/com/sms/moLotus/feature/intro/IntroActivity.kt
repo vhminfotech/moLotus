@@ -23,6 +23,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.sms.moLotus.R
 import com.sms.moLotus.customview.CustomStringBuilder
 import com.sms.moLotus.extension.toast
+import com.sms.moLotus.feature.Constants
 import com.sms.moLotus.feature.authentication.VerifyOtpActivity
 import com.sms.moLotus.feature.networkcall.ApiHelper
 import com.sms.moLotus.feature.retrofit.MainRepository
@@ -105,11 +106,11 @@ class IntroActivity : AppCompatActivity() {
                     Snackbar.LENGTH_INDEFINITE
                 )
                     .setAction("Retry") {
-                        viewModel.registerUser(
+                        /*viewModel.registerUser(
                             etName.text.toString(),
-                            carrier_provider.selectedItemId.toInt(),
+                            Constants.CARRIER_ID,
                             phone_number.text.toString()
-                        )
+                        )*/
                     }
                     .setActionTextColor(resources.getColor(android.R.color.holo_red_light))
                     .show()
@@ -119,7 +120,7 @@ class IntroActivity : AppCompatActivity() {
         })
         viewModel.registerUser(
             etName.text.toString(),
-            carrier_provider.selectedItemId.toInt(),
+            Constants.CARRIER_ID,
             phone_number.text.toString()
         )
     }

@@ -34,7 +34,7 @@ fun MmsPart.isWordDoc() =
 fun MmsPart.isXLDoc() =
     "application/vnd.ms-excel" == type || "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" == type
 
-fun MmsPart.isAudio() = ContentType.isAudioType(type)
+fun MmsPart.isAudio() =  "audio/aac" == type || "audio/mp3" == type/*ContentType.isAudioType(type)*/
 
 fun MmsPart.isText() = ContentType.TEXT_PLAIN == type
 

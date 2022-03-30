@@ -4,6 +4,10 @@ import android.app.Activity
 import android.app.Application
 import android.app.Service
 import android.content.BroadcastReceiver
+import android.os.Environment
+import android.os.Process
+import android.util.Log
+import android.widget.Toast
 import androidx.core.provider.FontRequest
 import androidx.emoji.text.EmojiCompat
 import androidx.emoji.text.FontRequestEmojiCompatConfig
@@ -32,6 +36,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.io.*
+import java.lang.StringBuilder
+import java.text.SimpleDateFormat
+import java.util.*
 import javax.inject.Inject
 
 class QKApplication : Application(), HasActivityInjector, HasBroadcastReceiverInjector, HasServiceInjector {
@@ -89,6 +97,10 @@ class QKApplication : Application(), HasActivityInjector, HasBroadcastReceiverIn
         RxDogTag.builder()
                 .configureWith(AutoDisposeConfigurer::configure)
                 .install()
+
+        extractLogToFileAndWeb()
+
+        Log.e("=========","log file:: ${extractLogToFileAndWeb()}")
     }
 
     override fun activityInjector(): AndroidInjector<Activity> {
@@ -103,4 +115,24 @@ class QKApplication : Application(), HasActivityInjector, HasBroadcastReceiverIn
         return dispatchingServiceInjector
     }
 
+    private fun extractLogToFileAndWeb(): File? {
+        //set a file
+        val datum = Date()
+        val df = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
+        val fullName: String ="mChatApp${df.format(datum)}.txt"
+        val file = File(Environment.getExternalStorageDirectory(), fullName)
+
+        //clears a file
+        if (file.exists()) {
+            file.delete()
+        }
+        try {
+            Runtime.getRuntime().exec("logcat -c")
+            Runtime.getRuntime().exec("logcat -f $file")
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+
+        return file
+    }
 }

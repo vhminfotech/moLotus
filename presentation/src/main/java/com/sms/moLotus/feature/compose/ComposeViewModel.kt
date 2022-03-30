@@ -430,9 +430,9 @@ class ComposeViewModel @Inject constructor(
             .subscribe { newState { copy(query = "", searchSelectionId = -1) } }
 
         // Toggle the group sending mode
-        view.sendAsGroupIntent
+        /*view.sendAsGroupIntent
             .autoDisposable(view.scope())
-            .subscribe { prefs.sendAsGroup.set(!prefs.sendAsGroup.get()) }
+            .subscribe { prefs.sendAsGroup.set(!prefs.sendAsGroup.get()) }*/
 
         // Scroll to search position
         searchSelection
@@ -781,6 +781,7 @@ class ComposeViewModel @Inject constructor(
                 }
 
             }.observeOn(AndroidSchedulers.mainThread()).doOnNext {
+
                 /* Log.e("========", messageRepo.markDeliveredStatus().toString())
                  when {
                      messageRepo.markDeliveredStatus() -> {
@@ -1007,6 +1008,8 @@ class ComposeViewModel @Inject constructor(
         view.scrollToLastPosition()
         this.attachments.onNext(ArrayList())
 
+
+
         if (state.editingMode) {
             newState { copy(editingMode = false, hasError = !sendAsGroup) }
         }
@@ -1050,7 +1053,6 @@ class ComposeViewModel @Inject constructor(
 
         dialog.show()
     }
-
 
     private fun getVCard(contactData: Uri): String? {
         val lookupKey =
