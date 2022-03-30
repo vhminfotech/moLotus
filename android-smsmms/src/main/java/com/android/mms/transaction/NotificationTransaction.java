@@ -138,6 +138,7 @@ public class NotificationTransaction extends Transaction implements Runnable {
             int status = STATUS_DEFERRED;
             // Don't try to download when data is suspended, as it will fail, so defer download
             if (!autoDownload) {
+                Timber.v("Auto Download Off");
                 downloadManager.markState(mUri, DownloadManager.STATE_UNSTARTED);
                 sendNotifyRespInd(status);
                 return;

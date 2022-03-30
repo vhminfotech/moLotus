@@ -504,12 +504,14 @@ object Utils {
                 }!! > 0) {
                 os.write(buffer, 0, length)
             }
-        } catch (e: java.lang.Exception) {
-            e.printStackTrace()
-        } finally {
             `is`?.close()
             os?.close()
-        }
+        } catch (e: java.lang.Exception) {
+            e.printStackTrace()
+        } /*finally {
+            `is`?.close()
+            os?.close()
+        }*/
         return dest
     }
 

@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.preference.PreferenceManager
 import android.util.Log
 import android.view.Gravity
 import android.view.Window
@@ -63,6 +64,7 @@ class AppSettingsActivity : AppCompatActivity() {
             onBackPressed()
         }
 
+
         txtVersion?.text = info.versionName
         toggleSignature?.setOnCheckedChangeListener { buttonView, isChecked ->
             if (isChecked) {
@@ -72,6 +74,8 @@ class AppSettingsActivity : AppCompatActivity() {
 
         toggleSendPaidMessages.isChecked = PreferenceHelper.getPreference(this, "SendPaidMessage")
         toggleNotification.isChecked = PreferenceHelper.getPreference(this, "Notification")
+        toggleAutoDownload.isChecked = PreferenceManager.getDefaultSharedPreferences(this)
+            .getBoolean("auto_download_mms", true)
 
         toggleSendPaidMessages?.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
@@ -80,6 +84,18 @@ class AppSettingsActivity : AppCompatActivity() {
             } else {
                 toggleSendPaidMessages.isChecked = false
                 PreferenceHelper.setPreference(this, "SendPaidMessage", false)
+            }
+        }
+
+        toggleAutoDownload?.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                toggleAutoDownload.isChecked = true
+                PreferenceManager.getDefaultSharedPreferences(this).edit()
+                    .putBoolean("auto_download_mms", true).commit()
+            } else {
+                toggleAutoDownload.isChecked = false
+                PreferenceManager.getDefaultSharedPreferences(this).edit()
+                    .putBoolean("auto_download_mms", false).commit()
             }
         }
 
@@ -102,6 +118,7 @@ class AppSettingsActivity : AppCompatActivity() {
             val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.molotus.com/"))
             startActivity(intent)
         }
+
         llCheckForUpdates?.setOnClickListener {
             if (versionCode >= info.versionCode) {
                 openAppUpdateDialog()

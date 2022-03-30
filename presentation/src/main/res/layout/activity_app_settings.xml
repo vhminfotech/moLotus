@@ -55,6 +55,7 @@
             android:textColor="@color/black" />
 
         <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/toggleAutoDownload"
             android:layout_width="40dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"

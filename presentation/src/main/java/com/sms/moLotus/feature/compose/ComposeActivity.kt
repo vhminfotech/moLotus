@@ -7,9 +7,7 @@ import android.app.Activity
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.ContentValues
-import android.content.Context
 import android.content.Intent
-import android.database.Cursor
 import android.graphics.Color
 import android.net.Uri
 import android.os.*
@@ -45,6 +43,7 @@ import com.sms.moLotus.common.base.QkThemedActivity
 import com.sms.moLotus.common.util.DateFormatter
 import com.sms.moLotus.common.util.extensions.*
 import com.sms.moLotus.customview.CustomProgressDialog
+import com.sms.moLotus.extension.toast
 import com.sms.moLotus.feature.Constants.FOLDER_NAME
 import com.sms.moLotus.feature.FileUtilsGetPath
 import com.sms.moLotus.feature.Utils
@@ -77,7 +76,6 @@ import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
 import kotlin.collections.HashMap
-
 
 @RequiresApi(Build.VERSION_CODES.M)
 class ComposeActivity : QkThemedActivity(), ComposeView {
@@ -1233,36 +1231,37 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
             }
 
             requestCode == AddAudioRequestCode && resultCode == Activity.RESULT_OK -> {
-                val dir = File(
-                    Environment.getExternalStorageDirectory(),
-                    FOLDER_NAME
-                ).apply { mkdirs() }
-                val to = File(
-                    dir,
-                    "audio_" + SimpleDateFormat(
-                        "yyyyMMdd_HHmmss",
-                        Locale.getDefault()
-                    ).format(Date()) + ".aac"
-                )
                 try {
-                    if (data != null) {
-                        data.data?.let {
-                            Utils.copyFileStream(to, it, this)?.absolutePath?.let { it1 ->
-                                getAudioContentUri(
-                                    this,
-                                    it1
-                                )}?.let(attachmentSelectedIntent::onNext)
+                    val dir = File(
+                        Environment.getExternalStorageDirectory(),
+                        FOLDER_NAME
+                    ).apply { mkdirs() }
+                    val to = File(
+                        dir,
+                        "audio_" + SimpleDateFormat(
+                            "yyyyMMdd_HHmmss",
+                            Locale.getDefault()
+                        ).format(Date()) + ".aac"
+                    )
+
+                    data?.data?.let {
+                        Utils.copyFileStream(to, it, this)?.absolutePath?.let { it1 ->
+                            getAudioContentUri(
+                                this,
+                                it1
+                            )
                         }
-                    }
+                    }?.let(attachmentSelectedIntent::onNext)
+
                 } catch (e: java.lang.Exception) {
                     e.printStackTrace()
+                    toast("Audio is corrupted or audio format not supported.")
                 }
             }
 
             else -> super.onActivityResult(requestCode, resultCode, data)
         }
     }
-
 
 
     override fun onSaveInstanceState(outState: Bundle) {
