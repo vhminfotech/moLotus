@@ -8,6 +8,7 @@ import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.ContentValues
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.net.Uri
 import android.os.*
@@ -43,6 +44,7 @@ import com.sms.moLotus.common.base.QkThemedActivity
 import com.sms.moLotus.common.util.DateFormatter
 import com.sms.moLotus.common.util.extensions.*
 import com.sms.moLotus.customview.CustomProgressDialog
+import com.sms.moLotus.extension.checkSelfPermissionCompat
 import com.sms.moLotus.extension.toast
 import com.sms.moLotus.feature.Constants.FOLDER_NAME
 import com.sms.moLotus.feature.FileUtilsGetPath
@@ -1244,14 +1246,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                         ).format(Date()) + ".aac"
                     )
 
-                    data?.data?.let {
-                        Utils.copyFileStream(to, it, this)?.absolutePath?.let { it1 ->
-                            getAudioContentUri(
-                                this,
-                                it1
-                            )
-                        }
-                    }?.let(attachmentSelectedIntent::onNext)
+                    checkStoragePermission(data?.data, to.absolutePath)
 
                 } catch (e: java.lang.Exception) {
                     e.printStackTrace()
@@ -1263,6 +1258,53 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         }
     }
 
+    private fun checkStoragePermission(uri: Uri?, outputFile: String) {
+        // Check if the storage permission has been granted
+
+
+        if (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                Environment.isExternalStorageManager()
+            } else {
+                checkSelfPermissionCompat(Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
+                        PackageManager.PERMISSION_GRANTED
+            }
+        ) {
+            // start downloading
+
+             val newUri =
+                 uri?.let {
+                     Utils.copyFileStream(File(outputFile), it, this)?.absolutePath?.let { it1 ->
+                         getAudioContentUri(
+                             this,
+                             it1
+                         )
+                     }
+                 }
+            newUri?.let(attachmentSelectedIntent::onNext)
+        } else {
+            // Permission is missing and must be requested.
+            requestPermission()
+        }
+    }
+
+    private fun requestPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (!Environment.isExternalStorageManager()) {
+                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+                intent.data =
+                    Uri.parse(String.format("package:%s", applicationContext?.packageName))
+                startActivity(intent)
+            }
+        } else {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                ),
+                0
+            )
+        }
+    }
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putParcelable(CameraDestinationKey, cameraDestination)

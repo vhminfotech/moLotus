@@ -48,17 +48,17 @@ sealed class Attachment {
 
         fun isVideo(context: Context): Boolean {
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1 && inputContent != null) {
-                inputContent.description.hasMimeType("video/mp4")
+                inputContent.description.hasMimeType("video/mp4") || inputContent.description.hasMimeType("video/3gpp")
             } else {
-                uri?.let(context.contentResolver::getType) == "video/mp4"
+                uri?.let(context.contentResolver::getType) == "video/mp4" || uri?.let(context.contentResolver::getType) == "video/3gpp"
             }
         }
 
         fun isAudio(context: Context): Boolean {
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1 && inputContent != null) {
-                inputContent.description.hasMimeType("audio/aac")
+                inputContent.description.hasMimeType("audio/aac") ||  inputContent.description.hasMimeType("audio/mp3")
             } else {
-                uri?.let(context.contentResolver::getType) == "audio/aac"
+                uri?.let(context.contentResolver::getType) == "audio/aac" || uri?.let(context.contentResolver::getType) == "audio/mp3"
             }
         }
 

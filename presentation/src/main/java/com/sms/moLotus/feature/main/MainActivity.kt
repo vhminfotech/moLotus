@@ -1,55 +1,44 @@
 package com.sms.moLotus.feature.main
 
+//import com.sms.moLotus.feature.conversations.ConversationItemTouchCallback
+//import kotlinx.android.synthetic.main.drawer_view.*
 import android.Manifest
 import android.animation.ObjectAnimator
 import android.app.AlertDialog
-import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
-import android.os.Build
 import android.os.Bundle
 import android.view.*
-import android.widget.*
-import androidx.appcompat.app.ActionBarDrawerToggle
-import androidx.appcompat.widget.PopupMenu
+import android.widget.PopupWindow
+import android.widget.RelativeLayout
 import androidx.core.app.ActivityCompat
-import androidx.core.view.GravityCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
-import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.tabs.TabLayout
 import com.jakewharton.rxbinding2.view.clicks
 import com.jakewharton.rxbinding2.widget.textChanges
 import com.sms.moLotus.R
 import com.sms.moLotus.common.Navigator
-import com.sms.moLotus.common.androidxcompat.drawerOpen
 import com.sms.moLotus.common.base.QkThemedActivity
-import com.sms.moLotus.common.util.extensions.autoScrollToStart
-import com.sms.moLotus.common.util.extensions.dismissKeyboard
-import com.sms.moLotus.common.util.extensions.resolveThemeColor
-import com.sms.moLotus.common.util.extensions.scrapViews
-import com.sms.moLotus.common.util.extensions.setBackgroundTint
-import com.sms.moLotus.common.util.extensions.setTint
-import com.sms.moLotus.common.util.extensions.setVisible
-import com.sms.moLotus.feature.intro.IntroActivity
+import com.sms.moLotus.common.util.extensions.*
 import com.sms.moLotus.feature.blocking.BlockingDialog
 import com.sms.moLotus.feature.changelog.ChangelogDialog
-//import com.sms.moLotus.feature.conversations.ConversationItemTouchCallback
 import com.sms.moLotus.feature.conversations.ConversationsAdapter
+import com.sms.moLotus.feature.intro.IntroActivity
+import com.sms.moLotus.feature.main.adapter.MyAdapter
 import com.sms.moLotus.manager.ChangelogManager
 import com.sms.moLotus.repository.SyncRepository
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
 import dagger.android.AndroidInjection
-import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
 import kotlinx.android.synthetic.main.layout_more_options.view.*
 import kotlinx.android.synthetic.main.layout_toolbar.*
-//import kotlinx.android.synthetic.main.drawer_view.*
 import kotlinx.android.synthetic.main.main_activity.*
 import kotlinx.android.synthetic.main.main_permission_hint.*
 import kotlinx.android.synthetic.main.main_syncing.*
@@ -153,6 +142,30 @@ class MainActivity : QkThemedActivity(), MainView {
         imgSearch.setOnClickListener {
             relSearch?.visibility = View.VISIBLE
         }
+
+        tabLayout?.newTab()?.setText("MCHAT")?.let { tabLayout?.addTab(it) }
+        tabLayout?.newTab()?.setText("SMS")?.let { tabLayout?.addTab(it) }
+        tabLayout?.tabGravity = TabLayout.GRAVITY_FILL
+
+        val adapter = MyAdapter(this, supportFragmentManager, tabLayout.tabCount)
+        viewPager?.adapter = adapter
+
+        viewPager?.addOnPageChangeListener(TabLayout.TabLayoutOnPageChangeListener(tabLayout))
+
+        tabLayout?.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab) {
+                viewPager?.currentItem = tab.position
+            }
+
+            override fun onTabUnselected(tab: TabLayout.Tab) {
+
+            }
+
+            override fun onTabReselected(tab: TabLayout.Tab) {
+
+            }
+        })
+
 
         imgClose.setOnClickListener {
             dismissKeyboard()
@@ -278,7 +291,7 @@ class MainActivity : QkThemedActivity(), MainView {
 //                compose.setBackgroundTint(theme.theme)
 
                 // Set the FAB compose icon color
-      //          compose.setTint(theme.textPrimary)
+                //          compose.setTint(theme.textPrimary)
             }
 
         // These theme attributes don't apply themselves on API 21

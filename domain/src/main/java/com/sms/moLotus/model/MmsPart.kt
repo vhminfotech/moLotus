@@ -47,7 +47,7 @@ open class MmsPart : RealmObject() {
         type == "text/x-vCard" -> "Contact card"
         type.startsWith("image") -> "Photo"
         type.startsWith("video") -> "Video"
-        type.startsWith("audio") -> "Audio"
+        type == "audio/aac" || type == "audio/mp3" -> "Audio"
         type == "application/pdf" -> "PDF Document"
         type == "application/msword" || type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document" -> "Word Document"
         type == "application/vnd.ms-excel" || type == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" -> "XLS Document"

@@ -47,6 +47,7 @@ import io.realm.RealmResults
 import io.realm.Sort
 import timber.log.Timber
 import java.io.*
+import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -161,9 +162,19 @@ class MessageRepositoryImpl @Inject constructor(
         Log.e("======", "id:: ${id}")
 
         val part = getPart(id) ?: return null
+        var extension: String?=null
+        Log.e("======", "part:: ${part}")
+        if (part.type == "audio/mp3"){
+            extension = "mp3"
+        }else{
+            extension =
+                MimeTypeMap.getSingleton().getExtensionFromMimeType(part.type)
+        }
 
-        val extension =
-            MimeTypeMap.getSingleton().getExtensionFromMimeType(part.type) ?: return null
+        /*val extension =
+            MimeTypeMap.getSingleton().getExtensionFromMimeType(part.type)*//* ?: return "audio/mp3"*/
+        Log.e("======", "extension:: ${extension}")
+
         val date = part.messages?.first()?.date
         val dir = File(Environment.getExternalStorageDirectory(), "MCHAT/Media").apply { mkdirs() }
         val fileName = "$date.$extension"
@@ -177,6 +188,8 @@ class MessageRepositoryImpl @Inject constructor(
                     " ($index).$extension"
                 )
             )
+            Timber.e("file:: $file")
+
             index++
         } while (file.exists())
 
@@ -197,7 +210,6 @@ class MessageRepositoryImpl @Inject constructor(
             Log.e("======", "err:: ${e.message}")
         } catch (e: java.lang.Exception) {
             e.printStackTrace()
-
             Log.e("======", "err:: ${e.message}")
         }
         Log.e("======", "file:: ${file.path}")
@@ -585,7 +597,8 @@ class MessageRepositoryImpl @Inject constructor(
                         MMSPart("image", ContentType.IMAGE_GIF, bytes)
                     }
                     attachment.isVideo(context) -> {
-                        MMSPart("video", ContentType.VIDEO_MP4, bytes)
+//                        MMSPart("video", ContentType.VIDEO_MP4, bytes)
+                        MMSPart("video", ContentType.VIDEO_3GPP, bytes)
                     }
                     attachment.isDoc(context) -> {
                         MMSPart("pdfDocument", "application/pdf", bytes)
@@ -607,8 +620,14 @@ class MessageRepositoryImpl @Inject constructor(
                         MMSPart("xlsDocument", "application/vnd.ms-excel", bytes)
                     }
                     attachment.isAudio(context) -> {
-                        MMSPart("audio", ContentType.AUDIO_AAC, bytes)
-                        MMSPart("audio", ContentType.AUDIO_MP3, bytes)
+                        MMSPart("audio_" + SimpleDateFormat(
+                            "yyyyMMdd_HHmmss",
+                            Locale.getDefault()
+                        ).format(Date()) + ".aac", ContentType.AUDIO_AAC, bytes)
+                        MMSPart("audio_" + SimpleDateFormat(
+                            "yyyyMMdd_HHmmss",
+                            Locale.getDefault()
+                        ).format(Date()) + ".mp3", ContentType.AUDIO_MP3, bytes)
                     }
                     else -> {
                         MMSPart("image", ContentType.IMAGE_JPEG, bytes)

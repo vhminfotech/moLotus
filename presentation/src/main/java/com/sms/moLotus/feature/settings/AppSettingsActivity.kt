@@ -7,8 +7,11 @@ import android.app.ProgressDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.preference.PreferenceManager
+import android.provider.Settings
 import android.util.Log
 import android.view.Gravity
 import android.view.Window
@@ -42,7 +45,9 @@ class AppSettingsActivity : AppCompatActivity() {
     lateinit var viewModel: MainViewModel
     private val retrofitService = RetrofitService.getInstance()
     private var versionCode: Int = 0
-    val apkUrl = "https://vhminfotech.com/mChat.apk"
+    private var apkUrl: String = ""
+
+    //    val apkUrl = "https://vhminfotech.com/mChat.apk"
     var progressDialog: ProgressDialog? = null
 
     companion object {
@@ -120,7 +125,7 @@ class AppSettingsActivity : AppCompatActivity() {
         }
 
         llCheckForUpdates?.setOnClickListener {
-            if (versionCode >= info.versionCode) {
+            if (versionCode > info.versionCode) {
                 openAppUpdateDialog()
             } else {
                 Toast.makeText(this, "No Update Available!!", Toast.LENGTH_SHORT).show()
@@ -184,6 +189,7 @@ class AppSettingsActivity : AppCompatActivity() {
         viewModel.versionCode.observe(this, {
             Log.e("=====", "response:: $it")
             this.versionCode = it[0].config_value.toInt()
+            this.apkUrl = it[2].config_value
         })
         viewModel.errorMessage.observe(this, {
             Log.e("=====", "errorMessage:: $it")
@@ -225,36 +231,45 @@ class AppSettingsActivity : AppCompatActivity() {
 
     private fun checkStoragePermission() {
         // Check if the storage permission has been granted
-        if (checkSelfPermissionCompat(Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
-            PackageManager.PERMISSION_GRANTED
-        ) {
-            // start downloading
-            runOnUiThread {
-                val updateApp = UpdateApp()
-                updateApp.setContext(this, progressDialog)
-                updateApp.execute(apkUrl)
+
+
+            if (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    Environment.isExternalStorageManager()
+                } else {
+                    checkSelfPermissionCompat(Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
+                            PackageManager.PERMISSION_GRANTED
+                }
+            ) {
+                // start downloading
+                runOnUiThread {
+                    val updateApp = UpdateApp()
+                    updateApp.setContext(this, progressDialog)
+                    updateApp.execute(apkUrl)
+                }
+            } else {
+                // Permission is missing and must be requested.
+                requestStoragePermission()
             }
-        } else {
-            // Permission is missing and must be requested.
-            requestStoragePermission()
-        }
     }
 
     private fun requestStoragePermission() {
-        if (shouldShowRequestPermissionRationaleCompat(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            toast(getString(R.string.storage_access_required))
-
-
-            requestPermissionsCompat(
-                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                PERMISSION_REQUEST_STORAGE
-            )
-
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+            intent.data = Uri.parse(String.format("package:%s", applicationContext?.packageName))
+            startActivity(intent)
         } else {
-            requestPermissionsCompat(
-                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                PERMISSION_REQUEST_STORAGE
-            )
+            if (shouldShowRequestPermissionRationaleCompat(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                toast(getString(R.string.storage_access_required))
+                requestPermissionsCompat(
+                    arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                    PERMISSION_REQUEST_STORAGE
+                )
+            } else {
+                requestPermissionsCompat(
+                    arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                    PERMISSION_REQUEST_STORAGE
+                )
+            }
         }
     }
 }

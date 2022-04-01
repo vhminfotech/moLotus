@@ -593,7 +593,7 @@ class ActVideoTrimmer : AppCompatActivity() {
                     Locale.getDefault()
                 ).format(
                     Date()
-                ) + ".mp4"
+                ) + ".3gp"
             )
 
             /*val uri = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())

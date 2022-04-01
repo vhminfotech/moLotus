@@ -27,9 +27,9 @@
         android:animateLayoutChanges="true"
         android:background="@color/tools_theme"
         android:backgroundTint="@color/tools_theme"
-        android:gravity="center_vertical"
         android:focusable="true"
         android:focusableInTouchMode="true"
+        android:gravity="center_vertical"
         android:visibility="gone"
         app:contentInsetStartWithNavigation="0dp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -98,6 +98,28 @@
         app:layout_constraintTop_toBottomOf="@id/toolbar"
         tools:text="Your conversations will appear here"
         tools:visibility="invisible" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@id/bottom"
+        app:layout_constraintTop_toBottomOf="@id/toolbar1">
+
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tabLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:tabIndicatorColor="@color/primary_dark"
+            android:background="@color/primary"
+            app:tabTextColor="@android:color/background_light" />
+
+        <androidx.viewpager.widget.ViewPager
+            android:id="@+id/viewPager"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"

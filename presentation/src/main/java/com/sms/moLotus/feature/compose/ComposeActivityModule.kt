@@ -82,7 +82,7 @@ class ComposeActivityModule {
                     Attachment.Image(uri)
                 }
 
-                ContentType.isAudioType(mimeType) -> {
+                ContentType.AUDIO_AAC.equals(mimeType, true)  || ContentType.AUDIO_MP3.equals(mimeType, true) -> {
                     Attachment.Image(uri)
                 }
 

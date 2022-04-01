@@ -39,7 +39,7 @@ object Utils {
         } else if (absPath.isNotEmpty()) {
             val values = ContentValues()
             values.put(MediaStore.Video.Media.DATA, absPath)
-            values.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
+            values.put(MediaStore.Video.Media.MIME_TYPE, "video/3gpp")
 
             context.contentResolver.insert(
                 MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values
