@@ -12,10 +12,10 @@ import android.os.Bundle
 import android.os.Environment
 import android.preference.PreferenceManager
 import android.provider.Settings
-import android.util.Log
 import android.view.Gravity
 import android.view.Window
 import android.view.WindowManager
+import android.webkit.WebView
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -46,9 +46,7 @@ class AppSettingsActivity : AppCompatActivity() {
     private val retrofitService = RetrofitService.getInstance()
     private var versionCode: Int = 0
     private var apkUrl: String = ""
-
-    //    val apkUrl = "https://vhminfotech.com/mChat.apk"
-    var progressDialog: ProgressDialog? = null
+    private var progressDialog: ProgressDialog? = null
 
     companion object {
         const val PERMISSION_REQUEST_STORAGE = 0
@@ -95,12 +93,10 @@ class AppSettingsActivity : AppCompatActivity() {
         toggleAutoDownload?.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 toggleAutoDownload.isChecked = true
-                PreferenceManager.getDefaultSharedPreferences(this).edit()
-                    .putBoolean("auto_download_mms", true).commit()
+                PreferenceManager.getDefaultSharedPreferences(this).edit().putBoolean("auto_download_mms", true).commit()
             } else {
                 toggleAutoDownload.isChecked = false
-                PreferenceManager.getDefaultSharedPreferences(this).edit()
-                    .putBoolean("auto_download_mms", false).commit()
+                PreferenceManager.getDefaultSharedPreferences(this).edit().putBoolean("auto_download_mms", false).commit()
             }
         }
 
@@ -120,8 +116,13 @@ class AppSettingsActivity : AppCompatActivity() {
         }
 
         txtAboutUs?.setOnClickListener {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.molotus.com/"))
-            startActivity(intent)
+            /*val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.molotus.com/"))
+            startActivity(intent)*/
+
+            val view = WebView(this)
+            view.settings.javaScriptEnabled = true
+            view.loadUrl("file:///android_asset/AboutUs.html")
+            setContentView(view)
         }
 
         llCheckForUpdates?.setOnClickListener {
@@ -187,12 +188,12 @@ class AppSettingsActivity : AppCompatActivity() {
 
     private fun getVersionCodeFromApi() {
         viewModel.versionCode.observe(this, {
-            Log.e("=====", "response:: $it")
+            //Log.e("=====", "response:: $it")
             this.versionCode = it[0].config_value.toInt()
             this.apkUrl = it[2].config_value
         })
         viewModel.errorMessage.observe(this, {
-            Log.e("=====", "errorMessage:: $it")
+            //Log.e("=====", "errorMessage:: $it")
             Snackbar.make(
                 findViewById(R.id.mainLayout),
                 "No Internet Connection. Please turn on your internet!",
