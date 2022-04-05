@@ -128,7 +128,7 @@ class IntroActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.intro_activity_main)
-        CustomStringBuilder.mChatBuilder(txtMchat)
+        //CustomStringBuilder.mChatBuilder(txtMchat)
 
         languages.add(0, "Select carrier provider")
         viewModel =

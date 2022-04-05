@@ -31,7 +31,7 @@ class SplashActivity : AppCompatActivity() {
             WindowManager.LayoutParams.FLAG_FULLSCREEN
         )
 
-        CustomStringBuilder.mChatBuilder(txtMchat)
+        //CustomStringBuilder.mChatBuilder(txtMchat)
 
 
         // we used the postDelayed(Runnable, time) method

@@ -36,7 +36,7 @@ class VerifyOtpActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_verify_otp)
-        CustomStringBuilder.mChatBuilder(txtMchat)
+        //CustomStringBuilder.mChatBuilder(txtMchat)
 
         phoneNo = intent?.getStringExtra("PhoneNumber")
         txtOTP?.text = "Please type the verification code sent to $phoneNo"
