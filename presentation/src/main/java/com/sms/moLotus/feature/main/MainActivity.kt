@@ -42,6 +42,7 @@ import kotlinx.android.synthetic.main.layout_toolbar.*
 import kotlinx.android.synthetic.main.main_activity.*
 import kotlinx.android.synthetic.main.main_permission_hint.*
 import kotlinx.android.synthetic.main.main_syncing.*
+import timber.log.Timber
 import javax.inject.Inject
 
 class MainActivity : QkThemedActivity(), MainView {
@@ -131,13 +132,17 @@ class MainActivity : QkThemedActivity(), MainView {
 
     companion object {
         var toolbarVisible: androidx.appcompat.widget.Toolbar? = null
+        var conversationsAdapterNew: ConversationsAdapter ?=null
+        var searchAdapterNew: SearchAdapter ?=null
+        var newState: MainState ?=null
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
-
+        conversationsAdapterNew = conversationsAdapter
+        searchAdapterNew = searchAdapter
         toolbarVisible = toolbar
         imgSearch.setOnClickListener {
             relSearch?.visibility = View.VISIBLE
@@ -302,10 +307,15 @@ class MainActivity : QkThemedActivity(), MainView {
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
+        Timber.e("onNewIntent")
+
         intent?.run(onNewIntentIntent::onNext)
     }
 
     override fun render(state: MainState) {
+        Timber.e("render :: $state")
+
+        newState = state
         if (state.hasError) {
             finish()
             return
