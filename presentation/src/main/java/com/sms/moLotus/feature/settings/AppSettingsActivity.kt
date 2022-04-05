@@ -47,6 +47,7 @@ class AppSettingsActivity : AppCompatActivity() {
     private var versionCode: Int = 0
     private var apkUrl: String = ""
     private var progressDialog: ProgressDialog? = null
+    var webView: WebView? = null
 
     companion object {
         const val PERMISSION_REQUEST_STORAGE = 0
@@ -56,6 +57,8 @@ class AppSettingsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_app_settings)
         progressDialog = ProgressDialog(this)
+        webView = WebView(this)
+
         viewModel =
             ViewModelProvider(this, MyViewModelFactory(MainRepository(retrofitService))).get(
                 MainViewModel::class.java
@@ -93,10 +96,12 @@ class AppSettingsActivity : AppCompatActivity() {
         toggleAutoDownload?.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 toggleAutoDownload.isChecked = true
-                PreferenceManager.getDefaultSharedPreferences(this).edit().putBoolean("auto_download_mms", true).commit()
+                PreferenceManager.getDefaultSharedPreferences(this).edit()
+                    .putBoolean("auto_download_mms", true).commit()
             } else {
                 toggleAutoDownload.isChecked = false
-                PreferenceManager.getDefaultSharedPreferences(this).edit().putBoolean("auto_download_mms", false).commit()
+                PreferenceManager.getDefaultSharedPreferences(this).edit()
+                    .putBoolean("auto_download_mms", false).commit()
             }
         }
 
@@ -119,10 +124,9 @@ class AppSettingsActivity : AppCompatActivity() {
             /*val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.molotus.com/"))
             startActivity(intent)*/
 
-            val view = WebView(this)
-            view.settings.javaScriptEnabled = true
-            view.loadUrl("file:///android_asset/AboutUs.html")
-            setContentView(view)
+            webView?.settings?.javaScriptEnabled = true
+            webView?.loadUrl("file:///android_asset/AboutUs.html")
+            setContentView(webView)
         }
 
         llCheckForUpdates?.setOnClickListener {
@@ -132,6 +136,10 @@ class AppSettingsActivity : AppCompatActivity() {
                 Toast.makeText(this, "No Update Available!!", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
     }
 
     private fun openSignatureDialog() {
@@ -234,23 +242,23 @@ class AppSettingsActivity : AppCompatActivity() {
         // Check if the storage permission has been granted
 
 
-            if (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    Environment.isExternalStorageManager()
-                } else {
-                    checkSelfPermissionCompat(Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
-                            PackageManager.PERMISSION_GRANTED
-                }
-            ) {
-                // start downloading
-                runOnUiThread {
-                    val updateApp = UpdateApp()
-                    updateApp.setContext(this, progressDialog)
-                    updateApp.execute(apkUrl)
-                }
+        if (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                Environment.isExternalStorageManager()
             } else {
-                // Permission is missing and must be requested.
-                requestStoragePermission()
+                checkSelfPermissionCompat(Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
+                        PackageManager.PERMISSION_GRANTED
             }
+        ) {
+            // start downloading
+            runOnUiThread {
+                val updateApp = UpdateApp()
+                updateApp.setContext(this, progressDialog)
+                updateApp.execute(apkUrl)
+            }
+        } else {
+            // Permission is missing and must be requested.
+            requestStoragePermission()
+        }
     }
 
     private fun requestStoragePermission() {
