@@ -65,7 +65,7 @@ class UpdateApp : AsyncTask<String?, Void?, Void?>() {
     override fun doInBackground(vararg arg0: String?): Void? {
         Timber.e("do in background called:::")
         try {
-            val myDir = File(Environment.getExternalStorageDirectory(), "MCHAT/Media")
+            val myDir = File(Environment.getExternalStorageDirectory(), "MGRAM/Media")
             myDir.mkdirs()
             outputFile = File(myDir, "mChat.apk").absolutePath
             val url = URL(arg0[0])

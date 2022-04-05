@@ -1,24 +1,16 @@
 package com.sms.moLotus.feature.splash
 
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.text.Spannable
-import android.text.SpannableString
-import android.text.style.ForegroundColorSpan
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
-import com.sms.moLotus.customview.CustomStringBuilder
 import com.sms.moLotus.feature.intro.APNDetailsActivity
 import com.sms.moLotus.feature.intro.AppIntroActivity
 import com.sms.moLotus.feature.main.MainActivity
-import kotlinx.android.synthetic.main.activity_splash.*
-import kotlinx.android.synthetic.main.activity_splash.txtMchat
-import kotlinx.android.synthetic.main.intro_activity_main.*
 import timber.log.Timber
 
 
