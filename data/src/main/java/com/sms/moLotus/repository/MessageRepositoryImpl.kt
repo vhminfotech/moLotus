@@ -176,7 +176,7 @@ class MessageRepositoryImpl @Inject constructor(
         Log.e("======", "extension:: ${extension}")
 
         val date = part.messages?.first()?.date
-        val dir = File(Environment.getExternalStorageDirectory(), "MCHAT/Media").apply { mkdirs() }
+        val dir = File(Environment.getExternalStorageDirectory(), "MGRAM/Media").apply { mkdirs() }
         val fileName = "$date.$extension"
         var file: File
         var index = 0

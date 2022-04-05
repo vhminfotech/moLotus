@@ -16,8 +16,14 @@
         android:gravity="center"
         android:text="@string/splash_name"
         android:textColor="#27a9e1"
+        android:visibility="gone"
         android:textSize="60sp"
         android:textStyle="bold" />
+    <androidx.appcompat.widget.AppCompatImageView
+        android:layout_width="match_parent"
+        android:layout_gravity="center"
+        android:layout_height="80dp"
+        android:src="@drawable/mgram_splash_icon" />
 
     <com.sms.moLotus.common.widget.QkTextView
         android:id="@+id/txtOTP"

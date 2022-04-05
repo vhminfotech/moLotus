@@ -5,5 +5,5 @@ object Constants {
     const val BASE_URL = "http://dev-mgram.vhminfotech.com/api/"
     const val CARRIER_ID = 1
     const val CARRIER_NAME = "Telkomsel"
-    const val FOLDER_NAME = "MCHAT/Media"
+    const val FOLDER_NAME = "MGRAM/Media"
 }

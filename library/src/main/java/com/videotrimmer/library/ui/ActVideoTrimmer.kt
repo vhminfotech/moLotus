@@ -585,7 +585,7 @@ class ActVideoTrimmer : AppCompatActivity() {
     private val outputFile: File
         get() {
 
-            val dir = File(Environment.getExternalStorageDirectory(), "MCHAT/Media").apply { mkdirs() }
+            val dir = File(Environment.getExternalStorageDirectory(), "MGRAM/Media").apply { mkdirs() }
 
             return File(
                 dir, SimpleDateFormat(
