@@ -329,7 +329,7 @@
                     android:editable="false"
                     android:enabled="false"
                     android:hint="APN Protocol"
-                    android:text="APN Protocol DATA"
+                    android:text="1Pv4/1Pv6"
                     android:textColor="@color/backgroundDark" />
 
             </com.google.android.material.textfield.TextInputLayout>

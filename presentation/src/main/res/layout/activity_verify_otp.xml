@@ -16,14 +16,24 @@
         android:gravity="center"
         android:text="@string/splash_name"
         android:textColor="#27a9e1"
-        android:visibility="gone"
         android:textSize="60sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:visibility="gone" />
+
     <androidx.appcompat.widget.AppCompatImageView
         android:layout_width="match_parent"
-        android:layout_gravity="center"
         android:layout_height="80dp"
+        android:layout_gravity="center"
         android:src="@drawable/mgram_splash_icon" />
+
+    <com.sms.moLotus.common.widget.QkTextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="@string/app_tagline"
+        android:textColor="#682494"
+        android:textSize="20sp"
+        android:textStyle="bold" />
 
     <com.sms.moLotus.common.widget.QkTextView
         android:id="@+id/txtOTP"
@@ -42,7 +52,6 @@
         android:layout_gravity="center"
         android:layout_marginLeft="5dp"
         android:layout_marginTop="50dp"
-        android:textSize="14sp"
         android:layout_marginRight="5dp"
         android:layout_marginBottom="10dp"
         android:background="@drawable/background_button"
@@ -55,7 +64,8 @@
         android:padding="20dp"
         android:singleLine="true"
         android:textColor="@android:color/black"
-        android:textColorHint="@android:color/darker_gray" />
+        android:textColorHint="@android:color/darker_gray"
+        android:textSize="14sp" />
     <!--<Button
         android:id="@+id/btnResendOtp"
         android:layout_width="match_parent"
@@ -69,8 +79,8 @@
         android:layout_height="wrap_content"
         android:background="@color/tools_theme"
         android:text="@string/verify_otp"
-        android:visibility="gone"
-        android:textAllCaps="false" />
+        android:textAllCaps="false"
+        android:visibility="gone" />
 
     <RelativeLayout
         android:id="@+id/btnVerifyOtp"
@@ -87,6 +97,7 @@
         android:elevation="3dp"
         android:padding="10dp"
         tools:visibility="visible">
+
         <com.sms.moLotus.common.widget.QkTextView
             android:id="@+id/skipLabel"
             android:layout_width="wrap_content"
@@ -114,11 +125,12 @@
         android:elevation="3dp"
         android:padding="10dp"
         tools:visibility="visible">
+
         <com.sms.moLotus.common.widget.QkTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:text="Resend OTP"
+            android:text="@string/resend_otp"
             android:textAllCaps="false"
             android:textColor="@color/white"
             android:textSize="16sp"

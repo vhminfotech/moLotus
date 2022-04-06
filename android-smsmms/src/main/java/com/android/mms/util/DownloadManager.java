@@ -46,9 +46,9 @@ public class DownloadManager {
         mHandler = new Handler(Looper.getMainLooper());
         mPreferences = PreferenceManager.getDefaultSharedPreferences(context);
 
-        mAutoDownload = getAutoDownloadState(context, mPreferences);
+        mAutoDownload = mPreferences.getBoolean("auto_download_mms", true);/*getAutoDownloadState(context, mPreferences);*/
         if (LOCAL_LOGV) {
-            Timber.v("mAutoDownload ------> " + mAutoDownload);
+            Timber.v("mAutoDownload --------> " + mAutoDownload);
         }
     }
 

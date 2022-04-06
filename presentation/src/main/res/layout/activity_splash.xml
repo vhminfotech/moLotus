@@ -26,13 +26,13 @@
 
     <com.sms.moLotus.common.widget.QkTextView
         android:layout_width="match_parent"
-        android:text="mgram interaction app"
-        android:textStyle="bold"
-        android:gravity="center"
+        android:layout_height="wrap_content"
         android:layout_below="@+id/imgSplash"
-        android:textColor="#682494"
         android:layout_centerInParent="true"
+        android:gravity="center"
+        android:text="@string/app_tagline"
+        android:textColor="#682494"
         android:textSize="24sp"
-        android:layout_height="wrap_content"/>
+        android:textStyle="bold" />
 
 </RelativeLayout>
