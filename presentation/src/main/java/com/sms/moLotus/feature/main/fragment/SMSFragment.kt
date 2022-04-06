@@ -1,43 +1,79 @@
 package com.sms.moLotus.feature.main.fragment
 
 import android.animation.ObjectAnimator
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewStub
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
+import com.jakewharton.rxbinding2.view.clicks
 import com.sms.moLotus.R
+import com.sms.moLotus.common.util.Colors
 import com.sms.moLotus.common.util.extensions.autoScrollToStart
-import com.sms.moLotus.common.util.extensions.scrapViews
-import com.sms.moLotus.common.util.extensions.setVisible
 import com.sms.moLotus.feature.conversations.ConversationsAdapter
 import com.sms.moLotus.feature.main.*
-import com.sms.moLotus.manager.ChangelogManager
 import com.sms.moLotus.repository.SyncRepository
+import com.uber.autodispose.android.lifecycle.scope
+import com.uber.autodispose.autoDisposable
+import io.reactivex.Observable
 import kotlinx.android.synthetic.main.fragment_sms.view.*
-import kotlinx.android.synthetic.main.main_activity.*
 import kotlinx.android.synthetic.main.main_permission_hint.*
 import kotlinx.android.synthetic.main.main_syncing.*
 import timber.log.Timber
+import javax.inject.Inject
 
 class SMSFragment : Fragment() {
-    private lateinit var conversationsAdapter: ConversationsAdapter
+    @Inject
+    lateinit var conversationsAdapter: ConversationsAdapter
+    @Inject
+    lateinit var viewModelFactory: ViewModelProvider.Factory
+    private val viewModel by lazy {
+        ViewModelProviders.of(
+            this,
+            viewModelFactory
+        )[MainViewModel::class.java]
+    }
+//    private lateinit var conversationsAdapter: ConversationsAdapter
     private lateinit var searchAdapter: SearchAdapter
     var layout: View? = null
     var state : MainState ?= null
     private val progressAnimator by lazy { ObjectAnimator.ofInt(syncingProgress, "progress", 0, 0) }
-
+    var theme : Observable<Colors.Theme>?= null
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
         layout = inflater.inflate(R.layout.fragment_sms, container, false)
+
         Timber.e("onCreateView")
-        conversationsAdapter = MainActivity.conversationsAdapterNew!!
+      //  conversationsAdapter = MainActivity.conversationsAdapterNew!!
         searchAdapter = MainActivity.searchAdapterNew!!
+        theme = MainActivity.themeNew
         state= MainActivity.newState
+
+
+        (layout?.snackbar as? ViewStub)?.setOnInflateListener { _, _ ->
+            snackbarButton.clicks()
+                .autoDisposable(scope(Lifecycle.Event.ON_DESTROY))
+                .subscribe(MainActivity.snackbarButtonIntentNew)
+        }
+
+        (layout?.syncing as? ViewStub)?.setOnInflateListener { _, _ ->
+            syncingProgress?.progressTintList = theme?.blockingFirst()?.theme?.let {
+                ColorStateList.valueOf(
+                    it
+                )
+            }
+            syncingProgress?.indeterminateTintList =
+                theme?.blockingFirst()?.theme?.let { ColorStateList.valueOf(it) }
+        }
         Timber.e("state:: $state")
 
         layout?.recyclerView?.let { conversationsAdapter.autoScrollToStart(it) }
@@ -56,12 +92,12 @@ class SMSFragment : Fragment() {
     }
 
 
-    fun initRecyclerView(){
+    private fun initRecyclerView(){
         Timber.e("render:: $state")
 
         conversationsAdapter.emptyView =
             layout?.empty.takeIf { state?.page is Inbox || state?.page is Archived }
-        searchAdapter.emptyView = empty.takeIf { state?.page is Searching }
+        searchAdapter.emptyView = layout?.empty.takeIf { state?.page is Searching }
 
         when (state?.page) {
 
@@ -72,13 +108,22 @@ class SMSFragment : Fragment() {
                 layout?.empty?.setText(R.string.inbox_empty_text)
             }
             is Searching -> {
-                if (recyclerView.adapter !== searchAdapter) recyclerView.adapter = searchAdapter
+                MainActivity.qcIntent
+                Timber.e("Searching:: ${state?.page}")
+
+                if (layout?.recyclerView?.adapter !== searchAdapter) layout?.recyclerView?.adapter = searchAdapter
                 searchAdapter.data = (state?.page as Searching).data ?: listOf()
-                empty.setText(R.string.inbox_search_empty_text)
+                layout?.empty?.setText(R.string.inbox_search_empty_text)
             }
-            else -> {
+            is Archived ->{
                 if (layout?.recyclerView?.adapter !== conversationsAdapter) layout?.recyclerView?.adapter =
                     conversationsAdapter
+                conversationsAdapter.updateData((state?.page as Archived).data)
+                layout?.empty?.setText(R.string.archived_empty_text)
+            }
+            else -> {
+                /*if (layout?.recyclerView?.adapter !== conversationsAdapter) layout?.recyclerView?.adapter =
+                    conversationsAdapter*/
             }
         }
 

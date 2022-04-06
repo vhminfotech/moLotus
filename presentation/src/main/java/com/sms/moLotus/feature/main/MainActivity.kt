@@ -23,6 +23,7 @@ import com.jakewharton.rxbinding2.widget.textChanges
 import com.sms.moLotus.R
 import com.sms.moLotus.common.Navigator
 import com.sms.moLotus.common.base.QkThemedActivity
+import com.sms.moLotus.common.util.Colors
 import com.sms.moLotus.common.util.extensions.*
 import com.sms.moLotus.feature.blocking.BlockingDialog
 import com.sms.moLotus.feature.changelog.ChangelogDialog
@@ -34,6 +35,7 @@ import com.sms.moLotus.repository.SyncRepository
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
 import dagger.android.AndroidInjection
+import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
@@ -135,6 +137,9 @@ class MainActivity : QkThemedActivity(), MainView {
         var conversationsAdapterNew: ConversationsAdapter ?=null
         var searchAdapterNew: SearchAdapter ?=null
         var newState: MainState ?=null
+        var themeNew : Observable<Colors.Theme>?= null
+        var snackbarButtonIntentNew : Subject<Unit>?= null
+        var qcIntent: Observable<CharSequence>?=null
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -143,33 +148,15 @@ class MainActivity : QkThemedActivity(), MainView {
         setContentView(R.layout.main_activity)
         conversationsAdapterNew = conversationsAdapter
         searchAdapterNew = searchAdapter
+        themeNew = theme
+        snackbarButtonIntentNew = snackbarButtonIntent
+        qcIntent = queryChangedIntent
         toolbarVisible = toolbar
         imgSearch.setOnClickListener {
             relSearch?.visibility = View.VISIBLE
         }
 
-        tabLayout?.newTab()?.setText("MCHAT")?.let { tabLayout?.addTab(it) }
-        tabLayout?.newTab()?.setText("SMS")?.let { tabLayout?.addTab(it) }
-        tabLayout?.tabGravity = TabLayout.GRAVITY_FILL
 
-        val adapter = MyAdapter(this, supportFragmentManager, tabLayout.tabCount)
-        viewPager?.adapter = adapter
-
-        viewPager?.addOnPageChangeListener(TabLayout.TabLayoutOnPageChangeListener(tabLayout))
-
-        tabLayout?.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-            override fun onTabSelected(tab: TabLayout.Tab) {
-                viewPager?.currentItem = tab.position
-            }
-
-            override fun onTabUnselected(tab: TabLayout.Tab) {
-
-            }
-
-            override fun onTabReselected(tab: TabLayout.Tab) {
-
-            }
-        })
 
 
         imgClose.setOnClickListener {
@@ -238,7 +225,7 @@ class MainActivity : QkThemedActivity(), MainView {
         viewModel.bindView(this)
         onNewIntentIntent.onNext(intent)
 
-        (snackbar as? ViewStub)?.setOnInflateListener { _, _ ->
+        /*(snackbar as? ViewStub)?.setOnInflateListener { _, _ ->
             snackbarButton.clicks()
                 .autoDisposable(scope(Lifecycle.Event.ON_DESTROY))
                 .subscribe(snackbarButtonIntent)
@@ -248,7 +235,7 @@ class MainActivity : QkThemedActivity(), MainView {
             syncingProgress?.progressTintList = ColorStateList.valueOf(theme.blockingFirst().theme)
             syncingProgress?.indeterminateTintList =
                 ColorStateList.valueOf(theme.blockingFirst().theme)
-        }
+        }*/
 
         //toggle.syncState()
         toolbar.setNavigationOnClickListener {
@@ -257,7 +244,7 @@ class MainActivity : QkThemedActivity(), MainView {
         }
 
 //        itemTouchCallback.adapter = conversationsAdapter
-        conversationsAdapter.autoScrollToStart(recyclerView)
+       // conversationsAdapter.autoScrollToStart(recyclerView)
 
         // Don't allow clicks to pass through the drawer layout
         //drawer.clicks().autoDisposable(scope()).subscribe()
@@ -303,6 +290,29 @@ class MainActivity : QkThemedActivity(), MainView {
         /*if (Build.VERSION.SDK_INT <= 22) {
             toolbarSearch.setBackgroundTint(resolveThemeColor(R.attr.bubbleColor))
         }*/
+
+        tabLayout?.newTab()?.setText("MCHAT")?.let { tabLayout?.addTab(it) }
+        tabLayout?.newTab()?.setText("SMS")?.let { tabLayout?.addTab(it) }
+        tabLayout?.tabGravity = TabLayout.GRAVITY_FILL
+
+        val adapter = MyAdapter(this, supportFragmentManager, tabLayout.tabCount)
+        viewPager?.adapter = adapter
+
+        viewPager?.addOnPageChangeListener(TabLayout.TabLayoutOnPageChangeListener(tabLayout))
+
+        tabLayout?.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab) {
+                viewPager?.currentItem = tab.position
+            }
+
+            override fun onTabUnselected(tab: TabLayout.Tab) {
+
+            }
+
+            override fun onTabReselected(tab: TabLayout.Tab) {
+
+            }
+        })
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -346,49 +356,30 @@ class MainActivity : QkThemedActivity(), MainView {
         }
 
         toolbarSearch.setVisible(state.page is Inbox && state.page.selected == 0 || state.page is Searching)
-        // toolbarTitle.setVisible(toolbarSearch.visibility != View.VISIBLE)
-
-
-//        toolbar.menu.findItem(R.id.archive)?.isVisible = state.page is Inbox && selectedConversations != 0
-//        toolbar.menu.findItem(R.id.unarchive)?.isVisible = state.page is Archived && selectedConversations != 0
         toolbar.menu.findItem(R.id.delete)?.isVisible = selectedConversations != 0
         toolbar.menu.findItem(R.id.add)?.isVisible = addContact && selectedConversations != 0
-//        toolbar.menu.findItem(R.id.pin)?.isVisible = markPinned && selectedConversations != 0
-//        toolbar.menu.findItem(R.id.unpin)?.isVisible = !markPinned && selectedConversations != 0
         toolbar.menu.findItem(R.id.read)?.isVisible = markRead && selectedConversations != 0
         toolbar.menu.findItem(R.id.unread)?.isVisible = !markRead && selectedConversations != 0
-//        toolbar.menu.findItem(R.id.block)?.isVisible = selectedConversations != 0
-
-        /*listOf(plusBadge1, plusBadge2).forEach { badge ->
-            badge.isVisible = drawerBadgesExperiment.variant && !state.upgraded
-        }
-//        plus.isVisible = state.upgraded
-        plusBanner.isVisible = !state.upgraded*/
-//        rateLayout.setVisible(state.showRating)
-
         compose.setVisible(state.page is Inbox || state.page is Archived)
-        conversationsAdapter.emptyView =
+        /*conversationsAdapter.emptyView =
             empty.takeIf { state.page is Inbox || state.page is Archived }
-        searchAdapter.emptyView = empty.takeIf { state.page is Searching }
+        searchAdapter.emptyView = empty.takeIf { state.page is Searching }*/
 
         when (state.page) {
-
             is Inbox -> {
                 showBackButton(state.page.selected > 0)
                 title = getString(R.string.main_title_selected, state.page.selected)
-                if (recyclerView.adapter !== conversationsAdapter) recyclerView.adapter =
+               /* if (recyclerView.adapter !== conversationsAdapter) recyclerView.adapter =
                     conversationsAdapter
                 conversationsAdapter.updateData(state.page.data)
-//                itemTouchHelper.attachToRecyclerView(recyclerView)
-                empty.setText(R.string.inbox_empty_text)
+                empty.setText(R.string.inbox_empty_text)*/
             }
 
             is Searching -> {
                 showBackButton(true)
-                if (recyclerView.adapter !== searchAdapter) recyclerView.adapter = searchAdapter
+                /*if (recyclerView.adapter !== searchAdapter) recyclerView.adapter = searchAdapter
                 searchAdapter.data = state.page.data ?: listOf()
-//                itemTouchHelper.attachToRecyclerView(null)
-                empty.setText(R.string.inbox_search_empty_text)
+                empty.setText(R.string.inbox_search_empty_text)*/
             }
 
             is Archived -> {
@@ -397,24 +388,11 @@ class MainActivity : QkThemedActivity(), MainView {
                     true -> getString(R.string.main_title_selected, state.page.selected)
                     false -> getString(R.string.title_archived)
                 }
-                if (recyclerView.adapter !== conversationsAdapter) recyclerView.adapter =
-                    conversationsAdapter
-                conversationsAdapter.updateData(state.page.data)
-//                itemTouchHelper.attachToRecyclerView(null)
-                empty.setText(R.string.archived_empty_text)
+
             }
         }
 
-        /*inbox.isActivated = state.page is Inbox
-        archived.isActivated = state.page is Archived
-
-        if (drawerLayout.isDrawerOpen(GravityCompat.START) && !state.drawerOpen) {
-            drawerLayout.closeDrawer(GravityCompat.START)
-        } else if (!drawerLayout.isDrawerVisible(GravityCompat.START) && state.drawerOpen) {
-            drawerLayout.openDrawer(GravityCompat.START)
-        }*/
-
-        when (state.syncing) {
+       /* when (state.syncing) {
             is SyncRepository.SyncProgress.Idle -> {
                 syncing.isVisible = false
                 snackbar.isVisible =
@@ -433,7 +411,7 @@ class MainActivity : QkThemedActivity(), MainView {
                 syncingProgress.isIndeterminate = state.syncing.indeterminate
                 snackbar.isVisible = false
             }
-        }
+        }*/
 
         when {
             !state.defaultSms -> {
@@ -509,7 +487,7 @@ class MainActivity : QkThemedActivity(), MainView {
     }
 
     override fun themeChanged() {
-        recyclerView.scrapViews()
+        //recyclerView.scrapViews()
     }
 
     override fun showBlockingDialog(conversations: List<Long>, block: Boolean) {
