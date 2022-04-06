@@ -6,12 +6,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewStub
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import com.jakewharton.rxbinding2.view.clicks
 import com.sms.moLotus.R
 import com.sms.moLotus.common.util.Colors
@@ -26,19 +23,10 @@ import kotlinx.android.synthetic.main.fragment_sms.view.*
 import kotlinx.android.synthetic.main.main_permission_hint.*
 import kotlinx.android.synthetic.main.main_syncing.*
 import timber.log.Timber
-import javax.inject.Inject
 
 class SMSFragment : Fragment() {
-    @Inject
     lateinit var conversationsAdapter: ConversationsAdapter
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val viewModel by lazy {
-        ViewModelProviders.of(
-            this,
-            viewModelFactory
-        )[MainViewModel::class.java]
-    }
+
 //    private lateinit var conversationsAdapter: ConversationsAdapter
     private lateinit var searchAdapter: SearchAdapter
     var layout: View? = null
@@ -53,19 +41,24 @@ class SMSFragment : Fragment() {
         layout = inflater.inflate(R.layout.fragment_sms, container, false)
 
         Timber.e("onCreateView")
-      //  conversationsAdapter = MainActivity.conversationsAdapterNew!!
+        conversationsAdapter = MainActivity.conversationsAdapterNew!!
         searchAdapter = MainActivity.searchAdapterNew!!
         theme = MainActivity.themeNew
         state= MainActivity.newState
 
 
-        (layout?.snackbar as? ViewStub)?.setOnInflateListener { _, _ ->
-            snackbarButton.clicks()
-                .autoDisposable(scope(Lifecycle.Event.ON_DESTROY))
-                .subscribe(MainActivity.snackbarButtonIntentNew)
+        layout?.snackbar?.setOnInflateListener { _, _ ->
+            try {
+                snackbarButton.clicks()
+                    .autoDisposable(scope(Lifecycle.Event.ON_DESTROY))
+                    .subscribe(MainActivity.snackbarButtonIntentNew)
+            }catch (e:Exception){
+                e.printStackTrace()
+            }
+
         }
 
-        (layout?.syncing as? ViewStub)?.setOnInflateListener { _, _ ->
+        layout?.syncing?.setOnInflateListener { _, _ ->
             syncingProgress?.progressTintList = theme?.blockingFirst()?.theme?.let {
                 ColorStateList.valueOf(
                     it
@@ -137,15 +130,21 @@ class SMSFragment : Fragment() {
 
             is SyncRepository.SyncProgress.Running -> {
                 layout?.syncing?.isVisible = true
-                syncingProgress.max = (state?.syncing as SyncRepository.SyncProgress.Running).max
-                progressAnimator.apply {
-                    setIntValues(
-                        syncingProgress.progress,
-                        (state?.syncing as SyncRepository.SyncProgress.Running).progress
-                    )
-                }.start()
-                syncingProgress.isIndeterminate = (state?.syncing as SyncRepository.SyncProgress.Running).indeterminate
-                layout?.snackbar?.isVisible = false
+                try {
+                    syncingProgress.max = (state?.syncing as SyncRepository.SyncProgress.Running).max
+                    progressAnimator.apply {
+                        setIntValues(
+                            syncingProgress.progress,
+                            (state?.syncing as SyncRepository.SyncProgress.Running).progress
+                        )
+                    }.start()
+                    syncingProgress.isIndeterminate = (state?.syncing as SyncRepository.SyncProgress.Running).indeterminate
+                    layout?.snackbar?.isVisible = false
+
+                }catch (e: Exception){
+                    e.printStackTrace()
+                }
+
             }
         }
     }

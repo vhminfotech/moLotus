@@ -9,12 +9,15 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.os.Bundle
-import android.view.*
+import android.os.Handler
+import android.os.Looper
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
 import android.widget.PopupWindow
 import android.widget.RelativeLayout
 import androidx.core.app.ActivityCompat
-import androidx.core.view.isVisible
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.tabs.TabLayout
@@ -24,14 +27,15 @@ import com.sms.moLotus.R
 import com.sms.moLotus.common.Navigator
 import com.sms.moLotus.common.base.QkThemedActivity
 import com.sms.moLotus.common.util.Colors
-import com.sms.moLotus.common.util.extensions.*
+import com.sms.moLotus.common.util.extensions.dismissKeyboard
+import com.sms.moLotus.common.util.extensions.resolveThemeColor
+import com.sms.moLotus.common.util.extensions.setVisible
 import com.sms.moLotus.feature.blocking.BlockingDialog
 import com.sms.moLotus.feature.changelog.ChangelogDialog
 import com.sms.moLotus.feature.conversations.ConversationsAdapter
 import com.sms.moLotus.feature.intro.IntroActivity
 import com.sms.moLotus.feature.main.adapter.MyAdapter
 import com.sms.moLotus.manager.ChangelogManager
-import com.sms.moLotus.repository.SyncRepository
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
 import dagger.android.AndroidInjection
@@ -146,6 +150,13 @@ class MainActivity : QkThemedActivity(), MainView {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
+        val settings = getSharedPreferences("appInfo", 0)
+        val firstTime = settings.getBoolean("first_time", true)
+
+        if (firstTime) {
+            val intent = Intent(this, IntroActivity::class.java);
+            startActivity(intent)
+        }
         conversationsAdapterNew = conversationsAdapter
         searchAdapterNew = searchAdapter
         themeNew = theme
@@ -214,13 +225,7 @@ class MainActivity : QkThemedActivity(), MainView {
             dialog.show()
         }*/
 
-        val settings = getSharedPreferences("appInfo", 0)
-        val firstTime = settings.getBoolean("first_time", true)
 
-        if (firstTime) {
-            val intent = Intent(this, IntroActivity::class.java);
-            startActivity(intent)
-        }
 
         viewModel.bindView(this)
         onNewIntentIntent.onNext(intent)
@@ -290,29 +295,31 @@ class MainActivity : QkThemedActivity(), MainView {
         /*if (Build.VERSION.SDK_INT <= 22) {
             toolbarSearch.setBackgroundTint(resolveThemeColor(R.attr.bubbleColor))
         }*/
+        Handler(Looper.getMainLooper()).postDelayed({
+            tabLayout?.newTab()?.setText("MCHAT")?.let { tabLayout?.addTab(it) }
+            tabLayout?.newTab()?.setText("SMS")?.let { tabLayout?.addTab(it) }
+            tabLayout?.tabGravity = TabLayout.GRAVITY_FILL
 
-        tabLayout?.newTab()?.setText("MCHAT")?.let { tabLayout?.addTab(it) }
-        tabLayout?.newTab()?.setText("SMS")?.let { tabLayout?.addTab(it) }
-        tabLayout?.tabGravity = TabLayout.GRAVITY_FILL
+            val adapter = MyAdapter(this, supportFragmentManager, tabLayout.tabCount)
+            viewPager?.adapter = adapter
 
-        val adapter = MyAdapter(this, supportFragmentManager, tabLayout.tabCount)
-        viewPager?.adapter = adapter
+            viewPager?.addOnPageChangeListener(TabLayout.TabLayoutOnPageChangeListener(tabLayout))
 
-        viewPager?.addOnPageChangeListener(TabLayout.TabLayoutOnPageChangeListener(tabLayout))
+            tabLayout?.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+                override fun onTabSelected(tab: TabLayout.Tab) {
+                    viewPager?.currentItem = tab.position
+                }
 
-        tabLayout?.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-            override fun onTabSelected(tab: TabLayout.Tab) {
-                viewPager?.currentItem = tab.position
-            }
+                override fun onTabUnselected(tab: TabLayout.Tab) {
 
-            override fun onTabUnselected(tab: TabLayout.Tab) {
+                }
 
-            }
+                override fun onTabReselected(tab: TabLayout.Tab) {
 
-            override fun onTabReselected(tab: TabLayout.Tab) {
+                }
+            })
+        },1000)
 
-            }
-        })
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -326,6 +333,9 @@ class MainActivity : QkThemedActivity(), MainView {
         Timber.e("render :: $state")
 
         newState = state
+
+
+
         if (state.hasError) {
             finish()
             return
