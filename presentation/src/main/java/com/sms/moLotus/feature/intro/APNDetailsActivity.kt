@@ -7,6 +7,7 @@ import android.content.Intent
 import android.net.ConnectivityManager
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -47,7 +48,12 @@ class APNDetailsActivity : AppCompatActivity() {
             MNC_et.setText(it.mnc)
             Auth_Type_et.setText(it.auth_type)
             APN_Type_et.setText(it.apn_type)
-            APN_Protocol_et.setText(it.apn_protocol)
+            if (it.apn_protocol.isEmpty()){
+                APN_Protocol_et.setText("1Pv4/1Pv6")
+            }else{
+                APN_Protocol_et.setText(it.apn_protocol)
+            }
+
             APN_Roaming_et.setText(it.apn_roaming)
             Bearer_et.setText(it.bearer)
             MVNO_Type_et.setText(it.mvno_type)
