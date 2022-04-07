@@ -24,6 +24,8 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
-        android:indeterminate="true" />
+        android:indeterminate="true"
+        android:progressTint="@color/tools_theme"
+        android:indeterminateTint="@color/tools_theme" />
 
 </LinearLayout>

@@ -7,7 +7,6 @@ import android.content.Intent
 import android.net.ConnectivityManager
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -215,6 +214,7 @@ class APNDetailsActivity : AppCompatActivity() {
 
             PreferenceHelper.setPreference(this, "APNSETTINGS", true)
             PreferenceHelper.setPreference(this, "Notification", true)
+
             val intent = Intent(this, MainActivity::class.java);
             startActivity(intent)
             finish()
