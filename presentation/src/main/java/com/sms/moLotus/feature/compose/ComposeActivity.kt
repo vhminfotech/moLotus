@@ -73,6 +73,7 @@ import kotlinx.android.synthetic.main.compose_activity.toolbar
 import kotlinx.android.synthetic.main.compose_activity.toolbarTitle
 import kotlinx.android.synthetic.main.main_activity.*
 import kotlinx.coroutines.*
+import timber.log.Timber
 import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -584,6 +585,9 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
     }
 
     override fun render(state: ComposeState) {
+        Timber.e("render :: ${state.messages?.second?.get(0)?.type}")
+        Timber.e("render :: ${state.messages?.second?.get(1)?.type}")
+
         if (state.hasError) {
             finish()
             return

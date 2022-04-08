@@ -252,6 +252,7 @@ class MainActivity : QkThemedActivity(), MainView {
 
     override fun render(state: MainState) {
         Timber.e("render :: $state")
+        Timber.e("render :: ${state.page}")
         newState = state
         if (state.hasError) {
             finish()
