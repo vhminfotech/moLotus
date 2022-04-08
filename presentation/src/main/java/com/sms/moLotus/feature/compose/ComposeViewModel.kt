@@ -192,6 +192,15 @@ class ComposeViewModel @Inject constructor(
         disposables += attachments
             .subscribe { attachments -> newState { copy(attachments = attachments) } }
 
+        /*disposables += conversation
+            .map { conversation -> conversation.id }
+            .distinctUntilChanged()
+            .withLatestFrom(state) { id, state -> messageRepo.getMessages(id, state.query) }
+            .switchMap { messagesendAsGroupSwitchs -> messages.asObservable() }
+            .takeUntil(state.map { it.query }.filter { it.isEmpty() })
+            .filter { messages -> messages.isLoaded }
+            .filter { messages -> messages.isValid }
+            .subscribe(searchResults::onNext)*/
         disposables += conversation
             .map { conversation -> conversation.id }
             .distinctUntilChanged()
@@ -430,9 +439,9 @@ class ComposeViewModel @Inject constructor(
             .subscribe { newState { copy(query = "", searchSelectionId = -1) } }
 
         // Toggle the group sending mode
-        /*view.sendAsGroupIntent
+        view.sendAsGroupIntent
             .autoDisposable(view.scope())
-            .subscribe { prefs.sendAsGroup.set(!prefs.sendAsGroup.get()) }*/
+            .subscribe { prefs.sendAsGroup.set(!prefs.sendAsGroup.get()) }
 
         // Scroll to search position
         searchSelection
