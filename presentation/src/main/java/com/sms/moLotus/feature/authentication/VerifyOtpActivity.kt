@@ -3,27 +3,20 @@ package com.sms.moLotus.feature.authentication
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.IntentFilter
-import android.graphics.Color
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Editable
-import android.text.Spannable
-import android.text.SpannableString
 import android.text.TextWatcher
-import android.text.style.ForegroundColorSpan
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.auth.api.phone.SmsRetriever
-import com.sms.moLotus.feature.authentication.MySMSBroadcastReceiver.OTPReceiveListener
 import com.google.android.gms.tasks.Task
 import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
-import com.sms.moLotus.customview.CustomStringBuilder
 import com.sms.moLotus.extension.toast
+import com.sms.moLotus.feature.authentication.MySMSBroadcastReceiver.OTPReceiveListener
 import com.sms.moLotus.feature.intro.APNDetailsActivity
 import com.sms.moLotus.feature.networkcall.ApiHelper
 import kotlinx.android.synthetic.main.activity_verify_otp.*
-import kotlinx.android.synthetic.main.activity_verify_otp.txtMchat
-import kotlinx.android.synthetic.main.intro_activity_main.*
 
 class VerifyOtpActivity : AppCompatActivity() {
     private var mySMSBroadcastReceiver: MySMSBroadcastReceiver? = null
@@ -39,7 +32,7 @@ class VerifyOtpActivity : AppCompatActivity() {
         //CustomStringBuilder.mChatBuilder(txtMchat)
 
         phoneNo = intent?.getStringExtra("PhoneNumber")
-        txtOTP?.text = "Please type the verification code sent to $phoneNo"
+        txtOTP?.text = resources.getString(R.string.otp_desc) + " $phoneNo"
         mySMSBroadcastReceiver = MySMSBroadcastReceiver()
         api = ApiHelper(this)
 

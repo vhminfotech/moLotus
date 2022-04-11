@@ -32,7 +32,7 @@
         android:gravity="center"
         android:text="@string/app_tagline"
         android:textColor="#682494"
-        android:textSize="24sp"
+        android:textSize="32sp"
         android:textStyle="bold" />
 
 </RelativeLayout>
