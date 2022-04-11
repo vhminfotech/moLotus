@@ -425,7 +425,7 @@
     <string name="apn_configuration">APN Configuration</string>
     <string name="text_apn_name">APN Name</string>
     <string name="get_started">Get Started</string>
-    <string name="intro_message">Enjoy the better way on messaging just on your phone</string>
+    <string name="intro_message">Interact smartly on phone</string>
     <string name="resend_otp">Resend OTP</string>
     <string name="signature_text">Signature Text</string>
     <string name="ok">OK</string>
@@ -434,6 +434,7 @@
     <string name="txt_update">Update</string>
     <string name="paid_message_description">mgram would like to send message \nThis will cause charges on your mobile account</string>
     <string name="message_status_sending">Sending message..</string>
+    <string name="otp_desc">Type the OTP sent to</string>
 
     <string-array name="night_modes">
         <item>System</item>
@@ -505,6 +506,6 @@
     <string name="storage_permission_denied">Storage permission request was denied.</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="app_tagline">mgram interaction app</string>
+    <string name="app_tagline">interaction app</string>
 
 </resources>
