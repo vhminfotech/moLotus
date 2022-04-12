@@ -1,18 +1,12 @@
 package com.sms.moLotus.feature.retrofit
 
+import com.google.gson.GsonBuilder
 import com.sms.moLotus.feature.Constants
-import com.sms.moLotus.feature.model.APNParamDetails
-import com.sms.moLotus.feature.model.Operators
-import com.sms.moLotus.feature.model.LoginResponse
+import com.sms.moLotus.feature.model.*
 import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.*
-import com.google.gson.GsonBuilder
-
-import com.google.gson.Gson
-import com.sms.moLotus.feature.Constants.CARRIER_ID
-import com.sms.moLotus.feature.model.VersionCode
 
 
 interface RetrofitService {
@@ -33,6 +27,17 @@ interface RetrofitService {
 
     @GET("app_config/1")
     fun getVersionCode(): Call<List<VersionCode>>
+
+    @Headers("Accept: application/json")
+    @GET("threads")
+    fun getChatList(@Header("Authorization") token: String): Call<ArrayList<ChatList>>
+
+    @Headers("Accept: application/json")
+    @GET("thread/{ID}")
+    fun getAllMessages(
+        @Path("ID") id: Int,
+        @Header("Authorization") token: String
+    ): Call<MessageList>
 
     companion object {
         var retrofitService: RetrofitService? = null

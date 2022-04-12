@@ -15,6 +15,7 @@ import android.provider.MediaStore
 import android.util.Log
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import timber.log.Timber
 import java.io.*
 import java.net.HttpURLConnection
 import java.nio.channels.FileChannel
@@ -550,5 +551,43 @@ object Utils {
                 // Report the error
             }
         }
+    }
+
+    fun covertTimeToText(dataDate: String?): String? {
+        var convTime: String? = null
+        val prefix = ""
+        val suffix = "Ago"
+        try {
+            val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+            dateFormat.timeZone = TimeZone.getTimeZone("UTC")
+            val pasTime = dateFormat.parse(dataDate)
+            val nowTime = Date()
+            val dateDiff = nowTime.time - pasTime.time
+            val second = TimeUnit.MILLISECONDS.toSeconds(dateDiff)
+            val minute = TimeUnit.MILLISECONDS.toMinutes(dateDiff)
+            val hour = TimeUnit.MILLISECONDS.toHours(dateDiff)
+            val day = TimeUnit.MILLISECONDS.toDays(dateDiff)
+            if (second < 60) {
+                convTime = "$second Seconds $suffix"
+            } else if (minute < 60) {
+                convTime = "$minute Minutes $suffix"
+            } else if (hour < 24) {
+                convTime = "$hour Hours $suffix"
+            } else if (day >= 7) {
+                convTime = if (day > 360) {
+                    (day / 360).toString() + " Years " + suffix
+                } else if (day > 30) {
+                    (day / 30).toString() + " Months " + suffix
+                } else {
+                    (day / 7).toString() + " Week " + suffix
+                }
+            } else if (day < 7) {
+                convTime = "$day Days $suffix"
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Timber.e("ConvTimeE ${e.message}")
+        }
+        return convTime
     }
 }

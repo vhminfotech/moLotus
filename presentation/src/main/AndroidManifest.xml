@@ -47,8 +47,10 @@
         android:theme="@style/AppLaunchTheme"
         android:usesCleartextTraffic="true">
         <activity
-            android:name=".feature.main.fragment.SMSActivity"
+            android:theme="@style/AppTheme1"
+            android:name=".feature.chat.ChatActivity"
             android:exported="true" />
+
         <activity
             android:name=".feature.settings.AppSettingsActivity"
             android:exported="true"

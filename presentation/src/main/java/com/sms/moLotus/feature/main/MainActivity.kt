@@ -227,7 +227,7 @@ class MainActivity : QkThemedActivity(), MainView {
 
         val adapter = MyAdapter(this, supportFragmentManager, tabLayout.tabCount)
         viewPager?.adapter = adapter
-
+        viewPager?.adapter?.notifyDataSetChanged()
         viewPager?.addOnPageChangeListener(TabLayout.TabLayoutOnPageChangeListener(tabLayout))
 
         tabLayout?.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {

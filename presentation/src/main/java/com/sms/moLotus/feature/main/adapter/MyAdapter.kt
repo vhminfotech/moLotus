@@ -28,4 +28,8 @@ class MyAdapter(private val myContext: Context, fm: FragmentManager, internal va
     override fun getCount(): Int {
         return totalTabs
     }
+
+    override fun getItemPosition(`object`: Any): Int {
+        return POSITION_NONE
+    }
 }

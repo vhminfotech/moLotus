@@ -1,27 +1,29 @@
 package com.sms.moLotus.feature.intro
 
+import android.app.Activity
+import android.app.role.RoleManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
 import android.net.ConnectivityManager
-import android.net.NetworkInfo
+import android.os.Build
 import android.os.Bundle
-import android.text.Spannable
-import android.text.SpannableString
-import android.text.style.ForegroundColorSpan
+import android.provider.Telephony
 import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.get
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
+import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
-import com.sms.moLotus.customview.CustomStringBuilder
+import com.sms.moLotus.common.Navigator
 import com.sms.moLotus.extension.toast
 import com.sms.moLotus.feature.Constants
 import com.sms.moLotus.feature.authentication.VerifyOtpActivity
@@ -31,10 +33,11 @@ import com.sms.moLotus.feature.retrofit.MainViewModel
 import com.sms.moLotus.feature.retrofit.MyViewModelFactory
 import com.sms.moLotus.feature.retrofit.RetrofitService
 import kotlinx.android.synthetic.main.intro_activity_main.*
-import kotlinx.android.synthetic.main.intro_activity_main.txtMchat
+import javax.inject.Inject
 
 class IntroActivity : AppCompatActivity() {
-
+    @Inject
+    lateinit var navigator: Navigator
     var languages = mutableListOf<String>()
 
     //var languages = mutableListOf("Telkomsel", "Indosat", "XL Axiata", "Celcom", "U Mobile")
@@ -88,6 +91,7 @@ class IntroActivity : AppCompatActivity() {
                 "OTP sent successfully.!!",
                 Toast.LENGTH_SHORT
             ).show()
+            PreferenceHelper.setStringPreference(this, Constants.TOKEN, it.token)
             val intent = Intent(this, VerifyOtpActivity::class.java)
             intent.putExtra("PhoneNumber", phone_number.text.toString())
             startActivity(intent)
@@ -125,11 +129,23 @@ class IntroActivity : AppCompatActivity() {
         )
     }
 
+    fun showDefaultSmsDialog(context: Activity) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val roleManager = context.getSystemService(RoleManager::class.java) as RoleManager
+            val intent = roleManager.createRequestRoleIntent(RoleManager.ROLE_SMS)
+            context.startActivityForResult(intent, 42389)
+        } else {
+            val intent = Intent(Telephony.Sms.Intents.ACTION_CHANGE_DEFAULT)
+            intent.putExtra(Telephony.Sms.Intents.EXTRA_PACKAGE_NAME, context.packageName)
+            context.startActivity(intent)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.intro_activity_main)
         //CustomStringBuilder.mChatBuilder(txtMchat)
-
+        showDefaultSmsDialog(this)
         languages.add(0, "Select carrier provider")
         viewModel =
             ViewModelProvider(this, MyViewModelFactory(MainRepository(retrofitService))).get(
@@ -137,10 +153,7 @@ class IntroActivity : AppCompatActivity() {
             )
 
 
-
 //        getOperators()
-
-
 
 
         api = ApiHelper(this)
@@ -224,14 +237,14 @@ class IntroActivity : AppCompatActivity() {
             } else if (phone_number.text.isEmpty()) {
                 btnLogin.isEnabled = true
                 showToast(message = "Phone number is empty")
-            }else if(phone_number.text.length <= 7 || phone_number.text.length > 14) {
+            } else if (phone_number.text.length <= 7 || phone_number.text.length > 14) {
                 btnLogin.isEnabled = true
 
                 toast("Please enter valid phone number having 7 to 14 digits!")
-            /*else if (carrierText == "Select carrier provider") {
-                               btnLogin.isEnabled = true
-                               showToast(message = "Please select carrier provider")
-                           }*/
+                /*else if (carrierText == "Select carrier provider") {
+                                   btnLogin.isEnabled = true
+                                   showToast(message = "Please select carrier provider")
+                               }*/
             } else if (/*carrierText != "Select carrier provider" &&*/ phone_number.text.isNotEmpty() && phone_number.text.length >= 7 && etName.text.isNotEmpty()) {
                 btnLogin.isEnabled = false
                 registerUser()
