@@ -14,18 +14,17 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-
 class AppIntroActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_app_intro)
-        GlobalScope.launch(Dispatchers.IO) {
-            getAppId()
-        }
         window.setFlags(
             WindowManager.LayoutParams.FLAG_FULLSCREEN,
             WindowManager.LayoutParams.FLAG_FULLSCREEN
         )
+        GlobalScope.launch(Dispatchers.IO){
+            getAppId()
+        }
         llGetStarted?.setOnClickListener {
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
