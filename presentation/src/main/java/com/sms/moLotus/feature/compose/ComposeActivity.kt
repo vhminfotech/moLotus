@@ -641,6 +641,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
 
         loading.setVisible(state.loading)
 
+        sendAsGroup.setVisible(false)
 //        sendAsGroup.setVisible(state.editingMode && state.selectedChips.size >= 2)
         sendAsGroup?.visibility = View.GONE
         sendAsGroupSwitch.isChecked = false/*state.sendAsGroup*/

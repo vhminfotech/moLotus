@@ -185,9 +185,9 @@ class ComposeViewModel @Inject constructor(
             .distinctUntilChanged()
             .subscribe { title -> newState { copy(conversationtitle = title) } }
 
-        disposables += prefs.sendAsGroup.asObservable()
+        /*disposables += prefs.sendAsGroup.asObservable()
             .distinctUntilChanged()
-            .subscribe { enabled -> newState { copy(sendAsGroup = enabled) } }
+            .subscribe { enabled -> newState { copy(sendAsGroup = enabled) } }*/
 
         disposables += attachments
             .subscribe { attachments -> newState { copy(attachments = attachments) } }
@@ -439,9 +439,9 @@ class ComposeViewModel @Inject constructor(
             .subscribe { newState { copy(query = "", searchSelectionId = -1) } }
 
         // Toggle the group sending mode
-        view.sendAsGroupIntent
+        /*view.sendAsGroupIntent
             .autoDisposable(view.scope())
-            .subscribe { prefs.sendAsGroup.set(!prefs.sendAsGroup.get()) }
+            .subscribe { prefs.sendAsGroup.set(!prefs.sendAsGroup.get()) }*/
 
         // Scroll to search position
         searchSelection
@@ -952,7 +952,7 @@ class ComposeViewModel @Inject constructor(
             Preferences.SEND_DELAY_LONG -> 10000
             else -> 0
         }
-        val sendAsGroup = !state.editingMode || state.sendAsGroup
+        val sendAsGroup = !state.editingMode /*|| state.sendAsGroup*/
 
         when {
             // Scheduling a message
@@ -1016,7 +1016,6 @@ class ComposeViewModel @Inject constructor(
         view.setDraft("")
         view.scrollToLastPosition()
         this.attachments.onNext(ArrayList())
-
 
 
         if (state.editingMode) {
