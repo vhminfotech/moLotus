@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.sms.moLotus.R
 import com.sms.moLotus.common.util.extensions.autoScrollToStart
@@ -34,6 +35,8 @@ class SMSFragment : Fragment() {
         state = MainActivity.newState
 
         rv = layout?.recyclerView
+        val layoutMgr = LinearLayoutManager(requireActivity())
+        rv?.layoutManager = layoutMgr
         txtEmpty = layout?.empty
         Timber.e("onCreateView")
 
@@ -63,10 +66,9 @@ class SMSFragment : Fragment() {
 
 
     private fun initRecyclerView() {
-        Timber.e("render:: $state")
 
-        conversationsAdapter.emptyView =
-            txtEmpty.takeIf { state?.page is Inbox || state?.page is Archived }
+        /*conversationsAdapter.emptyView =
+            txtEmpty.takeIf { state?.page is Inbox || state?.page is Archived }*/
 
         when (state?.page) {
 
@@ -77,7 +79,6 @@ class SMSFragment : Fragment() {
                 txtEmpty?.setText(R.string.inbox_empty_text)
             }
             is Searching -> {
-                Timber.e("Searching:: ${state?.page}")
 
                /* if (rv?.adapter !== searchAdapter) rv?.adapter =
                     searchAdapter
@@ -91,8 +92,8 @@ class SMSFragment : Fragment() {
                 txtEmpty?.setText(R.string.archived_empty_text)
             }
             else -> {
-                if (rv?.adapter !== conversationsAdapter) rv?.adapter =
-                    conversationsAdapter
+                /*if (rv?.adapter !== conversationsAdapter) rv?.adapter =
+                    conversationsAdapter*/
             }
         }
 

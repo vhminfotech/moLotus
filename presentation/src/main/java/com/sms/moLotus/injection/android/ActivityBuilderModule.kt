@@ -4,6 +4,8 @@ import com.sms.moLotus.feature.backup.BackupActivity
 import com.sms.moLotus.feature.blocking.BlockingActivity
 import com.sms.moLotus.feature.compose.ComposeActivity
 import com.sms.moLotus.feature.compose.ComposeActivityModule
+import com.sms.moLotus.feature.compose.mms.MMSActivity
+import com.sms.moLotus.feature.compose.mms.MMSActivityModule
 import com.sms.moLotus.feature.contacts.ContactsActivity
 import com.sms.moLotus.feature.contacts.ContactsActivityModule
 import com.sms.moLotus.feature.conversationinfo.ConversationInfoActivity
@@ -42,6 +44,10 @@ abstract class ActivityBuilderModule {
     @ActivityScope
     @ContributesAndroidInjector(modules = [ComposeActivityModule::class])
     abstract fun bindComposeActivity(): ComposeActivity
+
+    @ActivityScope
+    @ContributesAndroidInjector(modules = [MMSActivityModule::class])
+    abstract fun bindMMSActivity(): MMSActivity
 
     @ActivityScope
     @ContributesAndroidInjector(modules = [ContactsActivityModule::class])

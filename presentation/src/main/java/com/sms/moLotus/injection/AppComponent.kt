@@ -3,13 +3,7 @@ package com.sms.moLotus.injection
 import com.sms.moLotus.common.QKApplication
 import com.sms.moLotus.common.QkDialog
 import com.sms.moLotus.common.util.QkChooserTargetService
-import com.sms.moLotus.common.widget.AvatarView
-import com.sms.moLotus.common.widget.PagerTitleView
-import com.sms.moLotus.common.widget.PreferenceView
-import com.sms.moLotus.common.widget.QkEditText
-import com.sms.moLotus.common.widget.QkSwitch
-import com.sms.moLotus.common.widget.QkTextView
-import com.sms.moLotus.common.widget.RadioPreferenceView
+import com.sms.moLotus.common.widget.*
 import com.sms.moLotus.feature.backup.BackupController
 import com.sms.moLotus.feature.blocking.BlockingController
 import com.sms.moLotus.feature.blocking.manager.BlockingManagerController

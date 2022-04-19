@@ -1,4 +1,4 @@
-package com.sms.moLotus.feature.compose
+package com.sms.moLotus.feature.compose.mms
 
 //import android.util.Log
 import android.Manifest
@@ -53,6 +53,7 @@ import com.sms.moLotus.feature.Utils.compressImage
 import com.sms.moLotus.feature.Utils.getAudioContentUri
 import com.sms.moLotus.feature.Utils.getVideoContentUri
 import com.sms.moLotus.feature.Utils.getVideoDuration
+import com.sms.moLotus.feature.compose.*
 import com.sms.moLotus.feature.compose.editing.ChipsAdapter
 import com.sms.moLotus.feature.contacts.ContactsActivity
 import com.sms.moLotus.model.Attachment
@@ -69,6 +70,9 @@ import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
 import kotlinx.android.synthetic.main.backup_list_dialog.*
 import kotlinx.android.synthetic.main.compose_activity.*
+import kotlinx.android.synthetic.main.compose_activity.toolbar
+import kotlinx.android.synthetic.main.compose_activity.toolbarTitle
+import kotlinx.android.synthetic.main.main_activity.*
 import kotlinx.coroutines.*
 import timber.log.Timber
 import java.io.*
@@ -77,8 +81,9 @@ import java.util.*
 import javax.inject.Inject
 import kotlin.collections.HashMap
 
+
 @RequiresApi(Build.VERSION_CODES.M)
-class ComposeActivity : QkThemedActivity(), ComposeView {
+class MMSActivity : QkThemedActivity(), MMSView {
 
     companion object {
         private const val SelectContactRequestCode = 0
@@ -111,7 +116,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
     lateinit var dateFormatter: DateFormatter
 
     @Inject
-    lateinit var messageAdapter: MessagesAdapter
+    lateinit var messageAdapter: MMSMessageAdapter
 
     @Inject
     lateinit var navigator: Navigator
@@ -181,7 +186,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         ViewModelProviders.of(
             this,
             viewModelFactory
-        )[ComposeViewModel::class.java]
+        )[MMSViewModel::class.java]
     }
 
     private var cameraDestination: Uri? = null
@@ -341,7 +346,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                         getTheme()
                     )
                 )
-                Toast.makeText(this@ComposeActivity, "Recording cancelled", Toast.LENGTH_SHORT)
+                Toast.makeText(this@MMSActivity, "Recording cancelled", Toast.LENGTH_SHORT)
                     .show()
                 //Log.d("record_view", "onCancel")
             }
@@ -355,7 +360,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                 try {
                     uri = recordFile?.absolutePath?.let {
                         getAudioContentUri(
-                            this@ComposeActivity, it
+                            this@MMSActivity, it
                         )
                     }
                     //Log.d( "record_view", "onFinish Limit Reached? $limitReached == recordFile::${recordFile?.path} time:: $time :::: uri::::$uri" )
@@ -370,7 +375,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
 
             override fun onLessThanSecond() {
                 stopRecording(true)
-                Toast.makeText(this@ComposeActivity, "OnLessThanSecond", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@MMSActivity, "OnLessThanSecond", Toast.LENGTH_SHORT).show()
                 //Log.d("record_view", "onLessThanSecond")
             }
         })
@@ -582,10 +587,8 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
     }
 
     override fun render(state: ComposeState) {
-        Timber.e("render 0:: ${state.messages?.second?.get(0)?.type}")
-        Timber.e("render 1:: ${state.messages?.second?.get(1)?.type}")
-        Timber.e("render second:: ${state.messages?.second?.asJSON()}")
-        Timber.e("render first:: ${state.messages?.first}")
+        Timber.e("render :: ${state.messages?.second?.get(0)?.type}")
+        Timber.e("render :: ${state.messages?.second?.get(1)?.type}")
 
         if (state.hasError) {
             finish()
@@ -1067,9 +1070,9 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                                 cursor.getLong(sizeIndex)
                             ).filter { it.isDigit() }.toInt()
                             if (fileSize > 1) {
-                                progressDialog.show(this@ComposeActivity)
+                                progressDialog.show(this@MMSActivity)
                                 GlobalScope.launch(Dispatchers.IO) {
-                                    VideoCompressor.compress(this@ComposeActivity, data.data!!)
+                                    VideoCompressor.compress(this@MMSActivity, data.data!!)
                                 }
                                 Handler(Looper.getMainLooper()).postDelayed({
                                     progressDialog.dialog.dismiss()
@@ -1110,10 +1113,10 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                                         ).filter { it.isDigit() }.toInt()
 
                                     if (fileSize!! > 1) {
-                                        progressDialog.show(this@ComposeActivity)
+                                        progressDialog.show(this@MMSActivity)
                                         GlobalScope.launch(Dispatchers.IO) {
                                             VideoCompressor.compress(
-                                                this@ComposeActivity,
+                                                this@MMSActivity,
                                                 Uri.parse(data.clipData?.getItemAt(i)?.uri.toString())
                                             )
                                         }
@@ -1217,10 +1220,10 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                             cursor.getLong(sizeIndex)
                         ).filter { it.isDigit() }.toInt()
                         if (fileSize!! > 1) {
-                            progressDialog.show(this@ComposeActivity)
+                            progressDialog.show(this@MMSActivity)
 
                             GlobalScope.launch(Dispatchers.IO) {
-                                VideoCompressor.compress(this@ComposeActivity, data.data!!)
+                                VideoCompressor.compress(this@MMSActivity, data.data!!)
                             }
 
                             Handler(Looper.getMainLooper()).postDelayed({

@@ -39,6 +39,16 @@ interface RetrofitService {
         @Header("Authorization") token: String
     ): Call<MessageList>
 
+    @FormUrlEncoded
+    @Headers("Accept: application/json")
+    @POST("compose/{ID}")
+    fun sendMessage(
+        @Field("user_id") user_id: ArrayList<Int>,
+        @Field("text") text: String,
+        @Path("ID") id: Int,
+        @Header("Authorization") token: String
+    ): Call<MessageList>
+
     companion object {
         var retrofitService: RetrofitService? = null
         var gson = GsonBuilder()

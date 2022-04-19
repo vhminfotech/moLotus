@@ -14,6 +14,7 @@ class MainViewModel constructor(private val repository: MainRepository) : ViewMo
     val loginResponse = MutableLiveData<LoginResponse>()
     val chatList = MutableLiveData<ArrayList<ChatList>>()
     val allMessages = MutableLiveData<MessageList>()
+    val sendMessage = MutableLiveData<MessageList>()
     val errorMessage = MutableLiveData<String>()
 
     fun getAllOperators() {
@@ -104,6 +105,22 @@ class MainViewModel constructor(private val repository: MainRepository) : ViewMo
                 response: Response<MessageList>
             ) {
                 allMessages.postValue(response.body())
+            }
+
+            override fun onFailure(call: Call<MessageList>, t: Throwable) {
+                errorMessage.postValue(t.message)
+            }
+        })
+    }
+
+    fun sendMessage(user_id: ArrayList<Int>, text: String,threadId: Int, token: String) {
+        val response = repository.sendMessage(user_id, text,threadId,token)
+        response.enqueue(object : Callback<MessageList> {
+            override fun onResponse(
+                call: Call<MessageList>,
+                response: Response<MessageList>
+            ) {
+                sendMessage.postValue(response.body())
             }
 
             override fun onFailure(call: Call<MessageList>, t: Throwable) {

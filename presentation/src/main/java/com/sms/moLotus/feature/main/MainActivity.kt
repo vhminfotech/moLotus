@@ -31,7 +31,6 @@ import com.sms.moLotus.common.util.extensions.setVisible
 import com.sms.moLotus.feature.blocking.BlockingDialog
 import com.sms.moLotus.feature.changelog.ChangelogDialog
 import com.sms.moLotus.feature.conversations.ConversationsAdapter
-import com.sms.moLotus.feature.intro.IntroActivity
 import com.sms.moLotus.feature.main.adapter.MyAdapter
 import com.sms.moLotus.feature.main.fragment.SMSFragment
 import com.sms.moLotus.manager.ChangelogManager
@@ -126,13 +125,13 @@ class MainActivity : QkThemedActivity(), MainView {
         setContentView(R.layout.main_activity)
         viewModel.bindView(this)
         onNewIntentIntent.onNext(intent)
-        val settings = getSharedPreferences("appInfo", 0)
+        /*val settings = getSharedPreferences("appInfo", 0)
         val firstTime = settings.getBoolean("first_time", true)
 
         if (firstTime) {
             val intent = Intent(this, IntroActivity::class.java);
             startActivity(intent)
-        }
+        }*/
 
         conversationsAdapterNew = conversationsAdapter
         toolbarVisible = toolbar
@@ -222,6 +221,7 @@ class MainActivity : QkThemedActivity(), MainView {
 
     private fun initTabView() {
         tabLayout?.newTab()?.setText("SMS")?.let { tabLayout?.addTab(it) }
+//        tabLayout?.newTab()?.setText("MGRAM")?.let { tabLayout?.addTab(it) }
         tabLayout?.newTab()?.setText("MCHAT")?.let { tabLayout?.addTab(it) }
         tabLayout?.tabGravity = TabLayout.GRAVITY_FILL
 
@@ -289,21 +289,21 @@ class MainActivity : QkThemedActivity(), MainView {
         toolbar.menu.findItem(R.id.read)?.isVisible = markRead && selectedConversations != 0
         toolbar.menu.findItem(R.id.unread)?.isVisible = !markRead && selectedConversations != 0
         compose.setVisible(state.page is Inbox || state.page is Archived)
-        /*conversationsAdapter.emptyView =
-            SMSFragment.txtEmpty?.takeIf { state.page is Inbox || state.page is Archived }*/
+        conversationsAdapter.emptyView =
+            SMSFragment.txtEmpty?.takeIf { state.page is Inbox || state.page is Archived }
         searchAdapter.emptyView = SMSFragment.txtEmpty?.takeIf { state.page is Searching }
 
         when (state.page) {
             is Inbox -> {
                 showBackButton(state.page.selected > 0)
                 title = getString(R.string.main_title_selected, state.page.selected)
-                if (isSearch == true) {
-                    isSearch = false
+//                if (isSearch == true) {
+//                    isSearch = false
                     if (SMSFragment.rv?.adapter !== conversationsAdapter) SMSFragment.rv?.adapter =
                         conversationsAdapter
                     conversationsAdapter.updateData(state.page.data)
                     SMSFragment.txtEmpty?.setText(R.string.inbox_empty_text)
-                }
+              //  }
             }
 
             is Searching -> {
@@ -324,6 +324,7 @@ class MainActivity : QkThemedActivity(), MainView {
 
             }
         }
+
 
         when (state.syncing) {
             is SyncRepository.SyncProgress.Idle -> {

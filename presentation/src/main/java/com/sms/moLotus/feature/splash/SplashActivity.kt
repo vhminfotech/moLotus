@@ -10,6 +10,7 @@ import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
 import com.sms.moLotus.feature.intro.APNDetailsActivity
 import com.sms.moLotus.feature.intro.AppIntroActivity
+import com.sms.moLotus.feature.intro.IntroActivity
 import com.sms.moLotus.feature.main.MainActivity
 import timber.log.Timber
 
@@ -53,10 +54,11 @@ class SplashActivity : AppCompatActivity() {
                     finish()
                 }
             } else {
-                val intent = Intent(this, MainActivity::class.java)
+                val intent = Intent(this, IntroActivity::class.java)
                 startActivity(intent)
                 overridePendingTransition(0, 0)
                 finish()
+
             }
         }, 2000)
 

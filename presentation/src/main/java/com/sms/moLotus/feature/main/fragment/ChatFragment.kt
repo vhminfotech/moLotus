@@ -54,8 +54,6 @@ class ChatFragment : Fragment(), OnItemClickListener {
         // Setting the Adapter with the recyclerview
         layout?.rvChatRecyclerView?.adapter = adapter
         layout?.rvChatRecyclerView?.adapter?.notifyDataSetChanged()
-
-
     }
 
     companion object {

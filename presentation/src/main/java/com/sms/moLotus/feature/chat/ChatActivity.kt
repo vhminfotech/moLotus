@@ -30,6 +30,7 @@ class ChatActivity : AppCompatActivity() {
     private var currentUserId: Int = 0
     private var threadId: Int = 0
     var userName: String = ""
+    var userId : ArrayList<Int> ?= ArrayList()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
@@ -37,6 +38,7 @@ class ChatActivity : AppCompatActivity() {
         threadId = intent?.getIntExtra("threadId", 0) ?: 0
         userName = intent?.getStringExtra("userName").toString()
         txtTitle?.text = userName
+        userId = arrayListOf(2,4)
         imgBack?.setOnClickListener {
             onBackPressed()
         }
@@ -65,6 +67,49 @@ class ChatActivity : AppCompatActivity() {
         chatAdapter?.notifyDataSetChanged()
     }
 
+    private fun sendMessage() {
+        viewModel.sendMessage.observe(this, {
+            Log.e("=====", "response:: $it")
+            // initRecyclerView(it)
+
+            messageList = it.messages
+
+            chatAdapter?.notifyDataSetChanged()
+        })
+        viewModel.errorMessage.observe(this, {
+            Log.e("=====", "errorMessage:: $it")
+            val conMgr =
+                getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val netInfo = conMgr.activeNetworkInfo
+            if (netInfo == null) {
+                //No internet
+                Snackbar.make(
+                    findViewById(R.id.relMain),
+                    "No Internet Connection. Please turn on your internet!",
+                    Snackbar.LENGTH_INDEFINITE
+                )
+                    .setAction("Retry") {
+
+                    }
+                    .setActionTextColor(resources.getColor(android.R.color.holo_red_light))
+                    .show()
+            } else {
+                toast(it.toString(), Toast.LENGTH_SHORT)
+            }
+        })
+        userId?.let {
+            viewModel.sendMessage(
+                it, txtMessage.text.toString(),
+                threadId,
+                "Bearer ${
+                    PreferenceHelper.getStringPreference(
+                        this,
+                        Constants.TOKEN
+                    ).toString()
+                }"
+            )
+        }
+    }
 
     private fun getChatList() {
         viewModel.allMessages.observe(this, {

@@ -24,6 +24,7 @@ import com.sms.moLotus.BuildConfig
 import com.sms.moLotus.feature.backup.BackupActivity
 import com.sms.moLotus.feature.blocking.BlockingActivity
 import com.sms.moLotus.feature.compose.ComposeActivity
+import com.sms.moLotus.feature.compose.mms.MMSActivity
 import com.sms.moLotus.feature.conversationinfo.ConversationInfoActivity
 import com.sms.moLotus.feature.gallery.GalleryActivity
 import com.sms.moLotus.feature.intro.IntroActivity2
@@ -176,6 +177,13 @@ class Navigator @Inject constructor(
 
     fun showConversation(threadId: Long, query: String? = null) {
         val intent = Intent(context, ComposeActivity::class.java)
+            .putExtra("threadId", threadId)
+            .putExtra("query", query)
+        startActivity(intent)
+    }
+
+    fun showMMS(threadId: Long, query: String? = null) {
+        val intent = Intent(context, MMSActivity::class.java)
             .putExtra("threadId", threadId)
             .putExtra("query", query)
         startActivity(intent)

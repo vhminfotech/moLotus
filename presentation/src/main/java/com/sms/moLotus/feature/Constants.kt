@@ -6,6 +6,7 @@ object Constants {
     const val CARRIER_ID = 1
     const val CARRIER_NAME = "Telkomsel"
     const val TOKEN = "token"
+    const val USERID = "userId"
     const val FOLDER_NAME = "MGRAM/Media"
     const val DUMMY_NAME = "Akanksha Gogavale"
 }

@@ -16,7 +16,11 @@ class MyAdapter(private val myContext: Context, fm: FragmentManager, internal va
             0 -> {
                 SMSFragment()
             }
-            1 -> {
+            1 /*-> {
+
+                MGRAMFragment()
+            }
+            2*/ -> {
                 ChatFragment()
             }
 
