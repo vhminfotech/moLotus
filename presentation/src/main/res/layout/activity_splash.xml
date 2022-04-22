@@ -10,6 +10,7 @@
         android:layout_width="match_parent"
         android:text="@string/splash_name"
         android:textStyle="bold"
+
         android:gravity="center"
         android:visibility="gone"
         android:textColor="#27a9e1"
@@ -20,7 +21,7 @@
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/imgSplash"
         android:layout_width="match_parent"
-        android:layout_height="100dp"
+        android:layout_height="45dp"
         android:layout_centerInParent="true"
         android:src="@drawable/mgram_splash_icon" />
 
@@ -32,7 +33,7 @@
         android:gravity="center"
         android:text="@string/app_tagline"
         android:textColor="#682494"
-        android:textSize="32sp"
+        android:textSize="30sp"
         android:textStyle="bold" />
 
 </RelativeLayout>

@@ -31,6 +31,7 @@ import com.sms.moLotus.model.Message
 import com.sms.moLotus.util.Preferences
 import com.sms.moLotus.util.SqliteWrapper
 import com.sms.moLotus.util.tryOrNull
+import timber.log.Timber
 import javax.inject.Inject
 
 class CursorToMessageImpl @Inject constructor(
@@ -72,14 +73,20 @@ class CursorToMessageImpl @Inject constructor(
     override fun map(from: Pair<Cursor, CursorToMessage.MessageColumns>): Message {
         val cursor = from.first
         val columnsMap = from.second
-
+        Timber.e("map:::  $from")
+        Timber.e("map first:::  ${from.first}")
+        Timber.e("map second:::  ${from.second}")
         return Message().apply {
+            Timber.e("type:1::  ${cursor.getColumnIndex(Mms.SUBJECT)}")
+            Timber.e("type:2::  ${cursor.getColumnIndex(Sms.ADDRESS)}")
+
             type = when {
                 cursor.getColumnIndex(MmsSms.TYPE_DISCRIMINATOR_COLUMN) != -1 -> cursor.getString(columnsMap.msgType)
                 cursor.getColumnIndex(Mms.SUBJECT) != -1 -> "mms"
                 cursor.getColumnIndex(Sms.ADDRESS) != -1 -> "sms"
                 else -> "unknown"
             }
+            Timber.e("type:::  $type")
 
             id = keys.newId()
             threadId = cursor.getLong(columnsMap.threadId)
@@ -114,9 +121,15 @@ class CursorToMessageImpl @Inject constructor(
                     errorType = if (columnsMap.mmsErrorType != -1) cursor.getInt(columnsMap.mmsErrorType) else 0
                     messageSize = 0
                     readReportString = cursor.getString(columnsMap.mmsReadReport) ?: ""
+                    Timber.e("messageType::${cursor.getInt(columnsMap.mmsMessageType)}")
+
                     messageType = cursor.getInt(columnsMap.mmsMessageType)
+
                     mmsStatus = cursor.getInt(columnsMap.mmsStatus)
+                    Timber.e("subjectCharset::${cursor.getInt(columnsMap.mmsSubjectCharset)}")
+
                     val subjectCharset = cursor.getInt(columnsMap.mmsSubjectCharset)
+                    Timber.e("sub::${columnsMap.mmsSubject}:: == ${cursor.getString(columnsMap.mmsSubject)}")
                     subject = cursor.getString(columnsMap.mmsSubject)
                             ?.takeIf { it.isNotBlank() }
                             ?.let(PduPersister::getBytes)
