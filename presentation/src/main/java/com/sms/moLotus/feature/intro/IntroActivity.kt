@@ -5,23 +5,19 @@ import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
 import android.net.ConnectivityManager
-import android.net.NetworkInfo
 import android.os.Bundle
-import android.text.Spannable
-import android.text.SpannableString
-import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.get
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
 import com.sms.moLotus.R
-import com.sms.moLotus.customview.CustomStringBuilder
 import com.sms.moLotus.extension.toast
 import com.sms.moLotus.feature.Constants
 import com.sms.moLotus.feature.authentication.VerifyOtpActivity
@@ -31,7 +27,6 @@ import com.sms.moLotus.feature.retrofit.MainViewModel
 import com.sms.moLotus.feature.retrofit.MyViewModelFactory
 import com.sms.moLotus.feature.retrofit.RetrofitService
 import kotlinx.android.synthetic.main.intro_activity_main.*
-import kotlinx.android.synthetic.main.intro_activity_main.txtMchat
 
 class IntroActivity : AppCompatActivity() {
 
@@ -135,16 +130,9 @@ class IntroActivity : AppCompatActivity() {
             ViewModelProvider(this, MyViewModelFactory(MainRepository(retrofitService))).get(
                 MainViewModel::class.java
             )
-
-
-
 //        getOperators()
-
-
-
-
         api = ApiHelper(this)
-        // get reference to all views
+        //get reference to all views
         //val inputPhoneNumber = findViewById<EditText>(R.id.phone_number)
 
         val adapter: ArrayAdapter<String> = object : ArrayAdapter<String>(

@@ -81,7 +81,7 @@ class AppSettingsActivity : AppCompatActivity() {
         toggleSendPaidMessages.isChecked = PreferenceHelper.getPreference(this, "SendPaidMessage")
         toggleNotification.isChecked = PreferenceHelper.getPreference(this, "Notification")
         toggleAutoDownload.isChecked = PreferenceManager.getDefaultSharedPreferences(this)
-            .getBoolean("auto_download_mms", true)
+            .getBoolean("auto_download_mms", false)
 
         toggleSendPaidMessages?.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {

@@ -44,30 +44,30 @@ class CursorToMessageImpl @Inject constructor(
 
     private val uri = Uri.parse("content://mms-sms/complete-conversations")
     private val projection = arrayOf(
-            MmsSms.TYPE_DISCRIMINATOR_COLUMN,
-            MmsSms._ID,
-            Mms.DATE,
-            Mms.DATE_SENT,
-            Mms.READ,
-            Mms.THREAD_ID,
-            Mms.LOCKED,
+        MmsSms.TYPE_DISCRIMINATOR_COLUMN,
+        MmsSms._ID,
+        Mms.DATE,
+        Mms.DATE_SENT,
+        Mms.READ,
+        Mms.THREAD_ID,
+        Mms.LOCKED,
 
-            Sms.ADDRESS,
-            Sms.BODY,
-            Sms.SEEN,
-            Sms.TYPE,
-            Sms.STATUS,
-            Sms.ERROR_CODE,
+        Sms.ADDRESS,
+        Sms.BODY,
+        Sms.SEEN,
+        Sms.TYPE,
+        Sms.STATUS,
+        Sms.ERROR_CODE,
 
-            Mms.SUBJECT,
-            Mms.SUBJECT_CHARSET,
-            Mms.SEEN,
-            Mms.MESSAGE_TYPE,
-            Mms.MESSAGE_BOX,
-            Mms.DELIVERY_REPORT,
-            Mms.READ_REPORT,
-            MmsSms.PendingMessages.ERROR_TYPE,
-            Mms.STATUS
+        Mms.SUBJECT,
+        Mms.SUBJECT_CHARSET,
+        Mms.SEEN,
+        Mms.MESSAGE_TYPE,
+        Mms.MESSAGE_BOX,
+        Mms.DELIVERY_REPORT,
+        Mms.READ_REPORT,
+        MmsSms.PendingMessages.ERROR_TYPE,
+        Mms.STATUS
     )
 
     override fun map(from: Pair<Cursor, CursorToMessage.MessageColumns>): Message {
@@ -81,7 +81,9 @@ class CursorToMessageImpl @Inject constructor(
             Timber.e("type:2::  ${cursor.getColumnIndex(Sms.ADDRESS)}")
 
             type = when {
-                cursor.getColumnIndex(MmsSms.TYPE_DISCRIMINATOR_COLUMN) != -1 -> cursor.getString(columnsMap.msgType)
+                cursor.getColumnIndex(MmsSms.TYPE_DISCRIMINATOR_COLUMN) != -1 -> cursor.getString(
+                    columnsMap.msgType
+                )
                 cursor.getColumnIndex(Mms.SUBJECT) != -1 -> "mms"
                 cursor.getColumnIndex(Sms.ADDRESS) != -1 -> "sms"
                 else -> "unknown"
@@ -104,8 +106,9 @@ class CursorToMessageImpl @Inject constructor(
                     seen = cursor.getInt(columnsMap.smsSeen) != 0
 
                     body = columnsMap.smsBody
-                            .takeIf { column -> column != -1 } // The column may not be set
-                            ?.let { column -> cursor.getString(column) } ?: "" // cursor.getString() may return null
+                        .takeIf { column -> column != -1 } // The column may not be set
+                        ?.let { column -> cursor.getString(column) }
+                        ?: "" // cursor.getString() may return null
 
                     errorCode = cursor.getInt(columnsMap.smsErrorCode)
                     deliveryStatus = cursor.getInt(columnsMap.smsStatus)
@@ -118,7 +121,8 @@ class CursorToMessageImpl @Inject constructor(
                     dateSent *= 1000L
                     seen = cursor.getInt(columnsMap.mmsSeen) != 0
                     mmsDeliveryStatusString = cursor.getString(columnsMap.mmsDeliveryReport) ?: ""
-                    errorType = if (columnsMap.mmsErrorType != -1) cursor.getInt(columnsMap.mmsErrorType) else 0
+                    errorType =
+                        if (columnsMap.mmsErrorType != -1) cursor.getInt(columnsMap.mmsErrorType) else 0
                     messageSize = 0
                     readReportString = cursor.getString(columnsMap.mmsReadReport) ?: ""
                     Timber.e("messageType::${cursor.getInt(columnsMap.mmsMessageType)}")
@@ -130,10 +134,11 @@ class CursorToMessageImpl @Inject constructor(
 
                     val subjectCharset = cursor.getInt(columnsMap.mmsSubjectCharset)
                     Timber.e("sub::${columnsMap.mmsSubject}:: == ${cursor.getString(columnsMap.mmsSubject)}")
+
                     subject = cursor.getString(columnsMap.mmsSubject)
-                            ?.takeIf { it.isNotBlank() }
-                            ?.let(PduPersister::getBytes)
-                            ?.let { EncodedStringValue(subjectCharset, it).string } ?: ""
+                        ?.takeIf { it.isNotBlank() }
+                        ?.let(PduPersister::getBytes)
+                        ?.let { EncodedStringValue(subjectCharset, it).string } ?: ""
                     textContentType = ""
                     attachmentType = Message.AttachmentType.NOT_LOADED
                 }
@@ -147,7 +152,8 @@ class CursorToMessageImpl @Inject constructor(
         // column. In this case, we need to check if we do, before trying to sync messages
         if (!preferences.canUseSubId.isSet) {
             val canUseSubId = tryOrNull {
-                SqliteWrapper.query(context, uri, arrayOf(Mms.SUBSCRIPTION_ID), logError = false)?.use { true }
+                SqliteWrapper.query(context, uri, arrayOf(Mms.SUBSCRIPTION_ID), logError = false)
+                    ?.use { true }
             }
 
             preferences.canUseSubId.set(canUseSubId ?: false)
@@ -159,7 +165,12 @@ class CursorToMessageImpl @Inject constructor(
         }
 
         return when (permissionManager.hasReadSms()) {
-            true -> SqliteWrapper.query(context, uri, projection, sortOrder = "normalized_date desc")
+            true -> SqliteWrapper.query(
+                context,
+                uri,
+                projection,
+                sortOrder = "normalized_date desc"
+            )
             false -> null
         }
     }
@@ -170,8 +181,8 @@ class CursorToMessageImpl @Inject constructor(
 
     private fun getMmsAddress(messageId: Long): String {
         val uri = Mms.CONTENT_URI.buildUpon()
-                .appendPath(messageId.toString())
-                .appendPath("addr").build()
+            .appendPath(messageId.toString())
+            .appendPath("addr").build()
 
         //TODO: Use Charset to ensure address is decoded correctly
         val projection = arrayOf(Mms.Addr.ADDRESS, Mms.Addr.CHARSET)

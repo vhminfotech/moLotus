@@ -1,5 +1,13 @@
 package com.android.mms.transaction;
 
+import static com.android.mms.transaction.TransactionState.FAILED;
+import static com.android.mms.transaction.TransactionState.INITIALIZED;
+import static com.android.mms.transaction.TransactionState.SUCCESS;
+import static com.google.android.mms.pdu_alt.PduHeaders.MESSAGE_TYPE_RETRIEVE_CONF;
+import static com.google.android.mms.pdu_alt.PduHeaders.STATUS_DEFERRED;
+import static com.google.android.mms.pdu_alt.PduHeaders.STATUS_RETRIEVED;
+import static com.google.android.mms.pdu_alt.PduHeaders.STATUS_UNRECOGNIZED;
+
 import android.app.Service;
 import android.content.ContentValues;
 import android.content.Context;
@@ -30,14 +38,6 @@ import java.io.IOException;
 
 import timber.log.Timber;
 
-import static com.android.mms.transaction.TransactionState.FAILED;
-import static com.android.mms.transaction.TransactionState.INITIALIZED;
-import static com.android.mms.transaction.TransactionState.SUCCESS;
-import static com.google.android.mms.pdu_alt.PduHeaders.MESSAGE_TYPE_RETRIEVE_CONF;
-import static com.google.android.mms.pdu_alt.PduHeaders.STATUS_DEFERRED;
-import static com.google.android.mms.pdu_alt.PduHeaders.STATUS_RETRIEVED;
-import static com.google.android.mms.pdu_alt.PduHeaders.STATUS_UNRECOGNIZED;
-
 /**
  * The NotificationTransaction is responsible for handling multimedia
  * message notifications (M-Notification.ind).  It:
@@ -48,7 +48,7 @@ import static com.google.android.mms.pdu_alt.PduHeaders.STATUS_UNRECOGNIZED;
  * <li>Stores the notification indication.
  * <li>Notifies the TransactionService about succesful completion.
  * </ul>
- *
+ * <p>
  * NOTE: This MMS client handles all notifications with a <b>deferred
  * retrieval</b> response.  The transaction service, upon succesful
  * completion of this transaction, will trigger a retrieve transaction
@@ -115,18 +115,27 @@ public class NotificationTransaction extends Transaction implements Runnable {
     }
 
     public static boolean allowAutoDownload(Context context) {
-        try { Looper.prepare(); } catch (Exception e) { }
-        boolean autoDownload = PreferenceManager.getDefaultSharedPreferences(context).getBoolean("auto_download_mms", true);
+        try {
+            Looper.prepare();
+        } catch (Exception e) {
+        }
+        boolean autoDownload = PreferenceManager.getDefaultSharedPreferences(context).getBoolean("auto_download_mms", false);
         boolean dataSuspended = (((TelephonyManager) context.getSystemService(Service.TELEPHONY_SERVICE)).getDataState() ==
                 TelephonyManager.DATA_SUSPENDED);
+        Timber.e("auto download:::: %s", autoDownload);
+
         return autoDownload && !dataSuspended;
     }
 
     public void run() {
-        try { Looper.prepare(); } catch (Exception e) {}
+        try {
+            Looper.prepare();
+        } catch (Exception e) {
+        }
         DownloadManager.init(mContext);
         DownloadManager downloadManager = DownloadManager.getInstance();
         boolean autoDownload = allowAutoDownload(mContext);
+        Timber.e("auto download:::: %s", autoDownload);
         try {
             if (LOCAL_LOGV) {
                 Timber.v("Notification transaction launched: " + this);
@@ -187,7 +196,7 @@ public class NotificationTransaction extends Transaction implements Runnable {
                     // We have successfully downloaded the new MM. Delete the
                     // M-NotifyResp.ind from Inbox.
                     SqliteWrapper.delete(mContext, mContext.getContentResolver(),
-                                         mUri, null, null);
+                            mUri, null, null);
                     Timber.v("NotificationTransaction received new mms message: " + uri);
                     // Delete obsolete threads
                     SqliteWrapper.delete(mContext, mContext.getContentResolver(),
@@ -246,7 +255,7 @@ public class NotificationTransaction extends Transaction implements Runnable {
                 status);
 
         // Pack M-NotifyResp.ind and send it
-        if(MmsConfig.getNotifyWapMMSC()) {
+        if (MmsConfig.getNotifyWapMMSC()) {
             sendPdu(new PduComposer(mContext, notifyRespInd).make(), mContentLocation);
         } else {
             sendPdu(new PduComposer(mContext, notifyRespInd).make());

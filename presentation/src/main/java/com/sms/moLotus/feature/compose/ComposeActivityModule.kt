@@ -2,7 +2,11 @@ package com.sms.moLotus.feature.compose
 
 import android.content.ContentResolver
 import android.content.Intent
+import android.graphics.Typeface
 import android.net.Uri
+import android.text.Spannable
+import android.text.SpannableStringBuilder
+import android.text.style.StyleSpan
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.google.android.mms.ContentType
@@ -50,14 +54,39 @@ class ComposeActivityModule {
         if (subject != "") {
             subject += "\n"
         }
+        val sb = SpannableStringBuilder(subject)
+        sb.setSpan(
+            StyleSpan(Typeface.BOLD),
+            0,
+            subject.length,
+            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
 
-        return subject + (activity.intent.extras?.getString(Intent.EXTRA_TEXT)
+        return sb.append(activity.intent.extras?.getString(Intent.EXTRA_TEXT)
             ?: activity.intent.extras?.getString("sms_body")
             ?: activity.intent?.decodedDataString()
                 ?.substringAfter('?') // Query string
                 ?.takeIf { it.startsWith("body") }
                 ?.substringAfter('=')
-            ?: "")
+            ?: "").toString()
+    }
+
+    @Provides
+    @Named("subject")
+    fun provideSubjectText(activity: ComposeActivity): String {
+        var subject = activity.intent.getStringExtra(Intent.EXTRA_SUBJECT) ?: "";
+        if (subject != "") {
+            subject += "\n"
+        }
+        val sb = SpannableStringBuilder(subject)
+        sb.setSpan(
+            StyleSpan(Typeface.BOLD),
+            0,
+            subject.length,
+            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+
+        return sb.toString()
     }
 
     @Provides
@@ -68,10 +97,10 @@ class ComposeActivityModule {
         activity.intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM)?.run(uris::addAll)
 
         return Attachments(uris.mapNotNull { uri ->
-            Log.e("==========","uris:: $uri")
+            Log.e("==========", "uris:: $uri")
 
             val mimeType = activity.contentResolver.getType(uri)
-            Log.e("==========","mimeType:: $mimeType")
+            Log.e("==========", "mimeType:: $mimeType")
 
             when {
                 ContentType.isImageType(mimeType) -> {
@@ -82,7 +111,10 @@ class ComposeActivityModule {
                     Attachment.Image(uri)
                 }
 
-                ContentType.AUDIO_AAC.equals(mimeType, true)  || ContentType.AUDIO_MP3.equals(mimeType, true) -> {
+                ContentType.AUDIO_AAC.equals(mimeType, true) || ContentType.AUDIO_MP3.equals(
+                    mimeType,
+                    true
+                ) -> {
                     Attachment.Image(uri)
                 }
 

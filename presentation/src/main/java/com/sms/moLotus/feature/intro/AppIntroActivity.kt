@@ -1,7 +1,10 @@
 package com.sms.moLotus.feature.intro
 
 import android.content.Intent
+import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.ads.identifier.AdvertisingIdClient
@@ -9,9 +12,6 @@ import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
 import com.sms.moLotus.feature.main.MainActivity
 import kotlinx.android.synthetic.main.activity_app_intro.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import timber.log.Timber
 
 class AppIntroActivity : AppCompatActivity() {
@@ -22,9 +22,11 @@ class AppIntroActivity : AppCompatActivity() {
             WindowManager.LayoutParams.FLAG_FULLSCREEN,
             WindowManager.LayoutParams.FLAG_FULLSCREEN
         )
-        GlobalScope.launch(Dispatchers.IO){
+        /*getInstalledAppsList()
+
+        GlobalScope.launch(Dispatchers.IO) {
             getAppId()
-        }
+        }*/
         llGetStarted?.setOnClickListener {
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
@@ -32,6 +34,23 @@ class AppIntroActivity : AppCompatActivity() {
             finish()
         }
     }
+
+    private fun getInstalledAppsList() {
+        val pm: PackageManager = packageManager
+
+        val packages: List<ApplicationInfo> =
+            pm.getInstalledApplications(PackageManager.GET_META_DATA)
+
+        val appInstalled : ArrayList<String> = ArrayList()
+
+        for (packageInfo in packages) {
+            appInstalled.add(packageInfo.loadLabel(packageManager).toString())
+        }
+
+        Log.e("======","Package name::::${appInstalled.size}")
+
+    }
+
 
     private fun getAppId() {
         var adInfo: AdvertisingIdClient.Info? = null

@@ -22,6 +22,7 @@ import android.provider.Telephony.Threads;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.google.android.mms.ContentType;
 import com.google.android.mms.InvalidHeaderValueException;
@@ -1548,6 +1549,7 @@ public class PduPersister {
     public static byte[] getBytes(String data) {
 //        return data.getBytes(StandardCharsets.ISO_8859_1);
         try {
+            Log.e("=======","bytes:::"+data.getBytes(CharacterSets.MIMENAME_ISO_8859_1));
             return data.getBytes(CharacterSets.MIMENAME_ISO_8859_1);
         } catch (UnsupportedEncodingException e) {
             // Impossible to reach here!
