@@ -75,6 +75,7 @@ class VerifyOtpActivity : AppCompatActivity() {
                 val intent = Intent(this, APNDetailsActivity::class.java)
                 intent.putExtra("PhoneNumber", phoneNo)
                 startActivity(intent)
+                finish()
             } else {
                 Toast.makeText(
                     this,

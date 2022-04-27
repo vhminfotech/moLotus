@@ -385,7 +385,13 @@ class ComposeViewModel @Inject constructor(
                             .mapNotNull { it.getUri() }
                     Timber.e("message.subject ::: ${message.subject}")
 
-                    navigator.showCompose("<Subject: Fwd: ${message.subject}>",message.getText(), images)
+                    var sub: String = if (!message.subject.isEmpty()){
+                        "<Subject: Fwd: ${message.subject}>"
+                    }else{
+                        ""
+                    }
+
+                    navigator.showCompose(sub,message.getText(), images)
                 }
             }
             .autoDisposable(view.scope())
@@ -960,7 +966,7 @@ class ComposeViewModel @Inject constructor(
             Preferences.SEND_DELAY_LONG -> 10000
             else -> 0
         }
-        val sendAsGroup = !state.editingMode /*|| state.sendAsGroup*/
+        val sendAsGroup = !state.editingMode || !state.sendAsGroup
 
         when {
             // Scheduling a message
@@ -1013,6 +1019,8 @@ class ComposeViewModel @Inject constructor(
                         conversationRepo
                             .getConversation(threadId)?.recipients?.firstOrNull()?.address ?: addr
                     )
+                    Log.e("===========","address:: $addr")
+                    Log.e("===========","addr:: $addr")
                     sendMessage.execute(
                         SendMessage
                             .Params(subId, threadId, address, body, attachments, delay)

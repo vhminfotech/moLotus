@@ -70,7 +70,6 @@ import io.reactivex.subjects.Subject
 import kotlinx.android.synthetic.main.backup_list_dialog.*
 import kotlinx.android.synthetic.main.compose_activity.*
 import kotlinx.coroutines.*
-import timber.log.Timber
 import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -582,11 +581,6 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
     }
 
     override fun render(state: ComposeState) {
-        Timber.e("render 0:: ${state.messages?.second?.get(0)?.type}")
-        Timber.e("render 1:: ${state.messages?.second?.get(1)?.type}")
-        Timber.e("render second:: ${state.messages?.second?.asJSON()}")
-        Timber.e("render first:: ${state.messages?.first}")
-
         if (state.hasError) {
             finish()
             return
@@ -649,7 +643,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         sendAsGroup?.visibility = View.GONE
         sendAsGroupSwitch.isChecked = false/*state.sendAsGroup*/
 
-        messageList.setVisible(!state.editingMode || state.sendAsGroup || state.selectedChips.size == 1)
+        messageList.setVisible(!state.editingMode || !state.sendAsGroup || state.selectedChips.size == 1)
         messageAdapter.data = state.messages
         messageAdapter.highlight = state.searchSelectionId
 

@@ -54,6 +54,7 @@ class SendMessage @Inject constructor(
             messageRepo.markDelivered(threadId)
             Log.e("=========","delivered:: ${messageRepo.markDelivered(threadId)}")
         }
+        .doOnNext { syncManager.syncMessages() }
         .doOnNext { threadId -> conversationRepo.markUnarchived(threadId) }
         .flatMap { updateBadge.buildObservable(Unit) } // Update the widget
 
