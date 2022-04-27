@@ -362,12 +362,7 @@ import com.sms.moLotus.common.base.QkViewHolder
 import com.sms.moLotus.common.util.Colors
 import com.sms.moLotus.common.util.DateFormatter
 import com.sms.moLotus.common.util.TextViewStyler
-import com.sms.moLotus.common.util.extensions.dpToPx
-import com.sms.moLotus.common.util.extensions.forwardTouches
-import com.sms.moLotus.common.util.extensions.setBackgroundTint
-import com.sms.moLotus.common.util.extensions.setPadding
-import com.sms.moLotus.common.util.extensions.setTint
-import com.sms.moLotus.common.util.extensions.setVisible
+import com.sms.moLotus.common.util.extensions.*
 import com.sms.moLotus.compat.SubscriptionManagerCompat
 import com.sms.moLotus.extensions.isSmil
 import com.sms.moLotus.extensions.isText
@@ -391,6 +386,7 @@ import kotlinx.android.synthetic.main.message_list_item_in.status
 import kotlinx.android.synthetic.main.message_list_item_in.timestamp
 import kotlinx.android.synthetic.main.message_list_item_in.view.*
 import kotlinx.android.synthetic.main.message_list_item_out.*
+import timber.log.Timber
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -524,11 +520,12 @@ class MessagesAdapter @Inject constructor(
                     Preferences.SEND_DELAY_LONG -> 10000
                     else -> 0
                 }
-                val progress = (1 - (message.date - System.currentTimeMillis()) / delay.toFloat()) * 100
+                val progress =
+                    (1 - (message.date - System.currentTimeMillis()) / delay.toFloat()) * 100
 
                 ObjectAnimator.ofInt(cancel, "progress", progress.toInt(), 100)
-                        .setDuration(message.date - System.currentTimeMillis())
-                        .start()
+                    .setDuration(message.date - System.currentTimeMillis())
+                    .start()
             }
         }
 
@@ -536,21 +533,28 @@ class MessagesAdapter @Inject constructor(
         bindStatus(holder, message, next)
 
         // Bind the timestamp
-        val timeSincePrevious = TimeUnit.MILLISECONDS.toMinutes(message.date - (previous?.date ?: 0))
+        val timeSincePrevious =
+            TimeUnit.MILLISECONDS.toMinutes(message.date - (previous?.date ?: 0))
         val subscription = subs.find { sub -> sub.subscriptionId == message.subId }
 
         holder.timestamp.text = dateFormatter.getMessageTimestamp(message.date)
         holder.simIndex.text = subscription?.simSlotIndex?.plus(1)?.toString()
 
-        holder.timestamp.setVisible(timeSincePrevious >= BubbleUtils.TIMESTAMP_THRESHOLD
-                || message.subId != previous?.subId && subscription != null)
+        holder.timestamp.setVisible(
+            timeSincePrevious >= BubbleUtils.TIMESTAMP_THRESHOLD
+                    || message.subId != previous?.subId && subscription != null
+        )
 
         holder.sim.setVisible(message.subId != previous?.subId && subscription != null && subs.size > 1)
         holder.simIndex.setVisible(message.subId != previous?.subId && subscription != null && subs.size > 1)
 
         // Bind the grouping
         val media = message.parts.filter { !it.isSmil() && !it.isText() }
-        holder.containerView.setPadding(bottom = if (canGroup(message, next)) 0 else 16.dpToPx(context))
+        holder.containerView.setPadding(
+            bottom = if (canGroup(message, next)) 0 else 16.dpToPx(
+                context
+            )
+        )
 
         // Bind the avatar and bubble colour
         if (!message.isMe()) {
@@ -562,40 +566,73 @@ class MessagesAdapter @Inject constructor(
         }
 
         // Bind the body text
-        val messageText = when (message.isSms()) {
-            true -> message.body
-            false -> {
-                val subject = message.getCleansedSubject()
-                val body = message.parts
-                        .filter { part -> part.isText() }
-                        .mapNotNull { part -> part.text }
-                        .filter { text -> text.isNotBlank() }
-                        .joinToString("\n")
+        val messageText = if (message.isSms()) {
+            message.body
+        } else {
+            val subject = message.getCleansedSubject()
+            Timber.e("subject ::: $subject")
 
-                when {
-                    subject.isNotBlank() -> {
-                        val spannable = SpannableString(if (body.isNotBlank()) "$subject\n$body" else subject)
-                        spannable.setSpan(StyleSpan(Typeface.BOLD), 0, subject.length,
-                                Spannable.SPAN_INCLUSIVE_EXCLUSIVE)
-                        spannable
-                    }
-                    else -> body
+            val body = message.parts
+                .filter { part -> part.isText() }
+                .mapNotNull { part -> part.text }
+                .filter { text -> text.isNotBlank() }
+                .joinToString("\n")
+
+            when {
+                subject.isNotBlank() -> {
+                    val spannable =
+                        SpannableString(if (body.isNotBlank()) "$subject\n$body" else subject)
+                    spannable.setSpan(
+                        StyleSpan(Typeface.BOLD), 0, subject.length,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                    spannable
                 }
+                else -> body
             }
         }
+
+        /*when (message.isSms()) {
+        true -> message.body
+        false -> {
+            val subject = message.getCleansedSubject()
+            Timber.e("subject ::: $subject")
+
+            val body = message.parts
+                    .filter { part -> part.isText() }
+                    .mapNotNull { part -> part.text }
+                    .filter { text -> text.isNotBlank() }
+                    .joinToString("\n")
+
+            when {
+                subject.isNotBlank() -> {
+                    val spannable = SpannableString(if (body.isNotBlank()) "$subject\n$body" else subject)
+                    spannable.setSpan(StyleSpan(Typeface.BOLD), 0, subject.length,
+                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    spannable
+                }
+                else -> body
+            }
+        }
+    }*/
         val emojiOnly = messageText.isNotBlank() && messageText.matches(EMOJI_REGEX)
-        textViewStyler.setTextSize(holder.body, when (emojiOnly) {
-            true -> TextViewStyler.SIZE_EMOJI
-            false -> TextViewStyler.SIZE_PRIMARY
-        })
+        textViewStyler.setTextSize(
+            holder.body, when (emojiOnly) {
+                true -> TextViewStyler.SIZE_EMOJI
+                false -> TextViewStyler.SIZE_PRIMARY
+            }
+        )
 
         holder.body.text = messageText
         holder.body.setVisible(message.isSms() || messageText.isNotBlank())
-        holder.body.setBackgroundResource(getBubble(
+        holder.body.setBackgroundResource(
+            getBubble(
                 emojiOnly = emojiOnly,
                 canGroupWithPrevious = canGroup(message, previous) || media.isNotEmpty(),
                 canGroupWithNext = canGroup(message, next),
-                isMe = message.isMe()))
+                isMe = message.isMe()
+            )
+        )
 
         // Bind the attachments
         val partsAdapter = holder.attachments.adapter as PartsAdapter
@@ -608,27 +645,37 @@ class MessagesAdapter @Inject constructor(
 
         holder.status.text = when {
 //            message.isSending() -> context.getString(R.string.message_status_sending)
-            message.isDelivered() -> context.getString(R.string.message_status_delivered,
-                    dateFormatter.getTimestamp(message.dateSent))
+            message.isDelivered() -> context.getString(
+                R.string.message_status_delivered,
+                dateFormatter.getTimestamp(message.dateSent)
+            )
             message.isFailedMessage() -> context.getString(R.string.message_status_failed)
 
             // Incoming group message
             !message.isMe() && conversation?.recipients?.size ?: 0 > 1 -> {
-                "${contactCache[message.address]?.getDisplayName()} • ${dateFormatter.getTimestamp(message.date)}"
+                "${contactCache[message.address]?.getDisplayName()} • ${
+                    dateFormatter.getTimestamp(
+                        message.date
+                    )
+                }"
             }
 
             else -> dateFormatter.getTimestamp(message.date)
         }
 
-        holder.status.setVisible(when {
-            expanded[message.id] == true -> true
-            message.isSending() -> true
-            message.isFailedMessage() -> true
-            expanded[message.id] == false -> false
-            conversation?.recipients?.size ?: 0 > 1 && !message.isMe() && next?.compareSender(message) != true -> true
-            message.isDelivered() && next?.isDelivered() != true && age <= BubbleUtils.TIMESTAMP_THRESHOLD -> true
-            else -> false
-        })
+        holder.status.setVisible(
+            when {
+                expanded[message.id] == true -> true
+                message.isSending() -> true
+                message.isFailedMessage() -> true
+                expanded[message.id] == false -> false
+                conversation?.recipients?.size ?: 0 > 1 && !message.isMe() && next?.compareSender(
+                    message
+                ) != true -> true
+                message.isDelivered() && next?.isDelivered() != true && age <= BubbleUtils.TIMESTAMP_THRESHOLD -> true
+                else -> false
+            }
+        )
     }
 
     override fun getItemViewType(position: Int): Int {
@@ -644,7 +691,14 @@ class MessagesAdapter @Inject constructor(
 
         override fun get(key: String): Recipient? {
             if (super.get(key)?.isValid != true) {
-                set(key, conversation?.recipients?.firstOrNull { phoneNumberUtils.compare(it.address, key) })
+                set(
+                    key,
+                    conversation?.recipients?.firstOrNull {
+                        phoneNumberUtils.compare(
+                            it.address,
+                            key
+                        )
+                    })
             }
 
             return super.get(key)?.takeIf { it.isValid }

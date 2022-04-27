@@ -35,6 +35,7 @@ import com.sms.moLotus.feature.retrofit.RetrofitService
 import kotlinx.android.synthetic.main.intro_activity_main.*
 import javax.inject.Inject
 
+
 class IntroActivity : AppCompatActivity() {
     @Inject
     lateinit var navigator: Navigator
@@ -153,12 +154,10 @@ class IntroActivity : AppCompatActivity() {
                 MainViewModel::class.java
             )
 
-
 //        getOperators()
 
-
         api = ApiHelper(this)
-        // get reference to all views
+        //get reference to all views
         //val inputPhoneNumber = findViewById<EditText>(R.id.phone_number)
 
         val adapter: ArrayAdapter<String> = object : ArrayAdapter<String>(

@@ -22,7 +22,7 @@
 
     <androidx.appcompat.widget.AppCompatImageView
         android:layout_width="match_parent"
-        android:layout_height="80dp"
+        android:layout_height="40dp"
         android:layout_gravity="center"
         android:src="@drawable/mgram_splash_icon" />
 
@@ -32,7 +32,7 @@
         android:gravity="center"
         android:text="@string/app_tagline"
         android:textColor="#682494"
-        android:textSize="26sp"
+        android:textSize="27sp"
         android:textStyle="bold" />
 
     <com.sms.moLotus.common.widget.QkTextView

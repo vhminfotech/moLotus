@@ -136,7 +136,6 @@ open class Message : RealmObject() {
      */
     fun getCleansedSubject(): String {
         val uselessSubjects = listOf("no subject", "NoSubject", "<not present>")
-
         return if (uselessSubjects.contains(subject)) "" else subject
     }
 

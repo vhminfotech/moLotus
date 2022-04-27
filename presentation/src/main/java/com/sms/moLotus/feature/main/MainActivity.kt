@@ -9,10 +9,12 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
+import android.os.Build
 import android.os.Bundle
 import android.view.*
 import android.widget.PopupWindow
 import android.widget.RelativeLayout
+import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
@@ -402,7 +404,9 @@ class MainActivity : QkThemedActivity(), MainView {
         navigator.showDefaultSmsDialog(this)
     }
 
+    @RequiresApi(Build.VERSION_CODES.R)
     override fun requestPermissions() {
+
         ActivityCompat.requestPermissions(
             this, arrayOf(
                 Manifest.permission.READ_SMS,

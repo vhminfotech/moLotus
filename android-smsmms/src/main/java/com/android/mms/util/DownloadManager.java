@@ -37,7 +37,7 @@ public class DownloadManager {
     private final Context mContext;
     private final Handler mHandler;
     private final SharedPreferences mPreferences;
-    private boolean mAutoDownload;
+    private final boolean mAutoDownload;
 
     private static DownloadManager sInstance;
 
@@ -46,7 +46,9 @@ public class DownloadManager {
         mHandler = new Handler(Looper.getMainLooper());
         mPreferences = PreferenceManager.getDefaultSharedPreferences(context);
 
-        mAutoDownload = mPreferences.getBoolean("auto_download_mms", true);/*getAutoDownloadState(context, mPreferences);*/
+        mAutoDownload = mPreferences.getBoolean("auto_download_mms", false);
+        Timber.v("mAutoDownload --> " + mAutoDownload);
+        /*getAutoDownloadState(context, mPreferences);*/
         if (LOCAL_LOGV) {
             Timber.v("mAutoDownload --------> " + mAutoDownload);
         }

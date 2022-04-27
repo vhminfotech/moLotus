@@ -59,6 +59,7 @@ class ComposeViewModel @Inject constructor(
     @Named("threadId") private val threadId: Long,
     @Named("addresses") private val addresses: List<String>,
     @Named("text") private val sharedText: String,
+    @Named("subject") private val subject: String,
     @Named("attachments") private val sharedAttachments: Attachments,
     private val contactRepo: ContactRepository,
     private val context: Context,
@@ -239,6 +240,11 @@ class ComposeViewModel @Inject constructor(
         super.bindView(view)
 
         val sharing = sharedText.isNotEmpty() || sharedAttachments.isNotEmpty()
+
+
+        Timber.e("subject:: $subject")
+
+
         if (shouldShowContacts) {
             shouldShowContacts = false
             view.showContacts(sharing, selectedChips.blockingFirst())
@@ -377,7 +383,9 @@ class ComposeViewModel @Inject constructor(
                     val images =
                         message.parts.filter { it.isImage() || it.isAudio() || it.isVideo() || it.isVCard() || it.isDoc() || it.isWordDoc() || it.isXLDoc() }
                             .mapNotNull { it.getUri() }
-                    navigator.showCompose(message.getText(), images)
+                    Timber.e("message.subject ::: ${message.subject}")
+
+                    navigator.showCompose("<Subject: Fwd: ${message.subject}>",message.getText(), images)
                 }
             }
             .autoDisposable(view.scope())

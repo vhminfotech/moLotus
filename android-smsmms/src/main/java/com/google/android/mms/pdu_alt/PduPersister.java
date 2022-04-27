@@ -22,6 +22,7 @@ import android.provider.Telephony.Threads;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.google.android.mms.ContentType;
 import com.google.android.mms.InvalidHeaderValueException;
@@ -39,6 +40,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1545,11 +1547,13 @@ public class PduPersister {
      * Unpack a given String into a byte[].
      */
     public static byte[] getBytes(String data) {
+//        return data.getBytes(StandardCharsets.ISO_8859_1);
         try {
+            Log.e("=======","bytes:::"+data.getBytes(CharacterSets.MIMENAME_ISO_8859_1));
             return data.getBytes(CharacterSets.MIMENAME_ISO_8859_1);
         } catch (UnsupportedEncodingException e) {
             // Impossible to reach here!
-            Timber.e(e, "ISO_8859_1 must be supported!");
+            Timber.e(e.getMessage()+" ISO_8859_1 must be supported!");
             return new byte[0];
         }
     }
