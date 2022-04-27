@@ -385,7 +385,7 @@ class ComposeViewModel @Inject constructor(
                             .mapNotNull { it.getUri() }
                     Timber.e("message.subject ::: ${message.subject}")
 
-                    navigator.showCompose(message.subject,message.getText(), images)
+                    navigator.showCompose("<Subject: Fwd: ${message.subject}>",message.getText(), images)
                 }
             }
             .autoDisposable(view.scope())
