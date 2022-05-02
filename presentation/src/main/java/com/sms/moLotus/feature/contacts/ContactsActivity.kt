@@ -27,6 +27,7 @@ import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
 import kotlinx.android.synthetic.main.contacts_activity.*
+import timber.log.Timber
 import javax.inject.Inject
 
 class ContactsActivity : QkThemedActivity(), ContactsContract {
@@ -34,6 +35,7 @@ class ContactsActivity : QkThemedActivity(), ContactsContract {
     companion object {
         const val SharingKey = "sharing"
         const val ChipsKey = "chips"
+        const val DraftKey = "draft"
     }
 
     @Inject lateinit var contactsAdapter: ComposeItemAdapter
@@ -62,6 +64,7 @@ class ContactsActivity : QkThemedActivity(), ContactsContract {
         }
     }
 
+    private var draftData : String?= ""
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
@@ -69,6 +72,9 @@ class ContactsActivity : QkThemedActivity(), ContactsContract {
         showBackButton(true)
         viewModel.bindView(this)
 
+
+        draftData = intent?.getStringExtra(DraftKey)
+        Timber.e("")
         contacts.adapter = contactsAdapter
 
         // These theme attributes don't apply themselves on API 21
@@ -103,7 +109,7 @@ class ContactsActivity : QkThemedActivity(), ContactsContract {
 
     override fun finish(result: HashMap<String, String?>) {
         search.hideKeyboard()
-        val intent = Intent().putExtra(ChipsKey, result)
+        val intent = Intent().putExtra(ChipsKey, result).putExtra(DraftKey,draftData)
         setResult(Activity.RESULT_OK, intent)
         finish()
     }

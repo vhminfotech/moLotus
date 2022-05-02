@@ -24,6 +24,7 @@ import com.sms.moLotus.common.util.extensions.makeToast
 import com.sms.moLotus.compat.SubscriptionManagerCompat
 import com.sms.moLotus.compat.TelephonyCompat
 import com.sms.moLotus.extensions.*
+import com.sms.moLotus.feature.Constants
 import com.sms.moLotus.interactor.*
 import com.sms.moLotus.manager.ActiveConversationManager
 import com.sms.moLotus.manager.PermissionManager
@@ -86,8 +87,12 @@ class ComposeViewModel @Inject constructor(
     )
 ) {
 
+    var draftData: String? = ""
+    var addNewContact: Boolean? = false
+
     private val attachments: Subject<List<Attachment>> =
         BehaviorSubject.createDefault(sharedAttachments)
+
     private val chipsReducer: Subject<(List<Recipient>) -> List<Recipient>> =
         PublishSubject.create()
     private val conversation: Subject<Conversation> = BehaviorSubject.create()
@@ -193,6 +198,7 @@ class ComposeViewModel @Inject constructor(
         disposables += attachments
             .subscribe { attachments -> newState { copy(attachments = attachments) } }
 
+
         /*disposables += conversation
             .map { conversation -> conversation.id }
             .distinctUntilChanged()
@@ -291,7 +297,11 @@ class ComposeViewModel @Inject constructor(
         view.optionsItemIntent
             .filter { it == R.id.add }
             .withLatestFrom(selectedChips) { _, chips ->
-                view.showContacts(sharing, chips)
+                ComposeActivity.selectContact = true
+                view.showContacts(
+                    sharing, chips, draftData.toString()
+                    /*PreferenceHelper.getStringPreference(context, Constants.DRAFT_SAVED).toString()*/
+                )
             }
             .autoDisposable(view.scope())
             .subscribe()
@@ -385,13 +395,13 @@ class ComposeViewModel @Inject constructor(
                             .mapNotNull { it.getUri() }
                     Timber.e("message.subject ::: ${message.subject}")
 
-                    var sub: String = if (!message.subject.isEmpty()){
+                    var sub: String = if (!message.subject.isEmpty()) {
                         "<Subject: Fwd: ${message.subject}>"
-                    }else{
+                    } else {
                         ""
                     }
 
-                    navigator.showCompose(sub,message.getText(), images)
+                    navigator.showCompose(sub, message.getText(), images)
                 }
             }
             .autoDisposable(view.scope())
@@ -704,10 +714,26 @@ class ComposeViewModel @Inject constructor(
                 // existing draft
                 //
                 // TODO: Show dialog warning user about overwriting draft
-                if (sharedText.isNotBlank()) {
-                    view.setDraft(sharedText)
-                } else {
-                    view.setDraft(draft)
+
+                Timber.e("sharedText::: $sharedText")
+                Timber.e("draft::: $draft")
+                Timber.e("sharing::: $sharing")
+                PreferenceHelper.deletePreference(context, Constants.DRAFT_SAVED)
+                PreferenceHelper.setStringPreference(context, Constants.DRAFT_SAVED, draft)
+
+                //draftData = PreferenceHelper.getStringPreference(context, Constants.DRAFT_SAVED)
+
+                //Timber.e("draftData::con: $draftData")
+
+                when {
+                    sharedText.isNotBlank() -> {
+                        view.setDraft(sharedText)
+                    }
+
+                    else -> {
+                        ComposeActivity.selectContact = false
+                        view.setDraft(draft)
+                    }
                 }
             }
 
@@ -1019,8 +1045,8 @@ class ComposeViewModel @Inject constructor(
                         conversationRepo
                             .getConversation(threadId)?.recipients?.firstOrNull()?.address ?: addr
                     )
-                    Log.e("===========","address:: $addr")
-                    Log.e("===========","addr:: $addr")
+                    Log.e("===========", "address:: $addr")
+                    Log.e("===========", "addr:: $addr")
                     sendMessage.execute(
                         SendMessage
                             .Params(subId, threadId, address, body, attachments, delay)

@@ -10,11 +10,12 @@
     tools:context="com.sms.moLotus.feature.compose.ComposeActivity">
 
     <ImageView
-        android:alpha="0.1"
         android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0.1"
         android:background="@drawable/bg_chat"
-        android:scaleType="fitXY"
-        android:layout_height="match_parent"/>
+        android:scaleType="fitXY" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/messageList"
         android:layout_width="0dp"
@@ -23,14 +24,15 @@
         android:clipChildren="false"
         android:clipToPadding="false"
         android:paddingTop="8dp"
-        app:layout_constraintBottom_toBottomOf="@id/message"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintBottom_toTopOf="@id/message"
+        app:layout_constraintBottom_toBottomOf="@id/llBottom"
+        app:layout_constraintBottom_toTopOf="@id/llBottom"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/sendAsGroupBackground"
         app:stackFromEnd="true"
         tools:listitem="@layout/message_list_item_in" />
+
 
     <com.sms.moLotus.common.widget.QkTextView
         android:id="@+id/messagesEmpty"
@@ -117,7 +119,7 @@
         android:id="@+id/composeBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:constraint_referenced_ids="messageBackground,attachments,attach,message,counter,send" />
+        app:constraint_referenced_ids="messageBackground,attachments,counter,llBottom" />
 
     <View
         android:id="@+id/composeDivider"
@@ -126,14 +128,8 @@
         android:layout_marginBottom="12dp"
         android:background="?android:attr/divider"
         android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@id/messageBackground"
+        app:layout_constraintBottom_toTopOf="@id/llBottom"
         app:layout_goneMarginBottom="12dp" />
-
-
-
-
-
-
 
 
     <androidx.constraintlayout.widget.Group
@@ -223,8 +219,8 @@
         android:background="@drawable/rounded_rectangle_22dp"
         android:backgroundTint="?attr/bubbleColor"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/send"
-        app:layout_constraintStart_toEndOf="@id/attach"
+        app:layout_constraintEnd_toStartOf="@id/llBottom"
+        app:layout_constraintStart_toEndOf="@id/llBottom"
         app:layout_constraintTop_toTopOf="@id/scheduledCancel" />
 
     <androidx.constraintlayout.widget.Group
@@ -245,7 +241,7 @@
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@id/scheduledTime"
         app:layout_constraintEnd_toStartOf="@id/scheduledCancel"
-        app:layout_constraintStart_toStartOf="@id/messageBackground"
+        app:layout_constraintStart_toStartOf="@id/llBottom"
         app:layout_constraintTop_toTopOf="@id/scheduledCancel"
         app:layout_constraintVertical_chainStyle="packed"
         app:textSize="secondary" />
@@ -259,7 +255,7 @@
         android:textColor="?android:attr/textColorTertiary"
         app:layout_constraintBottom_toBottomOf="@id/scheduledCancel"
         app:layout_constraintEnd_toStartOf="@id/scheduledCancel"
-        app:layout_constraintStart_toStartOf="@id/messageBackground"
+        app:layout_constraintStart_toStartOf="@id/llBottom"
         app:layout_constraintTop_toBottomOf="@id/scheduledTitle"
         app:textSize="secondary"
         tools:text="Decemeber 23rd at 12:00AM" />
@@ -271,7 +267,7 @@
         android:padding="10dp"
         android:src="@drawable/ic_cancel_black_24dp"
         app:layout_constraintBottom_toTopOf="@id/scheduledSeparator"
-        app:layout_constraintEnd_toEndOf="@id/messageBackground"
+        app:layout_constraintEnd_toEndOf="@id/llBottom"
         app:tint="?android:attr/textColorSecondary" />
 
     <View
@@ -280,72 +276,25 @@
         android:layout_height="1dp"
         android:background="?android:attr/divider"
         app:layout_constraintBottom_toTopOf="@id/attachments"
-        app:layout_constraintEnd_toEndOf="@id/messageBackground"
-        app:layout_constraintStart_toStartOf="@id/messageBackground" />
+
+        app:layout_constraintStart_toStartOf="@id/llBottom" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/attachments"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:clipChildren="false"
+        android:background="@color/white"
         android:clipToPadding="false"
         android:orientation="horizontal"
         android:paddingStart="8dp"
         android:paddingEnd="8dp"
+        android:layout_marginStart="55dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintBottom_toTopOf="@id/message"
-        app:layout_constraintEnd_toEndOf="@id/messageBackground"
-        app:layout_constraintStart_toStartOf="@id/messageBackground"
+        app:layout_constraintBottom_toTopOf="@id/llBottom"
+        app:layout_constraintStart_toStartOf="@id/llBottom"
         tools:listitem="@layout/attachment_image_list_item" />
 
-    <com.sms.moLotus.common.widget.QkEditText
-        android:id="@+id/message"
-        style="@style/TextPrimary"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:background="@null"
-        android:gravity="center_vertical"
-        android:hint="@string/compose_hint"
-        android:inputType="textLongMessage|textCapSentences|textMultiLine"
-        android:maxLines="6"
-        android:minHeight="44dp"
-        android:paddingStart="16dp"
-        android:paddingTop="12dp"
-        android:paddingEnd="16dp"
-        android:paddingBottom="12dp"
-        android:textColorHint="?android:attr/textColorTertiary"
-        app:layout_constraintBottom_toBottomOf="@id/messageBackground"
-        app:layout_constraintEnd_toStartOf="@id/sim"
-        app:layout_constraintStart_toStartOf="@id/messageBackground" />
-
-    <ImageView
-        android:id="@+id/sim"
-        android:layout_width="44dp"
-        android:layout_height="44dp"
-        android:background="?android:attr/selectableItemBackgroundBorderless"
-        android:contentDescription="@string/compose_sim_cd"
-        android:padding="8dp"
-        android:src="@drawable/ic_sim_card_black_24dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@id/messageBackground"
-        app:layout_constraintEnd_toEndOf="@id/messageBackground"
-        app:tint="?android:attr/textColorSecondary" />
-
-    <com.sms.moLotus.common.widget.QkTextView
-        android:id="@+id/simIndex"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:gravity="center"
-        android:textColor="?android:attr/textColorPrimaryInverse"
-        android:textSize="14dp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="@id/sim"
-        app:layout_constraintEnd_toEndOf="@id/sim"
-        app:layout_constraintStart_toStartOf="@id/sim"
-        app:layout_constraintTop_toTopOf="@id/sim"
-        tools:ignore="SpUsage"
-        tools:text="1" />
 
     <com.sms.moLotus.common.widget.QkTextView
         android:id="@+id/counter"
@@ -354,62 +303,12 @@
         android:layout_marginBottom="4dp"
         android:gravity="center"
         android:textColor="?android:attr/textColorSecondary"
-        app:layout_constraintBottom_toTopOf="@id/send"
-        app:layout_constraintEnd_toEndOf="@id/send"
-        app:layout_constraintStart_toStartOf="@id/send"
+        app:layout_constraintBottom_toTopOf="@id/llBottom"
+
+        app:layout_constraintStart_toStartOf="@id/llBottom"
         app:textSize="tertiary"
         tools:text="108 / 2" />
 
-    <ImageView
-        android:id="@+id/send"
-        android:layout_width="44dp"
-        android:layout_height="44dp"
-        android:layout_marginEnd="8dp"
-        android:background="?android:attr/selectableItemBackgroundBorderless"
-        android:contentDescription="@string/compose_send_cd"
-        android:padding="10dp"
-        android:src="@drawable/ic_send_black_24dp"
-        app:layout_constraintBottom_toBottomOf="@id/messageBackground"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:tint="?android:textColorSecondary" />
-
-    <RelativeLayout
-        android:id="@+id/parent_layout"
-        android:layout_width="wrap_content"
-        android:layout_height="50dp"
-        android:layout_marginEnd="8dp"
-        android:elevation="7dp"
-        app:layout_constraintBottom_toBottomOf="@id/messageBackground"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <com.devlomi.record_view.RecordView
-            android:id="@+id/record_view"
-            android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            android:visibility="gone"
-            android:layout_marginStart="10dp"
-            android:layout_centerInParent="true"
-            android:layout_toStartOf="@id/record_button"
-            android:background="@drawable/rounded_rectangle_22dp"
-            android:backgroundTint="?attr/bubbleColor"
-            app:counter_time_color="#ff0000"
-            app:slide_to_cancel_arrow="@drawable/recv_ic_arrow"
-            app:slide_to_cancel_arrow_color="#000000"
-            app:slide_to_cancel_text="Slide To Cancel" />
-
-        <com.devlomi.record_view.RecordButton
-            android:id="@+id/record_button"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentBottom="true"
-            android:background="@drawable/recv_bg_mic"
-            android:backgroundTint="@color/tools_theme"
-            android:scaleType="centerInside"
-            app:mic_icon="@drawable/recv_ic_mic_white" />
-
-
-    </RelativeLayout>
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
@@ -489,6 +388,8 @@
         android:id="@+id/contact"
         android:layout_width="40dp"
         android:layout_height="40dp"
+        android:layout_marginStart="12dp"
+
         android:layout_marginBottom="12dp"
         android:background="@drawable/circle"
         android:backgroundTint="?attr/bubbleColor"
@@ -498,8 +399,8 @@
         android:src="@drawable/ic_person_black_24dp"
         android:visibility="visible"
         app:layout_constraintBottom_toTopOf="@id/gallery"
-        app:layout_constraintEnd_toEndOf="@id/attach"
-        app:layout_constraintStart_toStartOf="@id/attach"
+
+        app:layout_constraintStart_toStartOf="@id/llBottom"
         app:tint="?android:attr/textColorSecondary" />
 
     <com.sms.moLotus.common.widget.QkTextView
@@ -557,6 +458,8 @@
         android:id="@+id/gallery"
         android:layout_width="40dp"
         android:layout_height="40dp"
+        android:layout_marginStart="12dp"
+
         android:layout_marginBottom="12dp"
         android:background="@drawable/circle"
         android:backgroundTint="?attr/bubbleColor"
@@ -566,8 +469,8 @@
         android:src="@drawable/ic_insert_photo_black_24dp"
         android:visibility="visible"
         app:layout_constraintBottom_toTopOf="@id/camera"
-        app:layout_constraintEnd_toEndOf="@id/attach"
-        app:layout_constraintStart_toStartOf="@id/attach"
+
+        app:layout_constraintStart_toStartOf="@id/llBottom"
         app:tint="?android:attr/textColorSecondary" />
 
     <com.sms.moLotus.common.widget.QkTextView
@@ -591,17 +494,18 @@
         android:id="@+id/camera"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginStart="12dp"
+
+        android:layout_marginBottom="12dp"
         android:background="@drawable/circle"
         android:backgroundTint="?attr/bubbleColor"
-        android:contentDescription="@string/compose_camera_cd"
+        android:contentDescription="@string/compose_contact_cd"
         android:elevation="4dp"
         android:padding="10dp"
         android:src="@drawable/ic_camera_alt_black_24dp"
         android:visibility="visible"
         app:layout_constraintBottom_toTopOf="@id/video"
-        app:layout_constraintEnd_toEndOf="@id/video"
-        app:layout_constraintStart_toStartOf="@id/video"
+        app:layout_constraintStart_toStartOf="parent"
         app:tint="?android:attr/textColorSecondary" />
 
     <com.sms.moLotus.common.widget.QkTextView
@@ -619,11 +523,12 @@
         android:textColor="?android:attr/textColorPrimary"
         app:layout_constraintBottom_toBottomOf="@id/camera"
         app:layout_constraintStart_toEndOf="@id/gallery"
-        app:layout_constraintTop_toTopOf="@id/camera"
-        />
+        app:layout_constraintTop_toTopOf="@id/camera" />
 
     <ImageView
         android:id="@+id/video"
+        android:layout_marginStart="12dp"
+
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_marginBottom="16dp"
@@ -635,8 +540,7 @@
         android:src="@drawable/ic_baseline_video_library_24"
         android:visibility="visible"
         app:layout_constraintBottom_toTopOf="@id/takeVideo"
-        app:layout_constraintEnd_toEndOf="@id/takeVideo"
-        app:layout_constraintStart_toStartOf="@id/takeVideo"
+        app:layout_constraintStart_toStartOf="parent"
         app:tint="?android:attr/textColorSecondary" />
 
     <com.sms.moLotus.common.widget.QkTextView
@@ -667,11 +571,13 @@
         android:contentDescription="@string/compose_camera_cd"
         android:elevation="4dp"
         android:padding="10dp"
+        android:layout_marginStart="12dp"
+
         android:src="@drawable/ic_baseline_videocam_24"
         android:visibility="visible"
+
         app:layout_constraintBottom_toTopOf="@id/addDocuments"
-        app:layout_constraintEnd_toEndOf="@id/addDocuments"
-        app:layout_constraintStart_toStartOf="@id/addDocuments"
+        app:layout_constraintStart_toStartOf="parent"
         app:tint="?android:attr/textColorSecondary" />
 
     <com.sms.moLotus.common.widget.QkTextView
@@ -695,6 +601,8 @@
         android:id="@+id/addDocuments"
         android:layout_width="40dp"
         android:layout_height="40dp"
+        android:layout_marginStart="12dp"
+
         android:layout_marginBottom="16dp"
         android:background="@drawable/circle"
         android:backgroundTint="?attr/bubbleColor"
@@ -731,6 +639,8 @@
         android:id="@+id/addAudio"
         android:layout_width="40dp"
         android:layout_height="40dp"
+        android:layout_marginStart="12dp"
+
         android:layout_marginBottom="16dp"
         android:background="@drawable/circle"
         android:backgroundTint="?attr/bubbleColor"
@@ -739,9 +649,9 @@
         android:padding="7dp"
         android:src="@drawable/ic_baseline_mic_24"
         android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@id/attach"
-        app:layout_constraintEnd_toEndOf="@id/attach"
-        app:layout_constraintStart_toStartOf="@id/attach"
+        app:layout_constraintBottom_toTopOf="@id/llBottom"
+
+        app:layout_constraintStart_toStartOf="@id/llBottom"
         app:tint="?android:attr/textColorSecondary" />
 
     <com.sms.moLotus.common.widget.QkTextView
@@ -762,19 +672,131 @@
         app:layout_constraintStart_toEndOf="@id/addAudio"
         app:layout_constraintTop_toTopOf="@id/addAudio" />
 
-    <ImageView
-        android:id="@+id/attach"
-        android:layout_width="44dp"
-        android:layout_height="44dp"
-        android:layout_marginStart="12dp"
-        android:background="@drawable/circle"
-        android:contentDescription="@string/compose_attach_cd"
-        android:elevation="4dp"
-        android:padding="10dp"
-        android:src="@drawable/ic_add_black_24dp"
-        app:layout_constraintBottom_toBottomOf="@id/messageBackground"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:backgroundTint="@color/tools_theme"
-        tools:tint="@color/textPrimaryDark" />
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/llBottom"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize"
+        android:background="@color/white"
+        android:orientation="horizontal"
+        android:paddingBottom="7dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <ImageView
+            android:id="@+id/attach"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="12dp"
+            android:background="@drawable/circle"
+            android:contentDescription="@string/compose_attach_cd"
+            android:elevation="4dp"
+            android:padding="10dp"
+            android:src="@drawable/ic_add_black_24dp"
+            app:layout_constraintBottom_toBottomOf="@id/parent_layout"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:backgroundTint="@color/tools_theme"
+            tools:tint="@color/textPrimaryDark" />
+
+
+        <com.sms.moLotus.common.widget.QkEditText
+            android:id="@+id/message"
+            style="@style/TextPrimary"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@null"
+            android:gravity="center_vertical"
+            android:hint="@string/compose_hint"
+            android:inputType="textLongMessage|textCapSentences|textMultiLine"
+            android:maxLines="6"
+            android:minHeight="44dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:textColorHint="?android:attr/textColorTertiary"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/sim"
+            app:layout_constraintStart_toEndOf="@id/attach" />
+
+        <ImageView
+            android:id="@+id/sim"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/compose_sim_cd"
+            android:padding="8dp"
+            android:src="@drawable/ic_sim_card_black_24dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/send"
+            app:tint="?android:attr/textColorSecondary" />
+
+
+        <com.sms.moLotus.common.widget.QkTextView
+            android:id="@+id/simIndex"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:gravity="center"
+            android:textColor="?android:attr/textColorPrimaryInverse"
+            android:textSize="14dp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="@id/sim"
+            app:layout_constraintEnd_toEndOf="@id/sim"
+            app:layout_constraintStart_toStartOf="@id/sim"
+            app:layout_constraintTop_toTopOf="@id/sim"
+            tools:ignore="SpUsage"
+            tools:text="1" />
+
+        <RelativeLayout
+            android:id="@+id/parent_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:layout_marginEnd="8dp"
+            android:elevation="7dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <com.devlomi.record_view.RecordView
+                android:id="@+id/record_view"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:layout_centerInParent="true"
+                android:layout_marginStart="10dp"
+                android:layout_toStartOf="@id/record_button"
+                android:background="@drawable/rounded_rectangle_22dp"
+                android:backgroundTint="?attr/bubbleColor"
+                android:visibility="gone"
+                app:counter_time_color="#ff0000"
+                app:slide_to_cancel_arrow="@drawable/recv_ic_arrow"
+                app:slide_to_cancel_arrow_color="#000000"
+                app:slide_to_cancel_text="Slide To Cancel" />
+
+            <com.devlomi.record_view.RecordButton
+                android:id="@+id/record_button"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentBottom="true"
+                android:background="@drawable/recv_bg_mic"
+                android:backgroundTint="@color/tools_theme"
+                android:scaleType="centerInside"
+                app:mic_icon="@drawable/recv_ic_mic_white" />
+
+
+        </RelativeLayout>
+
+        <ImageView
+            android:id="@+id/send"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginEnd="8dp"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/compose_send_cd"
+            android:padding="10dp"
+            android:src="@drawable/ic_send_black_24dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:tint="?android:textColorSecondary" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

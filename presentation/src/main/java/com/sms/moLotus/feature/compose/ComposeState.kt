@@ -23,6 +23,7 @@ data class ComposeState(
     val selectedMessages: Int = 0,
     val scheduled: Long = 0,
     val attachments: List<Attachment> = ArrayList(),
+    val draftSaved: String = "",
     val attaching: Boolean = false,
     val remaining: String = "",
     val subscription: SubscriptionInfoCompat? = null,

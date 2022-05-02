@@ -38,6 +38,7 @@ import com.google.android.flexbox.FlexboxLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.jakewharton.rxbinding2.view.clicks
 import com.jakewharton.rxbinding2.widget.textChanges
+import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
 import com.sms.moLotus.common.Navigator
 import com.sms.moLotus.common.base.QkThemedActivity
@@ -46,6 +47,7 @@ import com.sms.moLotus.common.util.extensions.*
 import com.sms.moLotus.customview.CustomProgressDialog
 import com.sms.moLotus.extension.checkSelfPermissionCompat
 import com.sms.moLotus.extension.toast
+import com.sms.moLotus.feature.Constants
 import com.sms.moLotus.feature.Constants.FOLDER_NAME
 import com.sms.moLotus.feature.FileUtilsGetPath
 import com.sms.moLotus.feature.Utils
@@ -70,6 +72,7 @@ import io.reactivex.subjects.Subject
 import kotlinx.android.synthetic.main.backup_list_dialog.*
 import kotlinx.android.synthetic.main.compose_activity.*
 import kotlinx.coroutines.*
+import timber.log.Timber
 import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -92,6 +95,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         private const val CameraDestinationKey = "camera_destination"
 
         var recordButton: RecordButton? = null
+        var selectContact: Boolean = false
     }
 
     private val progressDialog = CustomProgressDialog()
@@ -184,6 +188,8 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
     }
 
     private var cameraDestination: Uri? = null
+
+    private var draftData: String? = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
@@ -779,13 +785,14 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         startActivityForResult(Intent.createChooser(intent, null), AttachContactRequestCode)
     }
 
-    override fun showContacts(sharing: Boolean, chips: List<Recipient>) {
+    override fun showContacts(sharing: Boolean, chips: List<Recipient>, draft: String) {
         message.hideKeyboard()
         val serialized =
             HashMap(chips.associate { chip -> chip.address to chip.contact?.lookupKey })
         val intent = Intent(this, ContactsActivity::class.java)
             .putExtra(ContactsActivity.SharingKey, sharing)
             .putExtra(ContactsActivity.ChipsKey, serialized)
+            .putExtra(ContactsActivity.DraftKey, draft)
         startActivityForResult(intent, SelectContactRequestCode)
     }
 
@@ -925,8 +932,29 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
     }
 
     override fun setDraft(draft: String) {
-        message.setText(draft)
-        message.setSelection(draft.length)
+        // draftData = PreferenceHelper.getStringPreference(this, Constants.DRAFT_SAVED)
+        // Timber.e("draft:::setDraft:::: $draft")
+        //  Timber.e("draftData::::setDraft::: $draftData")
+        /*if (draft.isEmpty()*//* && draftData?.isNotEmpty() == true*//*) {
+            message.setText(draftData)
+            draftData?.length?.let { message.setSelection(it) }
+        } else {
+            message.setText(draft)
+            message.setSelection(draft.length)
+        }*/
+        Timber.e("draft:::setDraft:::: $draft")
+        Timber.e("selectContact::: $selectContact")
+        Timber.e("draftData::setDraft: $draftData")
+        if (!selectContact && draft.isNotEmpty()) {
+            selectContact = true
+            message.setText(draft)
+            message.setSelection(draft.length)
+        } else {
+            selectContact = false
+            message.setText(draftData)
+            draftData?.length?.let { message.setSelection(it) }
+        }
+
     }
 
     override fun scrollToMessage(id: Long) {
@@ -965,6 +993,20 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when {
             requestCode == SelectContactRequestCode -> {
+                selectContact = true
+                // Timber.e("key draft ::::${data?.getStringExtra(ContactsActivity.DraftKey)}")
+                Timber.e(
+                    "key draft 1::::${
+                        PreferenceHelper.getStringPreference(
+                            this,
+                            Constants.DRAFT_SAVED
+                        )
+                    }"
+                )
+//                message?.setText(data?.getStringExtra(ContactsActivity.DraftKey))
+//                draftData = data?.getStringExtra(ContactsActivity.DraftKey)
+                draftData = PreferenceHelper.getStringPreference(this, Constants.DRAFT_SAVED)
+
                 chipsSelectedIntent.onNext(
                     data?.getSerializableExtra(ContactsActivity.ChipsKey)
                         ?.let { serializable -> serializable as? HashMap<String, String?> }
@@ -1270,15 +1312,15 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         ) {
             // start downloading
 
-             val newUri =
-                 uri?.let {
-                     Utils.copyFileStream(File(outputFile), it, this)?.absolutePath?.let { it1 ->
-                         getAudioContentUri(
-                             this,
-                             it1
-                         )
-                     }
-                 }
+            val newUri =
+                uri?.let {
+                    Utils.copyFileStream(File(outputFile), it, this)?.absolutePath?.let { it1 ->
+                        getAudioContentUri(
+                            this,
+                            it1
+                        )
+                    }
+                }
             newUri?.let(attachmentSelectedIntent::onNext)
         } else {
             // Permission is missing and must be requested.

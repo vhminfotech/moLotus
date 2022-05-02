@@ -30,6 +30,7 @@ import com.sms.moLotus.common.util.extensions.autoScrollToStart
 import com.sms.moLotus.common.util.extensions.dismissKeyboard
 import com.sms.moLotus.common.util.extensions.resolveThemeColor
 import com.sms.moLotus.common.util.extensions.setVisible
+import com.sms.moLotus.feature.Constants
 import com.sms.moLotus.feature.blocking.BlockingDialog
 import com.sms.moLotus.feature.changelog.ChangelogDialog
 import com.sms.moLotus.feature.conversations.ConversationsAdapter
@@ -222,9 +223,9 @@ class MainActivity : QkThemedActivity(), MainView {
     }
 
     private fun initTabView() {
-        tabLayout?.newTab()?.setText("SMS")?.let { tabLayout?.addTab(it) }
+        tabLayout?.newTab()?.setText(Constants.TAB_SMS)?.let { tabLayout?.addTab(it) }
 //        tabLayout?.newTab()?.setText("MGRAM")?.let { tabLayout?.addTab(it) }
-        tabLayout?.newTab()?.setText("MCHAT")?.let { tabLayout?.addTab(it) }
+        tabLayout?.newTab()?.setText(Constants.TAB_CHAT)?.let { tabLayout?.addTab(it) }
         tabLayout?.tabGravity = TabLayout.GRAVITY_FILL
 
         val adapter = MyAdapter(this, supportFragmentManager, tabLayout.tabCount)
@@ -301,11 +302,11 @@ class MainActivity : QkThemedActivity(), MainView {
                 title = getString(R.string.main_title_selected, state.page.selected)
 //                if (isSearch == true) {
 //                    isSearch = false
-                    if (SMSFragment.rv?.adapter !== conversationsAdapter) SMSFragment.rv?.adapter =
-                        conversationsAdapter
-                    conversationsAdapter.updateData(state.page.data)
-                    SMSFragment.txtEmpty?.setText(R.string.inbox_empty_text)
-              //  }
+                if (SMSFragment.rv?.adapter !== conversationsAdapter) SMSFragment.rv?.adapter =
+                    conversationsAdapter
+                conversationsAdapter.updateData(state.page.data)
+                SMSFragment.txtEmpty?.setText(R.string.inbox_empty_text)
+                //  }
             }
 
             is Searching -> {

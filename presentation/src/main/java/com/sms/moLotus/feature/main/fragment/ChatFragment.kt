@@ -15,7 +15,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
-import com.sms.moLotus.extension.toast
 import com.sms.moLotus.feature.Constants
 import com.sms.moLotus.feature.chat.ChatActivity
 import com.sms.moLotus.feature.chat.adapter.ChatListAdapter
@@ -103,7 +102,7 @@ class ChatFragment : Fragment(), OnItemClickListener {
                     .setActionTextColor(resources.getColor(android.R.color.holo_red_light))
                     .show()
             } else {
-                requireActivity().toast(it.toString(), Toast.LENGTH_SHORT)
+               // requireActivity().toast(it.toString(), Toast.LENGTH_SHORT)
             }
         })
         viewModel.getChatList(
