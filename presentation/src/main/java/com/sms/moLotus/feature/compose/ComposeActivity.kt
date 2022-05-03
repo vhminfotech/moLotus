@@ -96,6 +96,8 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
 
         var recordButton: RecordButton? = null
         var selectContact: Boolean = false
+        var msgFwd: Boolean = false
+        var msgSent: Boolean = false
     }
 
     private val progressDialog = CustomProgressDialog()
@@ -945,11 +947,17 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         Timber.e("draft:::setDraft:::: $draft")
         Timber.e("selectContact::: $selectContact")
         Timber.e("draftData::setDraft: $draftData")
-        if (!selectContact && draft.isNotEmpty()) {
+        if(msgSent && draft.isEmpty() && draftData?.isEmpty() == true){
+            message.setText("")
+        }else if (!selectContact && draft.isNotEmpty()) {
             selectContact = true
             message.setText(draft)
             message.setSelection(draft.length)
-        } else {
+        } else if (msgFwd && draft.isNotEmpty()) {
+            msgFwd = false
+            message.setText(draft)
+            message.setSelection(draft.length)
+        }else {
             selectContact = false
             message.setText(draftData)
             draftData?.length?.let { message.setSelection(it) }
@@ -995,14 +1003,6 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
             requestCode == SelectContactRequestCode -> {
                 selectContact = true
                 // Timber.e("key draft ::::${data?.getStringExtra(ContactsActivity.DraftKey)}")
-                Timber.e(
-                    "key draft 1::::${
-                        PreferenceHelper.getStringPreference(
-                            this,
-                            Constants.DRAFT_SAVED
-                        )
-                    }"
-                )
 //                message?.setText(data?.getStringExtra(ContactsActivity.DraftKey))
 //                draftData = data?.getStringExtra(ContactsActivity.DraftKey)
                 draftData = PreferenceHelper.getStringPreference(this, Constants.DRAFT_SAVED)

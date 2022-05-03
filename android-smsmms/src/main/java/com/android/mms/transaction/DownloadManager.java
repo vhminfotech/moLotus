@@ -14,6 +14,8 @@ import android.os.PowerManager;
 import android.provider.Telephony;
 import android.telephony.SmsManager;
 import android.text.TextUtils;
+import android.util.Log;
+
 import com.android.mms.MmsConfig;
 import com.klinker.android.send_message.BroadcastUtils;
 import com.klinker.android.send_message.MmsReceivedReceiver;
@@ -82,6 +84,7 @@ public class DownloadManager {
         }
 
         grantUriPermission(context, contentUri);
+        Log.e("DOWNLOADMANAGER","download:::"+location +":::contentUri::::"+contentUri);
         smsManager.downloadMultimediaMessage(context, location, contentUri, configOverrides, pendingIntent);
     }
 

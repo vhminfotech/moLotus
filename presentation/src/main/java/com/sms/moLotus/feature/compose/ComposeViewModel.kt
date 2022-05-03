@@ -4,6 +4,7 @@ import android.app.Dialog
 import android.content.Context
 import android.net.Uri
 import android.os.Build
+import android.os.Handler
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.provider.ContactsContract
@@ -32,6 +33,7 @@ import com.sms.moLotus.model.*
 import com.sms.moLotus.repository.ContactRepository
 import com.sms.moLotus.repository.ConversationRepository
 import com.sms.moLotus.repository.MessageRepository
+import com.sms.moLotus.repository.SyncRepository
 import com.sms.moLotus.util.ActiveSubscriptionObservable
 import com.sms.moLotus.util.PhoneNumberUtils
 import com.sms.moLotus.util.Preferences
@@ -79,6 +81,7 @@ class ComposeViewModel @Inject constructor(
     private val retrySending: RetrySending,
     private val sendMessage: SendMessage,
     private val subscriptionManager: SubscriptionManagerCompat,
+    private val syncManager: SyncRepository
 ) : QkViewModel<ComposeView, ComposeState>(
     ComposeState(
         editingMode = threadId == 0L && addresses.isEmpty(),
@@ -86,6 +89,9 @@ class ComposeViewModel @Inject constructor(
         query = query
     )
 ) {
+    companion object{
+        var syncManager1: SyncRepository ?= null
+    }
 
     var draftData: String? = ""
     var addNewContact: Boolean? = false
@@ -104,6 +110,8 @@ class ComposeViewModel @Inject constructor(
     private var shouldShowContacts = threadId == 0L && addresses.isEmpty()
 
     init {
+        syncManager1 = syncManager
+
         val initialConversation = threadId.takeIf { it != 0L }
             ?.let(conversationRepo::getConversationAsync)
             ?.asObservable()
@@ -400,7 +408,8 @@ class ComposeViewModel @Inject constructor(
                     } else {
                         ""
                     }
-
+                    ComposeActivity.msgFwd = true
+                    ComposeActivity.selectContact = true
                     navigator.showCompose(sub, message.getText(), images)
                 }
             }
@@ -826,10 +835,14 @@ class ComposeViewModel @Inject constructor(
                 if (PreferenceHelper.getPreference(context, "SendPaidMessage")) {
                     showSendPaidMessageDialog(view, state, attachments, conversation, chips, body)
                 } else {
-                    sendMessage(view, state, attachments, conversation, chips, body)
+                    Handler().postDelayed({
+                        sendMessage(view, state, attachments, conversation, chips, body)
+                        view.setDraft("")
+                    },500)
                 }
 
             }.observeOn(AndroidSchedulers.mainThread()).doOnNext {
+                view.setDraft("")
 
                 /* Log.e("========", messageRepo.markDeliveredStatus().toString())
                  when {
@@ -965,7 +978,9 @@ class ComposeViewModel @Inject constructor(
             .withLatestFrom(state) { _, state ->
                 when {
                     state.selectedMessages > 0 -> view.clearSelection()
-                    else -> newState { copy(hasError = true) }
+                    else -> newState {
+                        view.setDraft("")
+                        copy(hasError = true) }
                 }
             }
             .autoDisposable(view.scope())
@@ -1045,6 +1060,7 @@ class ComposeViewModel @Inject constructor(
                         conversationRepo
                             .getConversation(threadId)?.recipients?.firstOrNull()?.address ?: addr
                     )
+
                     Log.e("===========", "address:: $addr")
                     Log.e("===========", "addr:: $addr")
                     sendMessage.execute(
@@ -1055,10 +1071,12 @@ class ComposeViewModel @Inject constructor(
             }
         }
 
+
         view.setDraft("")
         view.scrollToLastPosition()
         this.attachments.onNext(ArrayList())
-
+        draftData = ""
+        ComposeActivity.msgSent = true
 
         if (state.editingMode) {
             newState { copy(editingMode = false, hasError = !sendAsGroup) }
