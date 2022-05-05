@@ -34,8 +34,7 @@ import com.sms.moLotus.feature.Constants
 import com.sms.moLotus.feature.blocking.BlockingDialog
 import com.sms.moLotus.feature.changelog.ChangelogDialog
 import com.sms.moLotus.feature.conversations.ConversationsAdapter
-import com.sms.moLotus.feature.main.adapter.MyAdapter
-import com.sms.moLotus.feature.main.fragment.SMSFragment
+//import com.sms.moLotus.feature.main.fragment.SMSFragment
 import com.sms.moLotus.manager.ChangelogManager
 import com.sms.moLotus.repository.SyncRepository
 import com.uber.autodispose.android.lifecycle.scope
@@ -228,14 +227,19 @@ class MainActivity : QkThemedActivity(), MainView {
         tabLayout?.newTab()?.setText(Constants.TAB_CHAT)?.let { tabLayout?.addTab(it) }
         tabLayout?.tabGravity = TabLayout.GRAVITY_FILL
 
-        val adapter = MyAdapter(this, supportFragmentManager, tabLayout.tabCount)
+       /* val adapter = MyAdapter(this, supportFragmentManager, tabLayout.tabCount)
         viewPager?.adapter = adapter
         viewPager?.adapter?.notifyDataSetChanged()
-        viewPager?.addOnPageChangeListener(TabLayout.TabLayoutOnPageChangeListener(tabLayout))
+        viewPager?.addOnPageChangeListener(TabLayout.TabLayoutOnPageChangeListener(tabLayout))*/
 
         tabLayout?.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab) {
-                viewPager?.currentItem = tab.position
+                //viewPager?.currentItem = tab.position
+                if (tab.text?.toString().equals(Constants.TAB_SMS)){
+                    recyclerView?.visibility = View.VISIBLE
+                }else{
+                    recyclerView?.visibility = View.GONE
+                }
             }
 
             override fun onTabUnselected(tab: TabLayout.Tab) {
