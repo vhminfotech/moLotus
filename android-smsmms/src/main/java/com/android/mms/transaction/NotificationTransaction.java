@@ -119,7 +119,7 @@ public class NotificationTransaction extends Transaction implements Runnable {
             Looper.prepare();
         } catch (Exception e) {
         }
-        boolean autoDownload = PreferenceManager.getDefaultSharedPreferences(context).getBoolean("auto_download_mms", false);
+        boolean autoDownload = PreferenceManager.getDefaultSharedPreferences(context).getBoolean("auto_download_mms", true);
         boolean dataSuspended = (((TelephonyManager) context.getSystemService(Service.TELEPHONY_SERVICE)).getDataState() ==
                 TelephonyManager.DATA_SUSPENDED);
         Timber.e("auto download:::: %s", autoDownload);
