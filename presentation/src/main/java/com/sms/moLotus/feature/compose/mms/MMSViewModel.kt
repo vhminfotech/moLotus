@@ -377,7 +377,7 @@ class MMSViewModel @Inject constructor(
                     val images =
                         message.parts.filter { it.isImage() || it.isAudio() || it.isVideo() || it.isVCard() || it.isDoc() || it.isWordDoc() || it.isXLDoc() }
                             .mapNotNull { it.getUri() }
-                    navigator.showCompose(message.getText(), images)
+                    navigator.showCompose("",message.getText(), images)
                 }
             }
             .autoDisposable(view.scope())
