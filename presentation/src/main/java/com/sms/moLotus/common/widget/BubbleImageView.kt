@@ -5,10 +5,10 @@ import android.graphics.Canvas
 import android.graphics.Path
 import android.graphics.RectF
 import android.util.AttributeSet
-import android.widget.ImageView
+import androidx.appcompat.widget.AppCompatImageView
 import com.sms.moLotus.common.util.extensions.dpToPx
 
-class BubbleImageView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) : ImageView(context, attrs) {
+class BubbleImageView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) : AppCompatImageView(context, attrs) {
 
     enum class Style(val topLeft: Boolean, val topRight: Boolean, val bottomRight: Boolean, val bottomLeft: Boolean) {
 

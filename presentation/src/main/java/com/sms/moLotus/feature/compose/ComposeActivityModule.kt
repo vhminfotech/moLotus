@@ -93,10 +93,11 @@ class ComposeActivityModule {
     @Named("attachments")
     fun provideSharedAttachments(activity: ComposeActivity): Attachments {
         val uris = mutableListOf<Uri>()
-        activity.intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)?.run(uris::add)
+        // activity.intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)?.run(uris::add)
         activity.intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM)?.run(uris::addAll)
 
-        return Attachments(uris.mapNotNull { uri ->
+
+        return Attachments(uris.map { uri ->
             Log.e("==========", "uris:: $uri")
 
             val mimeType = activity.contentResolver.getType(uri)

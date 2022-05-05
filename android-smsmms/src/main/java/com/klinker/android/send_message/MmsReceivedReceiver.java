@@ -297,7 +297,8 @@ public class MmsReceivedReceiver extends BroadcastReceiver {
                         sendPdu(new PduComposer(mContext, acknowledgeInd).make());
                     }
                 } catch (IOException | MmsException e) {
-                    Timber.e(e, "error");
+                    e.printStackTrace();
+                    Timber.e(e.getMessage(), "error");
                 }
             }
             return null;

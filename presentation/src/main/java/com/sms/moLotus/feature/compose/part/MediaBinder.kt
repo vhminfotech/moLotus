@@ -19,11 +19,13 @@
 package com.sms.moLotus.feature.compose.part
 
 import android.content.Context
+import android.util.Log
+import android.view.View
 import com.sms.moLotus.R
 import com.sms.moLotus.common.base.QkViewHolder
 import com.sms.moLotus.common.util.Colors
-import com.sms.moLotus.common.util.extensions.setVisible
 import com.sms.moLotus.common.widget.BubbleImageView
+import com.sms.moLotus.extensions.isAudio
 import com.sms.moLotus.extensions.isImage
 import com.sms.moLotus.extensions.isVideo
 import com.sms.moLotus.model.Message
@@ -37,7 +39,7 @@ class MediaBinder @Inject constructor(colors: Colors, private val context: Conte
     override val partLayout = R.layout.mms_preview_list_item
     override var theme = colors.theme()
 
-    override fun canBindPart(part: MmsPart) = part.isImage() || part.isVideo()
+    override fun canBindPart(part: MmsPart) = part.isImage() || part.isVideo() || part.isAudio()
 
     override fun bindPart(
         holder: QkViewHolder,
@@ -46,7 +48,12 @@ class MediaBinder @Inject constructor(colors: Colors, private val context: Conte
         canGroupWithPrevious: Boolean,
         canGroupWithNext: Boolean
     ) {
-        holder.video.setVisible(part.isVideo())
+        //holder.video.setVisible(part.isVideo())
+        Log.e("MediaBinder","part.isVideo():::: ${part.isVideo()}")
+
+        if (part.isVideo()){
+            holder.video.visibility = View.VISIBLE
+        }
         holder.containerView.setOnClickListener { clicks.onNext(part.id) }
 
         holder.thumbnail.bubbleStyle = when {
@@ -55,7 +62,7 @@ class MediaBinder @Inject constructor(colors: Colors, private val context: Conte
             canGroupWithPrevious && !canGroupWithNext -> if (message.isMe()) BubbleImageView.Style.OUT_LAST else BubbleImageView.Style.IN_LAST
             else -> BubbleImageView.Style.ONLY
         }
-
+        Log.e("MediaBinder","uri:::: ${part.getUri()}")
         GlideApp.with(context).load(part.getUri()).fitCenter().into(holder.thumbnail)
     }
 

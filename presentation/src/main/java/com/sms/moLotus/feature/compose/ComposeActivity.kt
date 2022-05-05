@@ -944,10 +944,11 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
             message.setText(draft)
             message.setSelection(draft.length)
         }*/
+        Timber.e("msgSent:::: $msgSent")
         Timber.e("draft:::setDraft:::: $draft")
         Timber.e("selectContact::: $selectContact")
         Timber.e("draftData::setDraft: $draftData")
-        if(msgSent && draft.isEmpty() && draftData?.isEmpty() == true){
+        if(msgSent && (draft.isNotEmpty() || draftData?.isNotEmpty() == true)){
             message.setText("")
         }else if (!selectContact && draft.isNotEmpty()) {
             selectContact = true
