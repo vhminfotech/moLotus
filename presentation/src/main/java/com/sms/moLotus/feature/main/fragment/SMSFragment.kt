@@ -92,8 +92,8 @@ class SMSFragment : Fragment() {
                 txtEmpty?.setText(R.string.archived_empty_text)
             }
             else -> {
-                /*if (rv?.adapter !== conversationsAdapter) rv?.adapter =
-                    conversationsAdapter*/
+                if (rv?.adapter !== conversationsAdapter) rv?.adapter =
+                    conversationsAdapter
             }
         }
 
