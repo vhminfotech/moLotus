@@ -24,7 +24,7 @@
     <uses-permission android:name="android.permission.WRITE_SMS" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
-    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"/>
+    <queries android:name="android.permission.QUERY_ALL_PACKAGES"/>
 
     <uses-permission
         android:name="android.permission.READ_LOGS"
@@ -51,6 +51,10 @@
         android:supportsRtl="true"
         android:theme="@style/AppLaunchTheme"
         android:usesCleartextTraffic="true">
+        <activity
+            android:name=".feature.chat.ChatActivity"
+            android:exported="true"
+            android:theme="@style/AppTheme1" />
         <activity
             android:name=".feature.settings.AppSettingsActivity"
             android:exported="true"
