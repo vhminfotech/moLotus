@@ -8,24 +8,32 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
+import android.net.ConnectivityManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.*
+import android.widget.AdapterView
 import android.widget.PopupWindow
 import android.widget.RelativeLayout
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
 import com.jakewharton.rxbinding2.view.clicks
 import com.jakewharton.rxbinding2.widget.textChanges
+import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
 import com.sms.moLotus.common.Navigator
 import com.sms.moLotus.common.base.QkThemedActivity
 import com.sms.moLotus.common.util.extensions.*
+import com.sms.moLotus.feature.Constants
 import com.sms.moLotus.feature.blocking.BlockingDialog
 import com.sms.moLotus.feature.changelog.ChangelogDialog
 import com.sms.moLotus.feature.conversations.ConversationsAdapter
@@ -47,7 +55,7 @@ import kotlinx.android.synthetic.main.main_permission_hint.*
 import kotlinx.android.synthetic.main.main_syncing.*
 import javax.inject.Inject
 
-class MainActivity : QkThemedActivity(), MainView {
+class MainActivity : QkThemedActivity(), MainView, OnItemClickListener {
 
     @Inject
     lateinit var blockingDialog: BlockingDialog
@@ -316,6 +324,78 @@ class MainActivity : QkThemedActivity(), MainView {
             toolbarSearch.setBackgroundTint(resolveThemeColor(R.attr.bubbleColor))
         }*/
     }
+
+    private fun getChatList() {
+        mainViewModel.chatList.observe(this, {
+            Log.e("=====", "response:: $it")
+
+            if (it.isNullOrEmpty()) {
+                rvChatRecyclerView?.visibility = View.GONE
+                txtNoChat?.visibility = View.VISIBLE
+
+            } else {
+                rvChatRecyclerView?.visibility = View.VISIBLE
+                txtNoChat?.visibility = View.GONE
+                initRecyclerView(it)
+            }
+        })
+        mainViewModel.errorMessage.observe(this, {
+            Log.e("=====", "errorMessage:: $it")
+            val conMgr =
+                getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val netInfo = conMgr.activeNetworkInfo
+            if (netInfo == null) {
+                //No internet
+                Snackbar.make(
+                    constraintLayout,
+                    "No Internet Connection. Please turn on your internet!",
+                    Snackbar.LENGTH_INDEFINITE
+                )
+                    .setAction("Retry") {
+                        /*viewModel.registerUser(
+                            etName.text.toString(),
+                            Constants.CARRIER_ID,
+                            phone_number.text.toString()
+                        )*/
+                    }
+                    .setActionTextColor(resources.getColor(android.R.color.holo_red_light))
+                    .show()
+            } else {
+                txtNoChat?.visibility = View.VISIBLE
+                // requireActivity().toast(it.toString(), Toast.LENGTH_SHORT)
+            }
+        })
+        mainViewModel.getChatList(
+            "Bearer ${
+                PreferenceHelper.getStringPreference(
+                    this,
+                    Constants.TOKEN
+                ).toString()
+            }"
+        )
+    }
+
+    override fun onItemClick(item: ChatList?) {
+        Toast.makeText(this, item?.id.toString(), Toast.LENGTH_SHORT).show()
+        val intent = Intent(this, ChatActivity::class.java)
+            .putExtra("currentUser", item?.current_user)
+            .putExtra("threadId", item?.id)
+            .putExtra("userName", item?.recipient_user?.get(0)?.name.toString())
+        startActivity(intent)
+        overridePendingTransition(0, 0)
+    }
+
+    private fun initRecyclerView(chatList: ArrayList<ChatList>) {
+        rvChatRecyclerView?.layoutManager = LinearLayoutManager(this)
+
+        // This will pass the ArrayList to our Adapter
+        val adapter = ChatListAdapter(this, chatList, this)
+
+        // Setting the Adapter with the recyclerview
+        rvChatRecyclerView?.adapter = adapter
+        rvChatRecyclerView?.adapter?.notifyDataSetChanged()
+    }
+
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
