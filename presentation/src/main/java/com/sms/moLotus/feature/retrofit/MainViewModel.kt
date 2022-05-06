@@ -2,10 +2,7 @@ package com.sms.moLotus.feature.retrofit
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.sms.moLotus.feature.model.APNParamDetails
-import com.sms.moLotus.feature.model.LoginResponse
-import com.sms.moLotus.feature.model.Operators
-import com.sms.moLotus.feature.model.VersionCode
+import com.sms.moLotus.feature.model.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -15,6 +12,9 @@ class MainViewModel constructor(private val repository: MainRepository) : ViewMo
     val versionCode = MutableLiveData<List<VersionCode>>()
     val apnDetails = MutableLiveData<APNParamDetails>()
     val loginResponse = MutableLiveData<LoginResponse>()
+    val chatList = MutableLiveData<ArrayList<ChatList>>()
+    val allMessages = MutableLiveData<MessageList>()
+    val sendMessage = MutableLiveData<MessageList>()
     val errorMessage = MutableLiveData<String>()
 
     fun getAllOperators() {
@@ -76,6 +76,54 @@ class MainViewModel constructor(private val repository: MainRepository) : ViewMo
             }
 
             override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
+                errorMessage.postValue(t.message)
+            }
+        })
+    }
+
+    fun getChatList(token: String) {
+        val response = repository.getChatList(token)
+        response.enqueue(object : Callback<ArrayList<ChatList>> {
+            override fun onResponse(
+                call: Call<ArrayList<ChatList>>,
+                response: Response<ArrayList<ChatList>>
+            ) {
+                chatList.postValue(response.body())
+            }
+
+            override fun onFailure(call: Call<ArrayList<ChatList>>, t: Throwable) {
+                errorMessage.postValue(t.message)
+            }
+        })
+    }
+
+    fun getAllMessages(threadId: Int, token: String) {
+        val response = repository.getAllMessages(threadId,token)
+        response.enqueue(object : Callback<MessageList> {
+            override fun onResponse(
+                call: Call<MessageList>,
+                response: Response<MessageList>
+            ) {
+                allMessages.postValue(response.body())
+            }
+
+            override fun onFailure(call: Call<MessageList>, t: Throwable) {
+                errorMessage.postValue(t.message)
+            }
+        })
+    }
+
+    fun sendMessage(user_id: ArrayList<Int>, text: String,threadId: Int, token: String) {
+        val response = repository.sendMessage(user_id, text,threadId,token)
+        response.enqueue(object : Callback<MessageList> {
+            override fun onResponse(
+                call: Call<MessageList>,
+                response: Response<MessageList>
+            ) {
+                sendMessage.postValue(response.body())
+            }
+
+            override fun onFailure(call: Call<MessageList>, t: Throwable) {
                 errorMessage.postValue(t.message)
             }
         })
