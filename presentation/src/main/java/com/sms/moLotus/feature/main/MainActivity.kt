@@ -13,7 +13,6 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.*
-import android.widget.AdapterView
 import android.widget.PopupWindow
 import android.widget.RelativeLayout
 import android.widget.Toast
@@ -36,13 +35,15 @@ import com.sms.moLotus.common.util.extensions.*
 import com.sms.moLotus.feature.Constants
 import com.sms.moLotus.feature.blocking.BlockingDialog
 import com.sms.moLotus.feature.changelog.ChangelogDialog
+import com.sms.moLotus.feature.chat.ChatActivity
+import com.sms.moLotus.feature.chat.adapter.ChatListAdapter
 import com.sms.moLotus.feature.conversations.ConversationsAdapter
 import com.sms.moLotus.feature.intro.IntroActivity
-import com.sms.moLotus.feature.main.adapter.MyAdapter
 import com.sms.moLotus.feature.main.listener.OnItemClickListener
 import com.sms.moLotus.feature.model.ChatList
 import com.sms.moLotus.feature.retrofit.MainRepository
 import com.sms.moLotus.feature.retrofit.MyViewModelFactory
+import com.sms.moLotus.feature.retrofit.RetrofitService
 import com.sms.moLotus.manager.ChangelogManager
 import com.sms.moLotus.repository.SyncRepository
 import com.uber.autodispose.android.lifecycle.scope
