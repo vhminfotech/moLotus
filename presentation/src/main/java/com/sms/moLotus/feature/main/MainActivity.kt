@@ -39,6 +39,8 @@ import com.sms.moLotus.feature.changelog.ChangelogDialog
 import com.sms.moLotus.feature.conversations.ConversationsAdapter
 import com.sms.moLotus.feature.intro.IntroActivity
 import com.sms.moLotus.feature.main.adapter.MyAdapter
+import com.sms.moLotus.feature.main.listener.OnItemClickListener
+import com.sms.moLotus.feature.model.ChatList
 import com.sms.moLotus.feature.retrofit.MainRepository
 import com.sms.moLotus.feature.retrofit.MyViewModelFactory
 import com.sms.moLotus.manager.ChangelogManager
