@@ -145,18 +145,32 @@ class MainActivity : QkThemedActivity(), MainView {
             relSearch?.visibility = View.VISIBLE
         }
 
-        tabLayout?.newTab()?.setText("MCHAT")?.let { tabLayout?.addTab(it) }
-        tabLayout?.newTab()?.setText("SMS")?.let { tabLayout?.addTab(it) }
+        tabLayout?.newTab()?.setText("MESSAGES")?.let { tabLayout?.addTab(it) }
+        tabLayout?.newTab()?.setText("CHATS")?.let { tabLayout?.addTab(it) }
         tabLayout?.tabGravity = TabLayout.GRAVITY_FILL
 
-        val adapter = MyAdapter(this, supportFragmentManager, tabLayout.tabCount)
-        viewPager?.adapter = adapter
 
-        viewPager?.addOnPageChangeListener(TabLayout.TabLayoutOnPageChangeListener(tabLayout))
+        /* val adapter = MyAdapter(this, supportFragmentManager, tabLayout.tabCount)
+         viewPager?.adapter = adapter
+
+         viewPager?.addOnPageChangeListener(TabLayout.TabLayoutOnPageChangeListener(tabLayout))*/
 
         tabLayout?.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab) {
-                viewPager?.currentItem = tab.position
+                //  viewPager?.currentItem = tab.position
+                val position = tab.position
+                if (position == 1) {
+                    recyclerView?.visibility = View.GONE
+                    empty?.visibility = View.GONE
+                    getChatList()
+                } else {
+                    txtNoChat?.visibility = View.GONE
+                    recyclerView?.visibility = View.VISIBLE
+                    rvChatRecyclerView?.visibility = View.GONE
+                    if (conversationsAdapter.itemCount == 0){
+                        empty?.visibility = View.VISIBLE
+                    }
+                }
             }
 
             override fun onTabUnselected(tab: TabLayout.Tab) {
