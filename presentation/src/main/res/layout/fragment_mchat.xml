@@ -20,6 +20,7 @@
         android:id="@+id/rvChatRecyclerView"
         android:layout_width="match_parent"
         android:clipChildren="false"
+        android:visibility="gone"
         android:clipToPadding="false"
         android:paddingTop="8dp"
         android:paddingBottom="8dp"

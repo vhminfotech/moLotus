@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.ads.identifier.AdvertisingIdClient
 import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
+import com.sms.moLotus.feature.main.MainActivity
 import kotlinx.android.synthetic.main.activity_app_intro.*
 import timber.log.Timber
 
@@ -27,13 +28,13 @@ class AppIntroActivity : AppCompatActivity() {
             getAppId()
         }*/
         llGetStarted?.setOnClickListener {
-            val intent = Intent(this, IntroActivity::class.java);
+           /* val intent = Intent(this, IntroActivity::class.java);
             startActivity(intent)
-            finish()
-            /*val intent = Intent(this, MainActivity::class.java)
+            finish()*/
+            val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
             overridePendingTransition(0, 0)
-            finish()*/
+            finish()
         }
     }
 

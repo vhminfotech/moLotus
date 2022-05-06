@@ -169,8 +169,9 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener {
         }
 
         tabLayout?.newTab()?.setText("MESSAGES")?.let { tabLayout?.addTab(it) }
-        tabLayout?.newTab()?.setText("CHAT")?.let { tabLayout?.addTab(it) }
+        tabLayout?.newTab()?.setText("CHATS")?.let { tabLayout?.addTab(it) }
         tabLayout?.tabGravity = TabLayout.GRAVITY_FILL
+
 
        /* val adapter = MyAdapter(this, supportFragmentManager, tabLayout.tabCount)
         viewPager?.adapter = adapter
