@@ -17,6 +17,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
+import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
 import com.sms.moLotus.extension.toast
 import com.sms.moLotus.feature.Constants
@@ -83,6 +84,8 @@ class IntroActivity : AppCompatActivity() {
                 "OTP sent successfully.!!",
                 Toast.LENGTH_SHORT
             ).show()
+            PreferenceHelper.setStringPreference(this, Constants.TOKEN, it.user_id)
+            PreferenceHelper.setStringPreference(this, Constants.TOKEN, it.token)
             val intent = Intent(this, VerifyOtpActivity::class.java)
             intent.putExtra("PhoneNumber", phone_number.text.toString())
             startActivity(intent)
