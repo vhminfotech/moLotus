@@ -11,7 +11,10 @@ import com.sms.moLotus.R
 import com.sms.moLotus.common.util.extensions.autoScrollToStart
 import com.sms.moLotus.common.widget.QkTextView
 import com.sms.moLotus.feature.conversations.ConversationsAdapter
-import com.sms.moLotus.feature.main.*
+import com.sms.moLotus.feature.main.Archived
+import com.sms.moLotus.feature.main.Inbox
+import com.sms.moLotus.feature.main.MainState
+import com.sms.moLotus.feature.main.Searching
 import kotlinx.android.synthetic.main.fragment_sms.view.*
 import timber.log.Timber
 
@@ -31,8 +34,8 @@ class SMSFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         layout = inflater.inflate(R.layout.fragment_sms, container, false)
-        conversationsAdapter = MainActivity.conversationsAdapterNew!!
-        state = MainActivity.newState
+      //  conversationsAdapter = MainActivity.conversationsAdapterNew!!
+      //  state = MainActivity.newState
 
         rv = layout?.recyclerView
         val layoutMgr = LinearLayoutManager(requireActivity())

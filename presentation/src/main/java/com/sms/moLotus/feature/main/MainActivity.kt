@@ -3,38 +3,48 @@ package com.sms.moLotus.feature.main
 //import com.sms.moLotus.feature.conversations.ConversationItemTouchCallback
 //import kotlinx.android.synthetic.main.drawer_view.*
 //import kotlinx.android.synthetic.main.main_syncing.*
+//import com.sms.moLotus.feature.main.fragment.SMSFragment
 import android.Manifest
 import android.animation.ObjectAnimator
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
+import android.net.ConnectivityManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.widget.PopupWindow
 import android.widget.RelativeLayout
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
 import com.jakewharton.rxbinding2.view.clicks
 import com.jakewharton.rxbinding2.widget.textChanges
+import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
 import com.sms.moLotus.common.Navigator
 import com.sms.moLotus.common.base.QkThemedActivity
-import com.sms.moLotus.common.util.extensions.autoScrollToStart
-import com.sms.moLotus.common.util.extensions.dismissKeyboard
-import com.sms.moLotus.common.util.extensions.resolveThemeColor
-import com.sms.moLotus.common.util.extensions.setVisible
+import com.sms.moLotus.common.util.extensions.*
 import com.sms.moLotus.feature.Constants
 import com.sms.moLotus.feature.blocking.BlockingDialog
 import com.sms.moLotus.feature.changelog.ChangelogDialog
+import com.sms.moLotus.feature.chat.ChatActivity
+import com.sms.moLotus.feature.chat.adapter.ChatListAdapter
 import com.sms.moLotus.feature.conversations.ConversationsAdapter
-//import com.sms.moLotus.feature.main.fragment.SMSFragment
+import com.sms.moLotus.feature.main.listener.OnItemClickListener
+import com.sms.moLotus.feature.model.ChatList
+import com.sms.moLotus.feature.retrofit.MainRepository
+import com.sms.moLotus.feature.retrofit.MyViewModelFactory
+import com.sms.moLotus.feature.retrofit.RetrofitService
 import com.sms.moLotus.manager.ChangelogManager
 import com.sms.moLotus.repository.SyncRepository
 import com.uber.autodispose.android.lifecycle.scope
@@ -43,15 +53,15 @@ import dagger.android.AndroidInjection
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
+import kotlinx.android.synthetic.main.fragment_mchat.*
 import kotlinx.android.synthetic.main.layout_more_options.view.*
 import kotlinx.android.synthetic.main.layout_toolbar.*
 import kotlinx.android.synthetic.main.main_activity.*
 import kotlinx.android.synthetic.main.main_permission_hint.*
 import kotlinx.android.synthetic.main.main_syncing.*
-import timber.log.Timber
 import javax.inject.Inject
 
-class MainActivity : QkThemedActivity(), MainView {
+class MainActivity : QkThemedActivity(), MainView, OnItemClickListener {
 
     @Inject
     lateinit var blockingDialog: BlockingDialog
@@ -115,10 +125,14 @@ class MainActivity : QkThemedActivity(), MainView {
     private val backPressedSubject: Subject<NavItem> = PublishSubject.create()
     var isSearch: Boolean? = false
 
+    lateinit var mainViewModel: com.sms.moLotus.feature.retrofit.MainViewModel
+    private val retrofitService = RetrofitService.getInstance()
+
+
     companion object {
         var toolbarVisible: androidx.appcompat.widget.Toolbar? = null
-        var conversationsAdapterNew: ConversationsAdapter? = null
-        var newState: MainState? = null
+        // var conversationsAdapterNew: ConversationsAdapter? = null
+        // var newState: MainState? = null
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -135,8 +149,12 @@ class MainActivity : QkThemedActivity(), MainView {
             startActivity(intent)
         }*/
 
-        conversationsAdapterNew = conversationsAdapter
+        //conversationsAdapterNew = conversationsAdapter
         toolbarVisible = toolbar
+        mainViewModel =
+            ViewModelProvider(this, MyViewModelFactory(MainRepository(retrofitService))).get(
+                com.sms.moLotus.feature.retrofit.MainViewModel::class.java
+            )
         initTabView()
         imgSearch.setOnClickListener {
             relSearch?.visibility = View.VISIBLE
@@ -192,7 +210,7 @@ class MainActivity : QkThemedActivity(), MainView {
             homeIntent.onNext(Unit)
         }
 
-        SMSFragment.rv?.let { conversationsAdapter.autoScrollToStart(it) }
+        recyclerView?.let { conversationsAdapter.autoScrollToStart(it) }
 
         // Don't allow clicks to pass through the drawer layout
         //drawer.clicks().autoDisposable(scope()).subscribe()
@@ -223,22 +241,29 @@ class MainActivity : QkThemedActivity(), MainView {
 
     private fun initTabView() {
         tabLayout?.newTab()?.setText(Constants.TAB_SMS)?.let { tabLayout?.addTab(it) }
-//        tabLayout?.newTab()?.setText("MGRAM")?.let { tabLayout?.addTab(it) }
         tabLayout?.newTab()?.setText(Constants.TAB_CHAT)?.let { tabLayout?.addTab(it) }
         tabLayout?.tabGravity = TabLayout.GRAVITY_FILL
 
-       /* val adapter = MyAdapter(this, supportFragmentManager, tabLayout.tabCount)
-        viewPager?.adapter = adapter
-        viewPager?.adapter?.notifyDataSetChanged()
-        viewPager?.addOnPageChangeListener(TabLayout.TabLayoutOnPageChangeListener(tabLayout))*/
+        /* val adapter = MyAdapter(this, supportFragmentManager, tabLayout.tabCount)
+         viewPager?.adapter = adapter
+         viewPager?.adapter?.notifyDataSetChanged()
+         viewPager?.addOnPageChangeListener(TabLayout.TabLayoutOnPageChangeListener(tabLayout))*/
 
         tabLayout?.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab) {
                 //viewPager?.currentItem = tab.position
-                if (tab.text?.toString().equals(Constants.TAB_SMS)){
-                    recyclerView?.visibility = View.VISIBLE
-                }else{
+                val position = tab.position
+                if (position == 1) {
                     recyclerView?.visibility = View.GONE
+                    empty?.visibility = View.GONE
+                    getChatList()
+                } else {
+                    txtNoChat?.visibility = View.GONE
+                    recyclerView?.visibility = View.VISIBLE
+                    rvChatRecyclerView?.visibility = View.GONE
+                    if (conversationsAdapter.itemCount == 0){
+                        empty?.visibility = View.VISIBLE
+                    }
                 }
             }
 
@@ -258,9 +283,9 @@ class MainActivity : QkThemedActivity(), MainView {
     }
 
     override fun render(state: MainState) {
-        Timber.e("render :: $state")
+        /*Timber.e("render :: $state")
         Timber.e("render :: ${state.page}")
-        newState = state
+        newState = state*/
         if (state.hasError) {
             finish()
             return
@@ -297,37 +322,66 @@ class MainActivity : QkThemedActivity(), MainView {
         toolbar.menu.findItem(R.id.unread)?.isVisible = !markRead && selectedConversations != 0
         compose.setVisible(state.page is Inbox || state.page is Archived)
         conversationsAdapter.emptyView =
-            SMSFragment.txtEmpty?.takeIf { state.page is Inbox || state.page is Archived }
-        searchAdapter.emptyView = SMSFragment.txtEmpty?.takeIf { state.page is Searching }
+            empty.takeIf { state.page is Inbox || state.page is Archived }
+        searchAdapter.emptyView = empty.takeIf { state.page is Searching }
 
         when (state.page) {
             is Inbox -> {
+                /* showBackButton(state.page.selected > 0)
+                 title = getString(R.string.main_title_selected, state.page.selected)
+
+                 if (SMSFragment.rv?.adapter !== conversationsAdapter) SMSFragment.rv?.adapter =
+                     conversationsAdapter
+                 conversationsAdapter.updateData(state.page.data)
+                 SMSFragment.txtEmpty?.setText(R.string.inbox_empty_text)*/
+
+
+                //changed
                 showBackButton(state.page.selected > 0)
                 title = getString(R.string.main_title_selected, state.page.selected)
-//                if (isSearch == true) {
-//                    isSearch = false
-                if (SMSFragment.rv?.adapter !== conversationsAdapter) SMSFragment.rv?.adapter =
+                if (recyclerView.adapter !== conversationsAdapter) recyclerView.adapter =
                     conversationsAdapter
                 conversationsAdapter.updateData(state.page.data)
-                SMSFragment.txtEmpty?.setText(R.string.inbox_empty_text)
-                //  }
+//                itemTouchHelper.attachToRecyclerView(recyclerView)
+                empty.setText(R.string.inbox_empty_text)
             }
 
             is Searching -> {
+                //changed
                 showBackButton(true)
+                if (recyclerView.adapter !== searchAdapter) recyclerView.adapter = searchAdapter
+                searchAdapter.data = state.page.data ?: listOf()
+//                itemTouchHelper.attachToRecyclerView(null)
+                empty.setText(R.string.inbox_search_empty_text)
+
+
+                /*showBackButton(true)
                 if (SMSFragment.rv?.adapter !== searchAdapter) SMSFragment.rv?.adapter =
                     searchAdapter
                 searchAdapter.data = state.page.data ?: listOf()
                 SMSFragment.txtEmpty?.setText(R.string.inbox_search_empty_text)
-                isSearch = true
+                isSearch = true*/
             }
 
             is Archived -> {
+                //changed
                 showBackButton(state.page.selected > 0)
                 title = when (state.page.selected != 0) {
                     true -> getString(R.string.main_title_selected, state.page.selected)
                     false -> getString(R.string.title_archived)
                 }
+                if (recyclerView.adapter !== conversationsAdapter) recyclerView.adapter =
+                    conversationsAdapter
+                conversationsAdapter.updateData(state.page.data)
+//                itemTouchHelper.attachToRecyclerView(null)
+                empty.setText(R.string.archived_empty_text)
+
+
+                /*showBackButton(state.page.selected > 0)
+                title = when (state.page.selected != 0) {
+                    true -> getString(R.string.main_title_selected, state.page.selected)
+                    false -> getString(R.string.title_archived)
+                }*/
 
             }
         }
@@ -431,6 +485,7 @@ class MainActivity : QkThemedActivity(), MainView {
     }
 
     override fun themeChanged() {
+        recyclerView.scrapViews()
         //  SMSFragment.rv?.scrapViews()
     }
 
@@ -476,5 +531,76 @@ class MainActivity : QkThemedActivity(), MainView {
 
     override fun onBackPressed() {
         super.onBackPressed()
+    }
+
+    private fun getChatList() {
+        mainViewModel.chatList.observe(this, {
+            Log.e("=====", "response:: $it")
+
+            if (it.isNullOrEmpty()) {
+                rvChatRecyclerView?.visibility = View.GONE
+                txtNoChat?.visibility = View.VISIBLE
+
+            } else {
+                rvChatRecyclerView?.visibility = View.VISIBLE
+                txtNoChat?.visibility = View.GONE
+                initRecyclerView(it)
+            }
+        })
+        mainViewModel.errorMessage.observe(this, {
+            Log.e("=====", "errorMessage:: $it")
+            val conMgr =
+                getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val netInfo = conMgr.activeNetworkInfo
+            if (netInfo == null) {
+                //No internet
+                Snackbar.make(
+                    constraintLayout,
+                    "No Internet Connection. Please turn on your internet!",
+                    Snackbar.LENGTH_INDEFINITE
+                )
+                    .setAction("Retry") {
+                        /*viewModel.registerUser(
+                            etName.text.toString(),
+                            Constants.CARRIER_ID,
+                            phone_number.text.toString()
+                        )*/
+                    }
+                    .setActionTextColor(resources.getColor(android.R.color.holo_red_light))
+                    .show()
+            } else {
+                txtNoChat?.visibility = View.VISIBLE
+                // requireActivity().toast(it.toString(), Toast.LENGTH_SHORT)
+            }
+        })
+        mainViewModel.getChatList(
+            "Bearer ${
+                PreferenceHelper.getStringPreference(
+                    this,
+                    Constants.TOKEN
+                ).toString()
+            }"
+        )
+    }
+
+    override fun onItemClick(item: ChatList?) {
+        Toast.makeText(this, item?.id.toString(), Toast.LENGTH_SHORT).show()
+        val intent = Intent(this, ChatActivity::class.java)
+            .putExtra("currentUser", item?.current_user)
+            .putExtra("threadId", item?.id)
+            .putExtra("userName", item?.recipient_user?.get(0)?.name.toString())
+        startActivity(intent)
+        overridePendingTransition(0, 0)
+    }
+
+    private fun initRecyclerView(chatList: ArrayList<ChatList>) {
+        rvChatRecyclerView?.layoutManager = LinearLayoutManager(this)
+
+        // This will pass the ArrayList to our Adapter
+        val adapter = ChatListAdapter(this, chatList, this)
+
+        // Setting the Adapter with the recyclerview
+        rvChatRecyclerView?.adapter = adapter
+        rvChatRecyclerView?.adapter?.notifyDataSetChanged()
     }
 }
