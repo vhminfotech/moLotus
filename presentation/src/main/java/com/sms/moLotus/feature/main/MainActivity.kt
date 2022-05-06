@@ -39,6 +39,8 @@ import com.sms.moLotus.feature.changelog.ChangelogDialog
 import com.sms.moLotus.feature.conversations.ConversationsAdapter
 import com.sms.moLotus.feature.intro.IntroActivity
 import com.sms.moLotus.feature.main.adapter.MyAdapter
+import com.sms.moLotus.feature.retrofit.MainRepository
+import com.sms.moLotus.feature.retrofit.MyViewModelFactory
 import com.sms.moLotus.manager.ChangelogManager
 import com.sms.moLotus.repository.SyncRepository
 import com.uber.autodispose.android.lifecycle.scope
@@ -139,7 +141,8 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener {
     private val snackbar by lazy { findViewById<View>(R.id.snackbar) }
     private val syncing by lazy { findViewById<View>(R.id.syncing) }
     private val backPressedSubject: Subject<NavItem> = PublishSubject.create()
-
+    lateinit var mainViewModel: com.sms.moLotus.feature.retrofit.MainViewModel
+    private val retrofitService = RetrofitService.getInstance()
     companion object {
         var toolbarVisible: androidx.appcompat.widget.Toolbar? = null
     }
@@ -150,6 +153,10 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener {
         setContentView(R.layout.main_activity)
 
         toolbarVisible = toolbar
+        mainViewModel =
+            ViewModelProvider(this, MyViewModelFactory(MainRepository(retrofitService))).get(
+                com.sms.moLotus.feature.retrofit.MainViewModel::class.java
+            )
         imgSearch.setOnClickListener {
             relSearch?.visibility = View.VISIBLE
         }
