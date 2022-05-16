@@ -292,6 +292,7 @@ class ComposeViewModel @Inject constructor(
         view.optionsItemIntent
             .filter { it == R.id.add }
             .withLatestFrom(selectedChips) { _, chips ->
+                ComposeActivity.selectContact = true
                 view.showContacts(sharing, chips)
             }
             .autoDisposable(view.scope())
@@ -385,8 +386,15 @@ class ComposeViewModel @Inject constructor(
                         message.parts.filter { it.isImage() || it.isAudio() || it.isVideo() || it.isVCard() || it.isDoc() || it.isWordDoc() || it.isXLDoc() }
                             .mapNotNull { it.getUri() }
                     Timber.e("message.subject ::: ${message.subject}")
-
-                    navigator.showCompose("<Subject: Fwd: ${message.subject}>",message.getText(), images)
+                    var sub: String = if (!message.subject.isEmpty()) {
+                        "<Subject: Fwd: ${message.subject}>"
+                    } else {
+                        ""
+                    }
+                    ComposeActivity.msgFwd = true
+                    ComposeActivity.selectContact = true
+                    navigator.showCompose(sub, message.getText(), images)
+//                    navigator.showCompose("<Subject: Fwd: ${message.subject}>",message.getText(), images)
                 }
             }
             .autoDisposable(view.scope())
