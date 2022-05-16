@@ -19,6 +19,9 @@
 package com.sms.moLotus.feature.compose.part
 
 import android.content.Context
+import android.util.Log
+import android.view.View
+import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
 import com.sms.moLotus.common.base.QkViewHolder
 import com.sms.moLotus.common.util.Colors
@@ -30,6 +33,7 @@ import com.sms.moLotus.model.Message
 import com.sms.moLotus.model.MmsPart
 import com.sms.moLotus.util.GlideApp
 import kotlinx.android.synthetic.main.mms_preview_list_item.*
+import timber.log.Timber
 import javax.inject.Inject
 
 class MediaBinder @Inject constructor(colors: Colors, private val context: Context) : PartBinder() {
@@ -55,8 +59,22 @@ class MediaBinder @Inject constructor(colors: Colors, private val context: Conte
             canGroupWithPrevious && !canGroupWithNext -> if (message.isMe()) BubbleImageView.Style.OUT_LAST else BubbleImageView.Style.IN_LAST
             else -> BubbleImageView.Style.ONLY
         }
-
-        GlideApp.with(context).load(part.getUri()).fitCenter().into(holder.thumbnail)
+        Timber.e("MediaBinder == uri:::: ${part.getUri()}")
+        Log.e(
+            "MediaBinder",
+            "auto download:::: ${PreferenceHelper.getPreference(context, "AutoDownload")}"
+        )
+        if (message.isMe()) {
+            PreferenceHelper.setPreference(context, "AutoDownload", true)
+            holder.imgDownload.visibility = View.GONE
+            GlideApp.with(context).load(part.getUri()).fitCenter().into(holder.thumbnail)
+        } else {
+            if (PreferenceHelper.getPreference(context, "AutoDownload")) {
+                holder.imgDownload.visibility = View.GONE
+                GlideApp.with(context).load(part.getUri()).fitCenter().into(holder.thumbnail)
+            } else {
+                holder.imgDownload.visibility = View.VISIBLE
+            }
+        }
     }
-
 }

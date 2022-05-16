@@ -14,6 +14,7 @@ import android.view.View
 import android.view.Window
 import android.view.WindowManager
 import android.widget.FrameLayout
+import android.widget.Toast
 import androidx.core.content.getSystemService
 import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
@@ -482,7 +483,11 @@ class ComposeViewModel @Inject constructor(
                 if (part.isAudio()) {
                     navigator.showAudioMedia(part.getUri())
                 } else {
-                    navigator.showMedia(part.id)
+                    if (PreferenceHelper.getPreference(context, "AutoDownload")) {
+                        navigator.showMedia(part.id)
+                    }else{
+                        Toast.makeText(context, "Auto Download is OFF. You can turn it on from Settings!", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
 

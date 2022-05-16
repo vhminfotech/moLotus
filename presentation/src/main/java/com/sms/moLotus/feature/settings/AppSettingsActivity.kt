@@ -10,7 +10,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
-import android.preference.PreferenceManager
 import android.provider.Settings
 import android.view.Gravity
 import android.view.Window
@@ -70,7 +69,6 @@ class AppSettingsActivity : AppCompatActivity() {
             onBackPressed()
         }
 
-
         txtVersion?.text = info.versionName
         toggleSignature?.setOnCheckedChangeListener { buttonView, isChecked ->
             if (isChecked) {
@@ -80,8 +78,7 @@ class AppSettingsActivity : AppCompatActivity() {
 
         toggleSendPaidMessages.isChecked = PreferenceHelper.getPreference(this, "SendPaidMessage")
         toggleNotification.isChecked = PreferenceHelper.getPreference(this, "Notification")
-        toggleAutoDownload.isChecked = PreferenceManager.getDefaultSharedPreferences(this)
-            .getBoolean("auto_download_mms", false)
+        toggleAutoDownload.isChecked =  PreferenceHelper.getPreference(this,"AutoDownload")
 
         toggleSendPaidMessages?.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
@@ -96,12 +93,10 @@ class AppSettingsActivity : AppCompatActivity() {
         toggleAutoDownload?.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 toggleAutoDownload.isChecked = true
-                PreferenceManager.getDefaultSharedPreferences(this).edit()
-                    .putBoolean("auto_download_mms", true).commit()
+                PreferenceHelper.setPreference(this,"AutoDownload",true)
             } else {
                 toggleAutoDownload.isChecked = false
-                PreferenceManager.getDefaultSharedPreferences(this).edit()
-                    .putBoolean("auto_download_mms", false).commit()
+                PreferenceHelper.setPreference(this,"AutoDownload", false)
             }
         }
 
