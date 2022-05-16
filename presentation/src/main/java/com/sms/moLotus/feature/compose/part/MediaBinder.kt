@@ -41,7 +41,7 @@ class MediaBinder @Inject constructor(colors: Colors, private val context: Conte
     override val partLayout = R.layout.mms_preview_list_item
     override var theme = colors.theme()
 
-    override fun canBindPart(part: MmsPart) = part.isImage() || part.isVideo() /*|| part.isAudio()*/
+    override fun canBindPart(part: MmsPart) = part.isImage() || part.isVideo()
 
     override fun bindPart(
         holder: QkViewHolder,
@@ -51,9 +51,6 @@ class MediaBinder @Inject constructor(colors: Colors, private val context: Conte
         canGroupWithNext: Boolean
     ) {
         holder.video.setVisible(part.isVideo())
-        Timber.e("MediaBinder == part.isVideo():::: ${part.isVideo()}")
-        Log.e("MediaBinder", "part.isVideo():::: ${part.isVideo()}")
-
         holder.containerView.setOnClickListener { clicks.onNext(part.id) }
 
         holder.thumbnail.bubbleStyle = when {
@@ -63,7 +60,6 @@ class MediaBinder @Inject constructor(colors: Colors, private val context: Conte
             else -> BubbleImageView.Style.ONLY
         }
         Timber.e("MediaBinder == uri:::: ${part.getUri()}")
-        Log.e("MediaBinder", "uri:::: ${part.getUri()}")
         Log.e(
             "MediaBinder",
             "auto download:::: ${PreferenceHelper.getPreference(context, "AutoDownload")}"
@@ -81,5 +77,4 @@ class MediaBinder @Inject constructor(colors: Colors, private val context: Conte
             }
         }
     }
-
 }

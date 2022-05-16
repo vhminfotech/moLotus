@@ -69,7 +69,6 @@ class AppSettingsActivity : AppCompatActivity() {
             onBackPressed()
         }
 
-
         txtVersion?.text = info.versionName
         toggleSignature?.setOnCheckedChangeListener { buttonView, isChecked ->
             if (isChecked) {
