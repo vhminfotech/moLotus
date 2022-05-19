@@ -71,7 +71,7 @@ class IntroActivity : AppCompatActivity() {
     }
 
     private fun registerUser() {
-        viewModel.loginResponse.observe(this, {
+        viewModel.registerUser.observe(this, {
             Log.e("=====", "response:: $it")
             /*requestOtp(
                 phone_number.text.toString(),
@@ -85,10 +85,10 @@ class IntroActivity : AppCompatActivity() {
                 Toast.LENGTH_SHORT
             ).show()
             PreferenceHelper.setStringPreference(this, Constants.USERID,
-                it.user_id
+                it.registerUser?.userData?.userId.toString()
             )
             PreferenceHelper.setStringPreference(this, Constants.TOKEN,
-                it.token
+                it.registerUser?.token.toString()
             )
             val intent = Intent(this, VerifyOtpActivity::class.java)
             intent.putExtra("PhoneNumber", phone_number.text.toString())
@@ -122,7 +122,7 @@ class IntroActivity : AppCompatActivity() {
         })
         viewModel.registerUser(
             etName.text.toString(),
-            Constants.CARRIER_ID,
+            Constants.CARRIER_ID.toString(),
             phone_number.text.toString()
         )
     }

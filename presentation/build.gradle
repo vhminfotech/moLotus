@@ -1,12 +1,22 @@
-apply plugin: 'com.android.application'
-apply plugin: "com.apollographql.apollo"
+/*apply plugin: 'com.android.application'
 apply plugin: 'realm-android' // Realm needs to be before Kotlin or the build will fail
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 // Apply the Crashlytics Gradle plugin
 apply plugin: 'com.google.firebase.crashlytics'
-apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.google.gms.google-services'*/
+plugins {
+    id("com.android.application")
+    id("realm-android")
+    id("kotlin-android")
+    id("kotlin-android-extensions")
+    id("kotlin-kapt")
+    id("com.google.firebase.crashlytics")
+    id("com.google.gms.google-services")
+    id("com.apollographql.apollo3").version("3.3.0")
+}
+
 
 
 android {
@@ -61,7 +71,6 @@ android {
     }
 
 
-
     if (System.getenv("CI") == "true") {
         signingConfigs.release.storeFile = file("../keystore")
         signingConfigs.release.storePassword = System.getenv("keystore_password")
@@ -87,6 +96,7 @@ configurations {
 }
 
 apollo {
+    packageName.set("com.sms.moLotus")
     generateKotlinModels.set(true)
 }
 
@@ -94,7 +104,6 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     implementation 'com.android.support:multidex:1.0.3'
-
 
 
     // material design
@@ -243,9 +252,10 @@ dependencies {
     implementation 'com.google.firebase:firebase-analytics-ktx'
 
     //apollo
-//    implementation "com.apollographql.apollo:apollo-coroutines-support:2.4.6"
-    implementation "com.apollographql.apollo:apollo-runtime:2.4.6"
-    implementation "com.apollographql.apollo:apollo-android-support:2.4.6"
+    implementation("com.apollographql.apollo3:apollo-runtime:3.3.0")
+
+//    implementation "com.apollographql.apollo:apollo-runtime:2.4.0"
+//    implementation "com.apollographql.apollo:apollo-android-support:2.4.0"
 
     //Room Database
     implementation "androidx.room:room-runtime:2.4.2"
@@ -253,7 +263,7 @@ dependencies {
     kapt "androidx.room:room-compiler:2.4.2"
 
     //socket
-    implementation ('io.socket:socket.io-client:1.0.0') {
+    implementation('io.socket:socket.io-client:1.0.0') {
         exclude group: 'org.json', module: 'json'
     }
 

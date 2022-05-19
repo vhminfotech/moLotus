@@ -1,0 +1,17 @@
+mutation RegisterUser($name: String!, $operatorId: ID!, $MSISDN: String!){
+    registerUser(name: $name, operatorId: $operatorId, MSISDN: $MSISDN) {
+        token
+        message
+        status
+        userData {
+            name
+            userId
+            #MSISDN
+            operator
+            createdAt
+            updatedAt
+            lastActive
+            userStatus
+        }
+    }
+}

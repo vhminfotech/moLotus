@@ -2,8 +2,15 @@ package com.sms.moLotus.feature.retrofit
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.apollographql.apollo.ApolloClient
+import com.apollographql.apollo3.ApolloClient
+import com.apollographql.apollo3.exception.ApolloException
+import com.sms.moLotus.RegisterUserMutation
+import com.sms.moLotus.feature.apollo.ApolloClientService
 import com.sms.moLotus.feature.model.*
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -12,12 +19,13 @@ class MainViewModel constructor(private val repository: MainRepository) : ViewMo
     val operatorsList = MutableLiveData<List<Operators>>()
     val versionCode = MutableLiveData<List<VersionCode>>()
     val apnDetails = MutableLiveData<APNParamDetails>()
-    val loginResponse = MutableLiveData<LoginResponse>()
+
+    //    val loginResponse = MutableLiveData<LoginResponse>()
     val chatList = MutableLiveData<ArrayList<ChatList>>()
     val allMessages = MutableLiveData<MessageList>()
     val sendMessage = MutableLiveData<MessageList>()
     private var client: ApolloClient? = null
-//    val registerUser = MutableLiveData<RegisterUserMutation.Data>()
+    val registerUser = MutableLiveData<RegisterUserMutation.Data>()
     val errorMessage = MutableLiveData<String>()
 
     fun getAllOperators() {
@@ -68,21 +76,21 @@ class MainViewModel constructor(private val repository: MainRepository) : ViewMo
         })
     }
 
-    fun registerUser(name: String, operator: Int, MSISDN: String) {
-        val response = repository.registerUser(name, operator, MSISDN)
-        response.enqueue(object : Callback<LoginResponse> {
-            override fun onResponse(
-                call: Call<LoginResponse>,
-                response: Response<LoginResponse>
-            ) {
-                loginResponse.postValue(response.body())
-            }
+    /* fun registerUser(name: String, operator: Int, MSISDN: String) {
+         val response = repository.registerUser(name, operator, MSISDN)
+         response.enqueue(object : Callback<LoginResponse> {
+             override fun onResponse(
+                 call: Call<LoginResponse>,
+                 response: Response<LoginResponse>
+             ) {
+                 loginResponse.postValue(response.body())
+             }
 
-            override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
-                errorMessage.postValue(t.message)
-            }
-        })
-    }
+             override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
+                 errorMessage.postValue(t.message)
+             }
+         })
+     }*/
 
     fun getChatList(token: String) {
         val response = repository.getChatList(token)
@@ -132,19 +140,17 @@ class MainViewModel constructor(private val repository: MainRepository) : ViewMo
         })
     }
 
-    /*fun registerUser(name: String, operator: String, MSISDN: String) {
+    @DelicateCoroutinesApi
+    fun registerUser(name: String, operator: String, MSISDN: String) {
         client = ApolloClientService.setUpApolloClient("")
-        client?.mutate(
-            RegisterUserMutation(name, operator, MSISDN )
-        )
-            ?.enqueue(object : ApolloCall.Callback<RegisterUserMutation.Data>() {
-                override fun onFailure(e: ApolloException) {
-                    errorMessage.postValue(e.message)
-                }
-
-                override fun onResponse(response: com.apollographql.apollo.api.Response<RegisterUserMutation.Data>) {
-                    registerUser.postValue(response.data)
-                }
-            })
-    }*/
+        val registerUserMutation = RegisterUserMutation(name, operator, MSISDN)
+        try {
+            GlobalScope.launch(Dispatchers.IO) {
+                val response = client?.mutation(registerUserMutation)?.execute()
+                registerUser.postValue(response?.data)
+            }
+        } catch (e: ApolloException) {
+            errorMessage.postValue(e.message)
+        }
+    }
 }

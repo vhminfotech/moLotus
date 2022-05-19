@@ -1,7 +1,8 @@
 package com.sms.moLotus.feature.apollo
 
-import com.apollographql.apollo.ApolloClient
-import com.sms.moLotus.feature.Constants.BASE_URL
+import com.apollographql.apollo3.ApolloClient
+import com.apollographql.apollo3.network.okHttpClient
+import com.sms.moLotus.feature.Constants
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.logging.HttpLoggingInterceptor
@@ -24,7 +25,7 @@ object ApolloClientService {
             .build()
 
         return ApolloClient.builder()
-            .serverUrl(BASE_URL)
+            .serverUrl(Constants.BASE_GRAPHQL_URL)
             .okHttpClient(okHttpClient) //ApolloClient with okhttp
             .build()
     }
