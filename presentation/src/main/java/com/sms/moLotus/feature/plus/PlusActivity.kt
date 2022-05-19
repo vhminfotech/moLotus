@@ -10,11 +10,7 @@ import com.sms.moLotus.BuildConfig
 import com.sms.moLotus.R
 import com.sms.moLotus.common.base.QkThemedActivity
 import com.sms.moLotus.common.util.FontProvider
-import com.sms.moLotus.common.util.extensions.makeToast
-import com.sms.moLotus.common.util.extensions.resolveThemeColor
-import com.sms.moLotus.common.util.extensions.setBackgroundTint
-import com.sms.moLotus.common.util.extensions.setTint
-import com.sms.moLotus.common.util.extensions.setVisible
+import com.sms.moLotus.common.util.extensions.*
 import com.sms.moLotus.common.widget.PreferenceView
 import com.sms.moLotus.feature.plus.experiment.UpgradeButtonExperiment
 import com.sms.moLotus.manager.BillingManager

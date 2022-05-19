@@ -75,7 +75,6 @@ import kotlinx.android.synthetic.main.compose_activity.toolbar
 import kotlinx.android.synthetic.main.compose_activity.toolbarTitle
 import kotlinx.android.synthetic.main.main_activity.*
 import kotlinx.coroutines.*
-import timber.log.Timber
 import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -938,27 +937,47 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
     override fun setDraft(draft: String) {
         /*message.setText(draft)
         message.setSelection(draft.length)*/
-
-
-        Timber.e("msgSent:::: $msgSent")
-        Timber.e("draft:::setDraft:::: $draft")
-        Timber.e("selectContact::: $selectContact")
-        Timber.e("draftData::setDraft: $draftData")
-        if (msgSent && (draft.isNotEmpty() || draftData?.isNotEmpty() == true)) {
-            message.setText("")
-        } else if (!selectContact && draft.isNotEmpty()) {
-            selectContact = true
-            message.setText(draft)
-            message.setSelection(draft.length)
-        } else if (msgFwd && draft.isNotEmpty()) {
-            msgFwd = false
-            message.setText(draft)
-            message.setSelection(draft.length)
-        } else {
-            selectContact = false
-            message.setText(draftData)
-            draftData?.length?.let { message.setSelection(it) }
+        when {
+            PreferenceHelper.getPreference(this, "msg_sent") -> {
+                message.setText("")
+                draftData = ""
+                PreferenceHelper.setPreference(this, "msg_sent", false)
+            }
+            draftData?.isNotEmpty() == true -> {
+                message.setText(draftData)
+                draftData?.length?.let { message.setSelection(it) }
+            }
+            msgFwd -> {
+                message.setText(draft)
+                message.setSelection(draft.length)
+            }
+            else->{
+                message.setText("")
+            }
         }
+
+
+        /* Timber.e("msgSent:::: $msgSent")
+         Timber.e("draft:::setDraft:::: $draft")
+         Timber.e("selectContact::: $selectContact")
+         Timber.e("draftData::setDraft: $draftData")
+         if (msgSent && (draft.isNotEmpty() || draftData?.isNotEmpty() == true)) {
+             message.setText("")
+             msgSent = false
+             PreferenceHelper.deletePreference(this, Constants.DRAFT_SAVED)
+         } else if (!selectContact && draft.isNotEmpty()) {
+             selectContact = true
+             message.setText(draft)
+             message.setSelection(draft.length)
+         } else if (msgFwd && draft.isNotEmpty()) {
+             msgFwd = false
+             message.setText(draft)
+             message.setSelection(draft.length)
+         } else {
+             selectContact = false
+             message.setText(draftData)
+             draftData?.length?.let { message.setSelection(it) }
+         }*/
     }
 
     override fun scrollToMessage(id: Long) {
@@ -998,7 +1017,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         when {
 
             requestCode == SelectContactRequestCode -> {
-                selectContact = true
+//                selectContact = true
                 draftData = PreferenceHelper.getStringPreference(this, Constants.DRAFT_SAVED)
                 chipsSelectedIntent.onNext(
                     data?.getSerializableExtra(ContactsActivity.ChipsKey)

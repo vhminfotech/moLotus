@@ -25,6 +25,7 @@ import com.sms.moLotus.common.util.extensions.makeToast
 import com.sms.moLotus.compat.SubscriptionManagerCompat
 import com.sms.moLotus.compat.TelephonyCompat
 import com.sms.moLotus.extensions.*
+import com.sms.moLotus.feature.Constants
 import com.sms.moLotus.interactor.*
 import com.sms.moLotus.manager.ActiveConversationManager
 import com.sms.moLotus.manager.PermissionManager
@@ -292,7 +293,7 @@ class ComposeViewModel @Inject constructor(
         view.optionsItemIntent
             .filter { it == R.id.add }
             .withLatestFrom(selectedChips) { _, chips ->
-                ComposeActivity.selectContact = true
+                //ComposeActivity.selectContact = true
                 view.showContacts(sharing, chips)
             }
             .autoDisposable(view.scope())
@@ -392,7 +393,7 @@ class ComposeViewModel @Inject constructor(
                         ""
                     }
                     ComposeActivity.msgFwd = true
-                    ComposeActivity.selectContact = true
+                 //  ComposeActivity.selectContact = true
                     navigator.showCompose(sub, message.getText(), images)
 //                    navigator.showCompose("<Subject: Fwd: ${message.subject}>",message.getText(), images)
                 }
@@ -493,8 +494,12 @@ class ComposeViewModel @Inject constructor(
                 } else {
                     if (PreferenceHelper.getPreference(context, "AutoDownload")) {
                         navigator.showMedia(part.id)
-                    }else{
-                        Toast.makeText(context, "Auto Download is OFF. You can turn it on from Settings!", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(
+                            context,
+                            "Auto Download is OFF. You can turn it on from Settings!",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
             }
@@ -711,10 +716,23 @@ class ComposeViewModel @Inject constructor(
                 // existing draft
                 //
                 // TODO: Show dialog warning user about overwriting draft
-                if (sharedText.isNotBlank()) {
+                /*if (sharedText.isNotBlank()) {
                     view.setDraft(sharedText)
                 } else {
                     view.setDraft(draft)
+                }*/
+
+                PreferenceHelper.deletePreference(context, Constants.DRAFT_SAVED)
+                PreferenceHelper.setStringPreference(context, Constants.DRAFT_SAVED, draft)
+
+                when {
+                    sharedText.isNotBlank() -> {
+                        view.setDraft(sharedText)
+                    }
+
+                    else -> {
+                        view.setDraft(draft)
+                    }
                 }
             }
 
@@ -995,6 +1013,8 @@ class ComposeViewModel @Inject constructor(
                     SendMessage
                         .Params(subId, conversation.id, addresses, body, attachments, delay)
                 )
+                PreferenceHelper.deletePreference(context, Constants.DRAFT_SAVED).toString()
+                view.setDraft("")
             }
 
             // Sending a message to an existing conversation with one recipient
@@ -1031,18 +1051,22 @@ class ComposeViewModel @Inject constructor(
                             .Params(subId, threadId, address, body, attachments, delay)
                     )
                 }
+                view.setDraft("")
+                PreferenceHelper.deletePreference(context, Constants.DRAFT_SAVED).toString()
+
             }
         }
 
         view.setDraft("")
         view.scrollToLastPosition()
         this.attachments.onNext(ArrayList())
-
+        view.setDraft(PreferenceHelper.deletePreference(context, Constants.DRAFT_SAVED).toString())
+//        ComposeActivity.msgSent = true
+        PreferenceHelper.setPreference(context,"msg_sent",true)
 
         if (state.editingMode) {
             newState { copy(editingMode = false, hasError = !sendAsGroup) }
         }
-
     }
 
 

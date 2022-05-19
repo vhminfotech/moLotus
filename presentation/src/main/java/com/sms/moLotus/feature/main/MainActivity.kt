@@ -154,7 +154,6 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
-
         toolbarVisible = toolbar
         mainViewModel =
             ViewModelProvider(this, MyViewModelFactory(MainRepository(retrofitService))).get(

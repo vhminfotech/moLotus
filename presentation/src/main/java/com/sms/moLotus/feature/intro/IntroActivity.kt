@@ -84,8 +84,12 @@ class IntroActivity : AppCompatActivity() {
                 "OTP sent successfully.!!",
                 Toast.LENGTH_SHORT
             ).show()
-            PreferenceHelper.setStringPreference(this, Constants.TOKEN, it.user_id)
-            PreferenceHelper.setStringPreference(this, Constants.TOKEN, it.token)
+            PreferenceHelper.setStringPreference(this, Constants.USERID,
+                it.user_id
+            )
+            PreferenceHelper.setStringPreference(this, Constants.TOKEN,
+                it.token
+            )
             val intent = Intent(this, VerifyOtpActivity::class.java)
             intent.putExtra("PhoneNumber", phone_number.text.toString())
             startActivity(intent)

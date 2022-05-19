@@ -2,6 +2,7 @@ package com.sms.moLotus.feature.retrofit
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.apollographql.apollo.ApolloClient
 import com.sms.moLotus.feature.model.*
 import retrofit2.Call
 import retrofit2.Callback
@@ -15,6 +16,8 @@ class MainViewModel constructor(private val repository: MainRepository) : ViewMo
     val chatList = MutableLiveData<ArrayList<ChatList>>()
     val allMessages = MutableLiveData<MessageList>()
     val sendMessage = MutableLiveData<MessageList>()
+    private var client: ApolloClient? = null
+//    val registerUser = MutableLiveData<RegisterUserMutation.Data>()
     val errorMessage = MutableLiveData<String>()
 
     fun getAllOperators() {
@@ -98,7 +101,7 @@ class MainViewModel constructor(private val repository: MainRepository) : ViewMo
     }
 
     fun getAllMessages(threadId: Int, token: String) {
-        val response = repository.getAllMessages(threadId,token)
+        val response = repository.getAllMessages(threadId, token)
         response.enqueue(object : Callback<MessageList> {
             override fun onResponse(
                 call: Call<MessageList>,
@@ -113,8 +116,8 @@ class MainViewModel constructor(private val repository: MainRepository) : ViewMo
         })
     }
 
-    fun sendMessage(user_id: ArrayList<Int>, text: String,threadId: Int, token: String) {
-        val response = repository.sendMessage(user_id, text,threadId,token)
+    fun sendMessage(user_id: ArrayList<Int>, text: String, threadId: Int, token: String) {
+        val response = repository.sendMessage(user_id, text, threadId, token)
         response.enqueue(object : Callback<MessageList> {
             override fun onResponse(
                 call: Call<MessageList>,
@@ -128,4 +131,20 @@ class MainViewModel constructor(private val repository: MainRepository) : ViewMo
             }
         })
     }
+
+    /*fun registerUser(name: String, operator: String, MSISDN: String) {
+        client = ApolloClientService.setUpApolloClient("")
+        client?.mutate(
+            RegisterUserMutation(name, operator, MSISDN )
+        )
+            ?.enqueue(object : ApolloCall.Callback<RegisterUserMutation.Data>() {
+                override fun onFailure(e: ApolloException) {
+                    errorMessage.postValue(e.message)
+                }
+
+                override fun onResponse(response: com.apollographql.apollo.api.Response<RegisterUserMutation.Data>) {
+                    registerUser.postValue(response.data)
+                }
+            })
+    }*/
 }
