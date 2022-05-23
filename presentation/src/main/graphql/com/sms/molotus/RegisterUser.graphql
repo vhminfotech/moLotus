@@ -1,12 +1,12 @@
-mutation RegisterUser($name: String!, $operatorId: ID!, $MSISDN: String!){
-    registerUser(name: $name, operatorId: $operatorId, MSISDN: $MSISDN) {
+mutation RegisterUser($name: String!, $operatorId: ID!, $msisdn: String!){
+    registerUser(name: $name, operatorId: $operatorId, msisdn: $msisdn) {
         token
         message
         status
         userData {
             name
             userId
-            #MSISDN
+            msisdn
             operator
             createdAt
             updatedAt
