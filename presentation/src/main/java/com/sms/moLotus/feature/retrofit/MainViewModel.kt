@@ -4,10 +4,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.apollographql.apollo3.ApolloClient
 import com.apollographql.apollo3.exception.ApolloException
+import com.sms.moLotus.GetApnDetailsQuery
 import com.sms.moLotus.RegisterUserMutation
 import com.sms.moLotus.feature.apollo.ApolloClientService
-import com.sms.moLotus.feature.model.*
-import kotlinx.coroutines.DelicateCoroutinesApi
+import com.sms.moLotus.feature.model.ChatList
+import com.sms.moLotus.feature.model.MessageList
+import com.sms.moLotus.feature.model.Operators
+import com.sms.moLotus.feature.model.VersionCode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -18,7 +21,7 @@ import retrofit2.Response
 class MainViewModel constructor(private val repository: MainRepository) : ViewModel() {
     val operatorsList = MutableLiveData<List<Operators>>()
     val versionCode = MutableLiveData<List<VersionCode>>()
-    val apnDetails = MutableLiveData<APNParamDetails>()
+    val apnDetails = MutableLiveData<GetApnDetailsQuery.Data>()
 
     //    val loginResponse = MutableLiveData<LoginResponse>()
     val chatList = MutableLiveData<ArrayList<ChatList>>()
@@ -61,7 +64,17 @@ class MainViewModel constructor(private val repository: MainRepository) : ViewMo
     }
 
     fun getApnDetails(id: Int) {
-        val response = repository.getApnDetails(id)
+        client = ApolloClientService.setUpApolloClient("")
+        val getAPNParamDetails = GetApnDetailsQuery(id.toString())
+        try {
+            GlobalScope.launch(Dispatchers.IO) {
+                val response = client?.query(getAPNParamDetails)?.execute()
+                apnDetails.postValue(response?.data)
+            }
+        } catch (e: ApolloException) {
+            errorMessage.postValue(e.message)
+        }
+        /*val response = repository.getApnDetails(id)
         response.enqueue(object : Callback<APNParamDetails> {
             override fun onResponse(
                 call: Call<APNParamDetails>,
@@ -73,7 +86,7 @@ class MainViewModel constructor(private val repository: MainRepository) : ViewMo
             override fun onFailure(call: Call<APNParamDetails>, t: Throwable) {
                 errorMessage.postValue(t.message)
             }
-        })
+        })*/
     }
 
     /* fun registerUser(name: String, operator: Int, MSISDN: String) {
@@ -140,7 +153,6 @@ class MainViewModel constructor(private val repository: MainRepository) : ViewMo
         })
     }
 
-    @DelicateCoroutinesApi
     fun registerUser(name: String, operator: String, MSISDN: String) {
         client = ApolloClientService.setUpApolloClient("")
         val registerUserMutation = RegisterUserMutation(name, operator, MSISDN)

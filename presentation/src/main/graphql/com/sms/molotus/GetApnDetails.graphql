@@ -1,0 +1,25 @@
+query GetApnDetails($operatorId: ID!){
+    getApnDetails(operatorId: $operatorId) {
+        _id
+        operatorId
+        apnName
+        apn
+        proxy
+        port
+        userName
+        password
+        server
+        mmsc
+        mmsProxy
+        mmsPort
+        mcc
+        mnc
+        authType
+        apnType
+        apnProtocol
+        apnRoaming
+        bearer
+        mvnoType
+        mvnoValue
+    }
+}

@@ -7,7 +7,6 @@ import android.content.Intent
 import android.net.ConnectivityManager
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -34,30 +33,30 @@ class APNDetailsActivity : AppCompatActivity() {
 
         viewModel.apnDetails.observe(this, {
 //            Log.e("=====", "response:: $it")
-            NAME_et.setText(it.apn_name)
-            APN_et.setText(it.apn)
-            Proxy_et.setText(it.proxy)
-            Port_et.setText(it.port)
-            username_et.setText(it.username)
-            password_et.setText(it.password)
-            Server_et.setText(it.server)
-            MMSC_et.setText(it.mmsc)
-            mms_proxy_et.setText(it.mms_proxy)
-            MMS_Port_et.setText(it.mms_port)
-            MCC_et.setText(it.mcc)
-            MNC_et.setText(it.mnc)
-            Auth_Type_et.setText(it.auth_type)
-            APN_Type_et.setText(it.apn_type)
-            if (it.apn_protocol.isEmpty()){
+            etName.setText(it.getApnDetails?.apnName)
+            etApn.setText(it.getApnDetails?.apn)
+            etProxy.setText(it.getApnDetails?.proxy)
+            etPort.setText(it.getApnDetails?.port)
+            etUserName.setText(it.getApnDetails?.userName)
+            etPassword.setText(it.getApnDetails?.password)
+            etServer.setText(it.getApnDetails?.server)
+            etMMSC.setText(it.getApnDetails?.mmsc)
+            etMmsProxy.setText(it.getApnDetails?.mmsProxy)
+            MMS_Port_et.setText(it.getApnDetails?.mmsPort)
+            MCC_et.setText(it.getApnDetails?.mcc)
+            MNC_et.setText(it.getApnDetails?.mnc)
+            Auth_Type_et.setText(it.getApnDetails?.authType)
+            APN_Type_et.setText(it.getApnDetails?.apnType)
+            if (it.getApnDetails?.apnProtocol?.isEmpty() == true){
                 APN_Protocol_et.setText("1Pv4/1Pv6")
             }else{
-                APN_Protocol_et.setText(it.apn_protocol)
+                APN_Protocol_et.setText(it.getApnDetails?.apnProtocol)
             }
 
-            APN_Roaming_et.setText(it.apn_roaming)
-            Bearer_et.setText(it.bearer)
-            MVNO_Type_et.setText(it.mvno_type)
-            MVNO_Value_et.setText(it.mvno_value)
+            APN_Roaming_et.setText(it.getApnDetails?.apnRoaming)
+            Bearer_et.setText(it.getApnDetails?.bearer)
+            MVNO_Type_et.setText(it.getApnDetails?.mvnoType)
+            MVNO_Value_et.setText(it.getApnDetails?.mvnoValue)
         })
         viewModel.errorMessage.observe(this, {
 //            Log.e("=====", "errorMessage:: $it")
@@ -102,47 +101,47 @@ class APNDetailsActivity : AppCompatActivity() {
         getApnDetails(Constants.CARRIER_ID)
 
         NAME_tf.setEndIconOnClickListener {
-            copy2clipboard(NAME_et.text.toString())
+            copy2clipboard(etName.text.toString())
             toast("NAME copied to clipboard")
         }
 
         APN_tf.setEndIconOnClickListener {
-            copy2clipboard(APN_et.text.toString())
+            copy2clipboard(etApn.text.toString())
             toast("APN copied to clipboard")
         }
 
         Proxy_tf.setEndIconOnClickListener {
-            copy2clipboard(Proxy_et.text.toString())
+            copy2clipboard(etProxy.text.toString())
             toast("Proxy copied to clipboard")
         }
 
         Port_tf.setEndIconOnClickListener {
-            copy2clipboard(Port_et.text.toString())
+            copy2clipboard(etPort.text.toString())
             toast("Port copied to clipboard")
         }
 
         username_tf.setEndIconOnClickListener {
-            copy2clipboard(username_et.text.toString())
+            copy2clipboard(etUserName.text.toString())
             toast("Username copied to clipboard")
         }
 
         Server_tf.setEndIconOnClickListener {
-            copy2clipboard(Server_et.text.toString())
+            copy2clipboard(etServer.text.toString())
             toast("Server copied to clipboard")
         }
 
         password_tf.setEndIconOnClickListener {
-            copy2clipboard(password_et.text.toString())
+            copy2clipboard(etPassword.text.toString())
             toast("Password copied to clipboard")
         }
 
         MMSC_tf.setEndIconOnClickListener {
-            copy2clipboard(MMSC_et.text.toString())
+            copy2clipboard(etMMSC.text.toString())
             toast("MMSC copied to clipboard")
         }
 
         mms_proxy_tf.setEndIconOnClickListener {
-            copy2clipboard(mms_proxy_et.text.toString())
+            copy2clipboard(etMmsProxy.text.toString())
             toast("MMS Proxy copied to clipboard")
         }
 
