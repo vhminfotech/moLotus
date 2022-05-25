@@ -1,0 +1,5 @@
+query GetAppConfig($operatorId: ID!){
+    getAppConfig(operatorId: $operatorId) {
+        appConfigRes
+    }
+}

@@ -11,6 +11,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.Settings
+import android.util.Log
 import android.view.Gravity
 import android.view.Window
 import android.view.WindowManager
@@ -20,6 +21,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
+import com.google.gson.Gson
 import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
 import com.sms.moLotus.common.Navigator
@@ -37,6 +39,9 @@ import kotlinx.android.synthetic.main.activity_app_settings.*
 import kotlinx.android.synthetic.main.layout_add_signature.*
 import kotlinx.android.synthetic.main.layout_check_for_updates.*
 import kotlinx.android.synthetic.main.layout_header.*
+import org.json.JSONArray
+import org.json.JSONException
+import org.json.JSONObject
 
 
 class AppSettingsActivity : AppCompatActivity() {
@@ -78,7 +83,7 @@ class AppSettingsActivity : AppCompatActivity() {
 
         toggleSendPaidMessages.isChecked = PreferenceHelper.getPreference(this, "SendPaidMessage")
         toggleNotification.isChecked = PreferenceHelper.getPreference(this, "Notification")
-        toggleAutoDownload.isChecked =  PreferenceHelper.getPreference(this,"AutoDownload")
+        toggleAutoDownload.isChecked = PreferenceHelper.getPreference(this, "AutoDownload")
 
         toggleSendPaidMessages?.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
@@ -93,10 +98,10 @@ class AppSettingsActivity : AppCompatActivity() {
         toggleAutoDownload?.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 toggleAutoDownload.isChecked = true
-                PreferenceHelper.setPreference(this,"AutoDownload",true)
+                PreferenceHelper.setPreference(this, "AutoDownload", true)
             } else {
                 toggleAutoDownload.isChecked = false
-                PreferenceHelper.setPreference(this,"AutoDownload", false)
+                PreferenceHelper.setPreference(this, "AutoDownload", false)
             }
         }
 
@@ -189,11 +194,34 @@ class AppSettingsActivity : AppCompatActivity() {
         dialog.show()
     }
 
+    fun convertToHashMap(jsonString: String?): HashMap<String?, String>? {
+        val myHashMap = HashMap<String?, String>()
+        try {
+            val jArray = JSONArray(jsonString)
+            Log.e("=====", "jArray:: ${jArray.get(0)}")
+
+            var jObject: JSONObject? = null
+            var keyString: String? = null
+            for (i in 0 until jArray.length()) {
+                jObject = jArray.getJSONObject(i)
+                // beacuse you have only one key-value pair in each object so I have used index 0
+                keyString = jObject.names().get(i) as String?
+                myHashMap[keyString] = jObject.getString(keyString)
+            }
+        } catch (e: JSONException) {
+            // TODO Auto-generated catch block
+            e.printStackTrace()
+            Log.e("=====", "error:: ${e.message}")
+
+        }
+        return myHashMap
+    }
+
     private fun getVersionCodeFromApi() {
         viewModel.versionCode.observe(this, {
-            //Log.e("=====", "response:: $it")
-            this.versionCode = it[0].config_value.toInt()
-            this.apkUrl = it[2].config_value
+            val jArray = JSONArray(Gson().toJson(it.appConfigRes))
+            this.versionCode = Integer.parseInt(jArray.getJSONObject(0)["configValue"].toString())
+            this.apkUrl = jArray.getJSONObject(2)["configValue"].toString()
         })
         viewModel.errorMessage.observe(this, {
             //Log.e("=====", "errorMessage:: $it")

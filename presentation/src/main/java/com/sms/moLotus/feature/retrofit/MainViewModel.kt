@@ -5,12 +5,13 @@ import androidx.lifecycle.ViewModel
 import com.apollographql.apollo3.ApolloClient
 import com.apollographql.apollo3.exception.ApolloException
 import com.sms.moLotus.GetApnDetailsQuery
+import com.sms.moLotus.GetAppConfigQuery
 import com.sms.moLotus.RegisterUserMutation
+import com.sms.moLotus.feature.Constants
 import com.sms.moLotus.feature.apollo.ApolloClientService
 import com.sms.moLotus.feature.model.ChatList
 import com.sms.moLotus.feature.model.MessageList
 import com.sms.moLotus.feature.model.Operators
-import com.sms.moLotus.feature.model.VersionCode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -20,7 +21,7 @@ import retrofit2.Response
 
 class MainViewModel constructor(private val repository: MainRepository) : ViewModel() {
     val operatorsList = MutableLiveData<List<Operators>>()
-    val versionCode = MutableLiveData<List<VersionCode>>()
+    val versionCode = MutableLiveData<GetAppConfigQuery.GetAppConfig>()
     val apnDetails = MutableLiveData<GetApnDetailsQuery.Data>()
 
     //    val loginResponse = MutableLiveData<LoginResponse>()
@@ -48,19 +49,20 @@ class MainViewModel constructor(private val repository: MainRepository) : ViewMo
     }
 
     fun getVersionCode() {
-        val response = repository.getVersionCode()
-        response.enqueue(object : Callback<List<VersionCode>> {
-            override fun onResponse(
-                call: Call<List<VersionCode>>,
-                response: Response<List<VersionCode>>
-            ) {
-                versionCode.postValue(response.body())
+        client = ApolloClientService.setUpApolloClient("")
+        val getAppConfig = GetAppConfigQuery(Constants.CARRIER_ID.toString())
+        try {
+            GlobalScope.launch(Dispatchers.IO) {
+                val response = client?.query(getAppConfig)?.execute()
+                if(response?.data?.getAppConfig !=null) {
+                    versionCode.postValue(response.data?.getAppConfig)
+                }else{
+                    errorMessage.postValue("null")
+                }
             }
-
-            override fun onFailure(call: Call<List<VersionCode>>, t: Throwable) {
-                errorMessage.postValue(t.message)
-            }
-        })
+        } catch (e: ApolloException) {
+            errorMessage.postValue(e.message)
+        }
     }
 
     fun getApnDetails(id: Int) {
@@ -74,19 +76,6 @@ class MainViewModel constructor(private val repository: MainRepository) : ViewMo
         } catch (e: ApolloException) {
             errorMessage.postValue(e.message)
         }
-        /*val response = repository.getApnDetails(id)
-        response.enqueue(object : Callback<APNParamDetails> {
-            override fun onResponse(
-                call: Call<APNParamDetails>,
-                response: Response<APNParamDetails>
-            ) {
-                apnDetails.postValue(response.body())
-            }
-
-            override fun onFailure(call: Call<APNParamDetails>, t: Throwable) {
-                errorMessage.postValue(t.message)
-            }
-        })*/
     }
 
     /* fun registerUser(name: String, operator: Int, MSISDN: String) {
