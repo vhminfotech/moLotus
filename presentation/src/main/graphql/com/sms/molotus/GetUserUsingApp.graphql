@@ -1,0 +1,10 @@
+query GetUserUsingApp($userId: ID!,$userData:[String!]!){
+    getUserUsingApp(userId:$userId,userData:$userData){
+        userData{
+            name
+            msisdn
+            operator
+            userId
+        }
+    }
+}

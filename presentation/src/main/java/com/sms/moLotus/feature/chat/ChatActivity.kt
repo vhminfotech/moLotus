@@ -31,7 +31,7 @@ class ChatActivity : AppCompatActivity() {
     private var currentUserId: Int = 0
     private var threadId: Int = 0
     var userName: String = ""
-    var userId : ArrayList<Int> ?= ArrayList()
+    var userId: ArrayList<Int>? = ArrayList()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
@@ -39,7 +39,7 @@ class ChatActivity : AppCompatActivity() {
         threadId = intent?.getIntExtra("threadId", 0) ?: 0
         userName = intent?.getStringExtra("userName").toString()
         txtTitle?.text = userName
-        userId = arrayListOf(2,4)
+        userId = arrayListOf(2, 4)
         imgBack?.setOnClickListener {
             onBackPressed()
         }
@@ -47,7 +47,7 @@ class ChatActivity : AppCompatActivity() {
             ViewModelProvider(this, MyViewModelFactory(MainRepository(retrofitService))).get(
                 MainViewModel::class.java
             )
-        getChatList()
+       // getChatList()
 
     }
 
@@ -116,9 +116,10 @@ class ChatActivity : AppCompatActivity() {
         viewModel.allMessages.observe(this, {
             Log.e("=====", "response:: $it")
             // initRecyclerView(it)
-
-            messageList = it.messages
-            initRecyclerView(messageList)
+            if (it.messages.isNotEmpty()) {
+                messageList = it.messages
+                initRecyclerView(messageList)
+            }
         })
         viewModel.errorMessage.observe(this, {
             Log.e("=====", "errorMessage:: $it")

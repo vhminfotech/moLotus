@@ -172,11 +172,24 @@
         android:background="@drawable/circle_ripple"
         android:contentDescription="@string/main_fab_cd"
         android:padding="16dp"
+        android:visibility="gone"
         android:src="@drawable/ic_add_black_24dp"
         app:layout_constraintBottom_toTopOf="@id/bottom"
         app:layout_constraintEnd_toEndOf="parent"
         app:tint="@color/white" />
-
+    <ImageView
+        android:id="@+id/createChat"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_margin="16dp"
+        android:background="@drawable/circle_ripple"
+        android:contentDescription="@string/main_fab_cd"
+        android:padding="16dp"
+        android:visibility="gone"
+        android:src="@drawable/ic_add_black_24dp"
+        app:layout_constraintBottom_toTopOf="@id/bottom"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:tint="@color/white" />
     <View
         android:layout_width="0dp"
         android:layout_height="8dp"

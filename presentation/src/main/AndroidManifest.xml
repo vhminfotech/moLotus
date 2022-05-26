@@ -3,8 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.sms.moLotus">
     <!-- Used for starting foreground service for backup/restore on Android P+ -->
-
-
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CALL_PHONE" /> <!-- Used for starting foreground service for backup/restore on Android P+ -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
@@ -24,12 +22,12 @@
     <uses-permission android:name="android.permission.WRITE_SMS" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
-    <queries android:name="android.permission.QUERY_ALL_PACKAGES"/>
+
+    <queries android:name="android.permission.QUERY_ALL_PACKAGES" />
 
     <uses-permission
         android:name="android.permission.READ_LOGS"
         tools:ignore="ProtectedPermissions" />
-
     <uses-permission
         android:name="android.permission.WRITE_SETTINGS"
         tools:ignore="ProtectedPermissions" />
@@ -51,6 +49,10 @@
         android:supportsRtl="true"
         android:theme="@style/AppLaunchTheme"
         android:usesCleartextTraffic="true">
+        <activity
+            android:name=".feature.chat.ChatContactListActivity"
+            android:theme="@style/AppTheme1"
+            android:exported="true" />
         <activity
             android:name=".feature.chat.ChatActivity"
             android:exported="true"
@@ -91,12 +93,14 @@
             android:name=".feature.intro.APNDetailsActivity"
             android:theme="@style/AppTheme1">
 
-            <!--<intent-filter>
+            <!--
+            <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>-->
-        </activity><!-- <activity android:name="com.sms.moLotus.feature.main.MainActivity" /> -->
+            </intent-filter>
+            -->
+        </activity> <!-- <activity android:name="com.sms.moLotus.feature.main.MainActivity" /> -->
         <activity
             android:name=".feature.intro.IntroActivity"
             android:theme="@style/AppTheme1" />

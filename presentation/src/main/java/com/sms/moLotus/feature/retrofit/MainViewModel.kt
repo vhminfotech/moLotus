@@ -6,6 +6,7 @@ import com.apollographql.apollo3.ApolloClient
 import com.apollographql.apollo3.exception.ApolloException
 import com.sms.moLotus.GetApnDetailsQuery
 import com.sms.moLotus.GetAppConfigQuery
+import com.sms.moLotus.GetUserUsingAppQuery
 import com.sms.moLotus.RegisterUserMutation
 import com.sms.moLotus.feature.Constants
 import com.sms.moLotus.feature.apollo.ApolloClientService
@@ -23,6 +24,7 @@ class MainViewModel constructor(private val repository: MainRepository) : ViewMo
     val operatorsList = MutableLiveData<List<Operators>>()
     val versionCode = MutableLiveData<GetAppConfigQuery.GetAppConfig>()
     val apnDetails = MutableLiveData<GetApnDetailsQuery.Data>()
+    val userUsingApp = MutableLiveData<GetUserUsingAppQuery.Data>()
 
     //    val loginResponse = MutableLiveData<LoginResponse>()
     val chatList = MutableLiveData<ArrayList<ChatList>>()
@@ -54,9 +56,9 @@ class MainViewModel constructor(private val repository: MainRepository) : ViewMo
         try {
             GlobalScope.launch(Dispatchers.IO) {
                 val response = client?.query(getAppConfig)?.execute()
-                if(response?.data?.getAppConfig !=null) {
+                if (response?.data?.getAppConfig != null) {
                     versionCode.postValue(response.data?.getAppConfig)
-                }else{
+                } else {
                     errorMessage.postValue("null")
                 }
             }
@@ -78,6 +80,18 @@ class MainViewModel constructor(private val repository: MainRepository) : ViewMo
         }
     }
 
+    fun getUserUsingAppList(userId: String, contactList: List<String>) {
+        client = ApolloClientService.setUpApolloClient("")
+        val getUserUsingApp = GetUserUsingAppQuery(userId, contactList)
+        try {
+            GlobalScope.launch(Dispatchers.IO) {
+                val response = client?.query(getUserUsingApp)?.execute()
+                userUsingApp.postValue(response?.data)
+            }
+        } catch (e: ApolloException) {
+            errorMessage.postValue(e.message)
+        }
+    }
     /* fun registerUser(name: String, operator: Int, MSISDN: String) {
          val response = repository.registerUser(name, operator, MSISDN)
          response.enqueue(object : Callback<LoginResponse> {

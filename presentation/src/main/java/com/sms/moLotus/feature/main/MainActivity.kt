@@ -37,9 +37,9 @@ import com.sms.moLotus.feature.blocking.BlockingDialog
 import com.sms.moLotus.feature.changelog.ChangelogDialog
 import com.sms.moLotus.feature.chat.ChatActivity
 import com.sms.moLotus.feature.chat.adapter.ChatListAdapter
+import com.sms.moLotus.feature.chat.listener.OnItemClickListener
 import com.sms.moLotus.feature.conversations.ConversationsAdapter
 import com.sms.moLotus.feature.intro.IntroActivity
-import com.sms.moLotus.feature.main.listener.OnItemClickListener
 import com.sms.moLotus.feature.model.ChatList
 import com.sms.moLotus.feature.retrofit.MainRepository
 import com.sms.moLotus.feature.retrofit.MyViewModelFactory
@@ -89,6 +89,10 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener {
     override val queryChangedIntent by lazy { toolbarSearch.textChanges() }
     override val composeIntent by lazy {
         compose.clicks()
+    }
+
+    override val createChatIntent by lazy {
+        createChat.clicks()
     }
 
     /*override val drawerOpenIntent: Observable<Boolean> by lazy {
@@ -146,6 +150,7 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener {
     private val backPressedSubject: Subject<NavItem> = PublishSubject.create()
     lateinit var mainViewModel: com.sms.moLotus.feature.retrofit.MainViewModel
     private val retrofitService = RetrofitService.getInstance()
+
     companion object {
         var toolbarVisible: androidx.appcompat.widget.Toolbar? = null
     }
@@ -180,12 +185,16 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener {
                 if (position == 1) {
                     recyclerView?.visibility = View.GONE
                     empty?.visibility = View.GONE
+                    compose?.visibility = View.GONE
+                    createChat?.visibility = View.VISIBLE
                     getChatList()
                 } else {
                     txtNoChat?.visibility = View.GONE
                     recyclerView?.visibility = View.VISIBLE
                     rvChatRecyclerView?.visibility = View.GONE
-                    if (conversationsAdapter.itemCount == 0){
+                    compose?.visibility = View.VISIBLE
+                    createChat?.visibility = View.GONE
+                    if (conversationsAdapter.itemCount == 0) {
                         empty?.visibility = View.VISIBLE
                     }
                 }

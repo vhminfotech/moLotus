@@ -12,6 +12,7 @@ interface MainView : QkView<MainState> {
     val activityResumedIntent: Observable<Boolean>
     val queryChangedIntent: Observable<CharSequence>
     val composeIntent: Observable<Unit>
+    val createChatIntent: Observable<Unit>
     //val drawerOpenIntent: Observable<Boolean>
     val homeIntent: Observable<*>
 //    val navigationIntent: Observable<NavItem>
