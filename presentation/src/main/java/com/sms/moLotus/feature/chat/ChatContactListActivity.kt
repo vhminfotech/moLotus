@@ -8,6 +8,7 @@ import android.net.ConnectivityManager
 import android.os.Bundle
 import android.provider.ContactsContract
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
@@ -131,9 +132,13 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
             val list: ArrayList<GetUserUsingAppQuery.UserDatum> =
                 it.getUserUsingApp?.userData as ArrayList<GetUserUsingAppQuery.UserDatum>
             // initRecyclerView(it)
-            if (list.isNotEmpty()) {
-
+            if (list.size > 0) {
+                txtNoData?.visibility = View.GONE
+                rvContact?.visibility = View.VISIBLE
                 initRecyclerView(list)
+            } else {
+                txtNoData?.visibility = View.VISIBLE
+                rvContact?.visibility = View.GONE
             }
         })
         viewModel.errorMessage.observe(this, {
