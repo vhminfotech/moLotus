@@ -95,7 +95,7 @@ class APNDetailsActivity : AppCompatActivity() {
             skip.visibility = View.GONE
         }
         viewModel =
-            ViewModelProvider(this, MyViewModelFactory(MainRepository(retrofitService))).get(
+            ViewModelProvider(this/*, MyViewModelFactory(MainRepository(retrofitService))*/).get(
                 MainViewModel::class.java
             )
         getApnDetails(Constants.CARRIER_ID)

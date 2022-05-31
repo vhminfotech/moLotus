@@ -161,7 +161,7 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener {
         setContentView(R.layout.main_activity)
         toolbarVisible = toolbar
         mainViewModel =
-            ViewModelProvider(this, MyViewModelFactory(MainRepository(retrofitService))).get(
+            ViewModelProvider(this/*, MyViewModelFactory(MainRepository(retrofitService))*/).get(
                 com.sms.moLotus.feature.retrofit.MainViewModel::class.java
             )
         imgSearch.setOnClickListener {

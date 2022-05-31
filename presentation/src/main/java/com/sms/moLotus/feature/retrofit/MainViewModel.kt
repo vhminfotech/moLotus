@@ -4,10 +4,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.apollographql.apollo3.ApolloClient
 import com.apollographql.apollo3.exception.ApolloException
-import com.sms.moLotus.GetApnDetailsQuery
-import com.sms.moLotus.GetAppConfigQuery
-import com.sms.moLotus.GetUserUsingAppQuery
-import com.sms.moLotus.RegisterUserMutation
+import com.sms.moLotus.*
 import com.sms.moLotus.feature.Constants
 import com.sms.moLotus.feature.apollo.ApolloClientService
 import com.sms.moLotus.feature.model.ChatList
@@ -16,11 +13,8 @@ import com.sms.moLotus.feature.model.Operators
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
-class MainViewModel constructor(private val repository: MainRepository) : ViewModel() {
+class MainViewModel constructor(/*private val repository: MainRepository*/) : ViewModel() {
     val operatorsList = MutableLiveData<List<Operators>>()
     val versionCode = MutableLiveData<GetAppConfigQuery.GetAppConfig>()
     val apnDetails = MutableLiveData<GetApnDetailsQuery.Data>()
@@ -32,10 +26,12 @@ class MainViewModel constructor(private val repository: MainRepository) : ViewMo
     val sendMessage = MutableLiveData<MessageList>()
     private var client: ApolloClient? = null
     val registerUser = MutableLiveData<RegisterUserMutation.Data>()
+    val createThread = MutableLiveData<CreateThreadMutation.Data>()
+    val createMessage = MutableLiveData<CreateMessageMutation.Data>()
     val errorMessage = MutableLiveData<String>()
 
     fun getAllOperators() {
-        val response = repository.getAllOperators()
+      /*  val response = repository.getAllOperators()
         response.enqueue(object : Callback<List<Operators>> {
             override fun onResponse(
                 call: Call<List<Operators>>,
@@ -47,7 +43,7 @@ class MainViewModel constructor(private val repository: MainRepository) : ViewMo
             override fun onFailure(call: Call<List<Operators>>, t: Throwable) {
                 errorMessage.postValue(t.message)
             }
-        })
+        })*/
     }
 
     fun getVersionCode() {
@@ -109,7 +105,7 @@ class MainViewModel constructor(private val repository: MainRepository) : ViewMo
      }*/
 
     fun getChatList(token: String) {
-        val response = repository.getChatList(token)
+       /* val response = repository.getChatList(token)
         response.enqueue(object : Callback<ArrayList<ChatList>> {
             override fun onResponse(
                 call: Call<ArrayList<ChatList>>,
@@ -121,11 +117,11 @@ class MainViewModel constructor(private val repository: MainRepository) : ViewMo
             override fun onFailure(call: Call<ArrayList<ChatList>>, t: Throwable) {
                 errorMessage.postValue(t.message)
             }
-        })
+        })*/
     }
 
     fun getAllMessages(threadId: Int, token: String) {
-        val response = repository.getAllMessages(threadId, token)
+        /*val response = repository.getAllMessages(threadId, token)
         response.enqueue(object : Callback<MessageList> {
             override fun onResponse(
                 call: Call<MessageList>,
@@ -137,11 +133,11 @@ class MainViewModel constructor(private val repository: MainRepository) : ViewMo
             override fun onFailure(call: Call<MessageList>, t: Throwable) {
                 errorMessage.postValue(t.message)
             }
-        })
+        })*/
     }
 
     fun sendMessage(user_id: ArrayList<Int>, text: String, threadId: Int, token: String) {
-        val response = repository.sendMessage(user_id, text, threadId, token)
+       /* val response = repository.sendMessage(user_id, text, threadId, token)
         response.enqueue(object : Callback<MessageList> {
             override fun onResponse(
                 call: Call<MessageList>,
@@ -153,7 +149,7 @@ class MainViewModel constructor(private val repository: MainRepository) : ViewMo
             override fun onFailure(call: Call<MessageList>, t: Throwable) {
                 errorMessage.postValue(t.message)
             }
-        })
+        })*/
     }
 
     fun registerUser(name: String, operator: String, MSISDN: String) {
@@ -163,6 +159,32 @@ class MainViewModel constructor(private val repository: MainRepository) : ViewMo
             GlobalScope.launch(Dispatchers.IO) {
                 val response = client?.mutation(registerUserMutation)?.execute()
                 registerUser.postValue(response?.data)
+            }
+        } catch (e: ApolloException) {
+            errorMessage.postValue(e.message)
+        }
+    }
+
+    fun createThread(message: String, userId: String, recipientsIds: ArrayList<String>, token: String) {
+        client = ApolloClientService.setUpApolloClient(token)
+        val createThreadMutation = CreateThreadMutation(message, userId, recipientsIds)
+        try {
+            GlobalScope.launch(Dispatchers.IO) {
+                val response = client?.mutation(createThreadMutation)?.execute()
+                createThread.postValue(response?.data)
+            }
+        } catch (e: ApolloException) {
+            errorMessage.postValue(e.message)
+        }
+    }
+
+    fun createMessage(message: String, threadId: String, senderId: String, token: String) {
+        client = ApolloClientService.setUpApolloClient(token)
+        val createMessageMutation = CreateMessageMutation(message, threadId, senderId)
+        try {
+            GlobalScope.launch(Dispatchers.IO) {
+                val response = client?.mutation(createMessageMutation)?.execute()
+                createMessage.postValue(response?.data)
             }
         } catch (e: ApolloException) {
             errorMessage.postValue(e.message)

@@ -13,41 +13,53 @@ import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
 import com.sms.moLotus.extension.toast
 import com.sms.moLotus.feature.Constants
-
 import com.sms.moLotus.feature.chat.adapter.ChatAdapter
 import com.sms.moLotus.feature.model.Message
-import com.sms.moLotus.feature.retrofit.MainRepository
 import com.sms.moLotus.feature.retrofit.MainViewModel
-import com.sms.moLotus.feature.retrofit.MyViewModelFactory
 import com.sms.moLotus.feature.retrofit.RetrofitService
 import kotlinx.android.synthetic.main.activity_chat.*
 import kotlinx.android.synthetic.main.layout_header.*
+import timber.log.Timber
 
 class ChatActivity : AppCompatActivity() {
     lateinit var viewModel: MainViewModel
     private val retrofitService = RetrofitService.getInstance()
     var messageList: ArrayList<Message> = ArrayList()
     private var chatAdapter: ChatAdapter? = null
-    private var currentUserId: Int = 0
-    private var threadId: Int = 0
+    private var currentUserId: String = ""
+    private var receiverUserId: String = ""
     var userName: String = ""
-    var userId: ArrayList<Int>? = ArrayList()
+    var recipientsIds: ArrayList<String>? = ArrayList()
+    var threadId: String = ""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
-        currentUserId = intent?.getIntExtra("currentUser", 0) ?: 0
-        threadId = intent?.getIntExtra("threadId", 0) ?: 0
+        currentUserId = intent?.getStringExtra("currentUserId").toString()
+        receiverUserId = intent?.getStringExtra("receiverUserId").toString()
+        threadId = intent?.getStringExtra("threadId").toString()
         userName = intent?.getStringExtra("userName").toString()
+        Log.e("==========", "currentUserId:: $currentUserId")
+        Log.e("==========", "recieverUserId:: $receiverUserId")
         txtTitle?.text = userName
-        userId = arrayListOf(2, 4)
+        recipientsIds?.add(receiverUserId)
         imgBack?.setOnClickListener {
             onBackPressed()
         }
         viewModel =
-            ViewModelProvider(this, MyViewModelFactory(MainRepository(retrofitService))).get(
+            ViewModelProvider(this/*, MyViewModelFactory(MainRepository(retrofitService))*/).get(
                 MainViewModel::class.java
             )
-       // getChatList()
+        // getChatList()
+
+
+        imgSend.setOnClickListener { //getMessage list empty then create thread else create message
+            if (threadId.isEmpty()) {
+                createThread()
+            } else {
+                createMessage(threadId)
+            }
+        }
+
 
     }
 
@@ -68,14 +80,15 @@ class ChatActivity : AppCompatActivity() {
         chatAdapter?.notifyDataSetChanged()
     }
 
-    private fun sendMessage() {
-        viewModel.sendMessage.observe(this, {
+    private fun createThread() {
+        viewModel.createThread.observe(this, {
             Log.e("=====", "response:: $it")
             // initRecyclerView(it)
+            /*val list : ArrayList<CreateThreadMutation.CreateThread> = it
+            messageList = it*/
 
-            messageList = it.messages
+            Timber.e("createThread:: $it")
 
-            chatAdapter?.notifyDataSetChanged()
         })
         viewModel.errorMessage.observe(this, {
             Log.e("=====", "errorMessage:: $it")
@@ -98,18 +111,49 @@ class ChatActivity : AppCompatActivity() {
                 toast(it.toString(), Toast.LENGTH_SHORT)
             }
         })
-        userId?.let {
-            viewModel.sendMessage(
-                it, txtMessage.text.toString(),
-                threadId,
-                "Bearer ${
-                    PreferenceHelper.getStringPreference(
-                        this,
-                        Constants.TOKEN
-                    ).toString()
-                }"
+        recipientsIds?.let {
+            viewModel.createThread(
+                txtMessage.text.toString(), currentUserId,
+                it, PreferenceHelper.getStringPreference(this, Constants.TOKEN).toString()
             )
         }
+    }
+
+    private fun createMessage(threadId: String) {
+        viewModel.createMessage.observe(this, {
+            Log.e("=====", "response:: $it")
+            // initRecyclerView(it)
+            /*val list : ArrayList<CreateThreadMutation.CreateThread> = it
+            messageList = it*/
+            Timber.e("createMessage:: $it")
+
+        })
+        viewModel.errorMessage.observe(this, {
+            Log.e("=====", "errorMessage:: $it")
+            val conMgr =
+                getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val netInfo = conMgr.activeNetworkInfo
+            if (netInfo == null) {
+                //No internet
+                Snackbar.make(
+                    findViewById(R.id.relMain),
+                    "No Internet Connection. Please turn on your internet!",
+                    Snackbar.LENGTH_INDEFINITE
+                )
+                    .setAction("Retry") {
+
+                    }
+                    .setActionTextColor(resources.getColor(android.R.color.holo_red_light))
+                    .show()
+            } else {
+                toast(it.toString(), Toast.LENGTH_SHORT)
+            }
+        })
+
+        viewModel.createMessage(
+            txtMessage.text.toString(), threadId,
+            currentUserId, PreferenceHelper.getStringPreference(this, Constants.TOKEN).toString()
+        )
     }
 
     private fun getChatList() {
@@ -143,13 +187,12 @@ class ChatActivity : AppCompatActivity() {
             }
         })
         viewModel.getAllMessages(
-            threadId,
-            "Bearer ${
-                PreferenceHelper.getStringPreference(
-                    this,
-                    Constants.TOKEN
-                ).toString()
-            }"
+            1,
+            PreferenceHelper.getStringPreference(
+                this,
+                Constants.TOKEN
+            ).toString()
+
         )
     }
 }

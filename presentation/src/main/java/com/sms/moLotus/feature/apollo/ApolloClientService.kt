@@ -18,7 +18,7 @@ object ApolloClientService {
                 val original: Request = chain.request()
                 val builder: Request.Builder =
                     original.newBuilder().method(original.method, original.body)
-                builder.header("Authorization", authHeader)
+                builder.header("Authorization","Bearer  $authHeader")
                 Timber.e("Authorization $authHeader")
                 chain.proceed(builder.build())
             }

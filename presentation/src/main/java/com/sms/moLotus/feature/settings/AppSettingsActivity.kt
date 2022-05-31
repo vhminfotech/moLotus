@@ -64,7 +64,7 @@ class AppSettingsActivity : AppCompatActivity() {
         webView = WebView(this)
 
         viewModel =
-            ViewModelProvider(this, MyViewModelFactory(MainRepository(retrofitService))).get(
+            ViewModelProvider(this/*, MyViewModelFactory(MainRepository(retrofitService))*/).get(
                 MainViewModel::class.java
             )
         getVersionCodeFromApi()

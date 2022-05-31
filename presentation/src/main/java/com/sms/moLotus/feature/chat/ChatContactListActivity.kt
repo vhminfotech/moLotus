@@ -21,9 +21,7 @@ import com.sms.moLotus.extension.toast
 import com.sms.moLotus.feature.Constants
 import com.sms.moLotus.feature.chat.adapter.ChatContactListAdapter
 import com.sms.moLotus.feature.chat.listener.OnChatContactClickListener
-import com.sms.moLotus.feature.retrofit.MainRepository
 import com.sms.moLotus.feature.retrofit.MainViewModel
-import com.sms.moLotus.feature.retrofit.MyViewModelFactory
 import com.sms.moLotus.feature.retrofit.RetrofitService
 import kotlinx.android.synthetic.main.activity_chat_contact_list.*
 import kotlinx.android.synthetic.main.layout_header.*
@@ -39,9 +37,9 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat_contact_list)
         userId = PreferenceHelper.getStringPreference(this, Constants.USERID).toString()
-        Log.e("CHATCONTACT", "userId :: $userId")
+        Log.e("==========", "userId :: $userId")
         viewModel =
-            ViewModelProvider(this, MyViewModelFactory(MainRepository(retrofitService))).get(
+            ViewModelProvider(this/*, MyViewModelFactory(MainRepository(retrofitService))*/).get(
                 MainViewModel::class.java
             )
         txtTitle.text = "Chat Contacts List"
@@ -169,9 +167,10 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
 
     override fun onChatContactClick(item: GetUserUsingAppQuery.UserDatum?) {
         val intent = Intent(this, ChatActivity::class.java)
-            .putExtra("currentUser", userId)
+            .putExtra("currentUserId", userId)
+            .putExtra("receiverUserId", item?.userId.toString())
             .putExtra("threadId", "")
-            .putExtra("userName", item?.name)
+            .putExtra("userName", item?.name.toString())
         startActivity(intent)
         overridePendingTransition(0, 0)
     }

@@ -70,7 +70,7 @@ class IntroActivity2 : AppCompatActivity() {
 
         languages.add(0, "Select carrier provider")
         viewModel =
-            ViewModelProvider(this, MyViewModelFactory(MainRepository(retrofitService))).get(
+            ViewModelProvider(this/*, MyViewModelFactory(MainRepository(retrofitService))*/).get(
                 MainViewModel::class.java
             )
         getOperators()

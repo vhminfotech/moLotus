@@ -1,0 +1,19 @@
+mutation CreateThread($message: String!, $lastSenderId: ID!, $recipientsIds:[ID!]!){
+    createThread(threadInput: {
+        message:$message,
+        lastSenderId:$lastSenderId,
+        recipientsIds:$recipientsIds
+    }) {
+        id
+        lastSenderId
+        message
+        date
+        recipientsIds
+        currentUser
+        unreadCount
+        recipientsCount
+        recipientUser
+        isGroup
+        groupName
+    }
+}

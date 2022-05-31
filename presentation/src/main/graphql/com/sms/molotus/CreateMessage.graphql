@@ -1,0 +1,17 @@
+mutation CreateMessage($message: String!, $threadId: ID!, $senderId:ID!){
+    createMessege(messageInput: {
+        threadId:$threadId
+        senderId:$senderId
+        message:$message
+
+    }) {
+        _id
+        threadId
+        senderId
+        message
+        dateSend
+        isAttachment
+        attachmentId
+        url
+    }
+}

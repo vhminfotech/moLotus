@@ -10,7 +10,7 @@ import com.sms.moLotus.R
 import com.sms.moLotus.feature.chat.MessageViewHolder
 import com.sms.moLotus.feature.model.Message
 
-class ChatAdapter(var currentUserId: Int, var data: MutableList<Message>) :
+class ChatAdapter(var currentUserId: String, var data: MutableList<Message>) :
     RecyclerView.Adapter<MessageViewHolder<*>>() {
     companion object {
         const val TYPE_MY_MESSAGE = 0
@@ -49,7 +49,7 @@ class ChatAdapter(var currentUserId: Int, var data: MutableList<Message>) :
         Log.e("=====", "currentUserId adapter:: $currentUserId")
         Log.e("=====", "senderID adapter:: ${data[position].sender_id}")
 
-        return if (data[position].sender_id == currentUserId) {
+        return if (data[position].sender_id.equals(currentUserId)) {
             TYPE_MY_MESSAGE
         } else {
             TYPE_FRIEND_MESSAGE
