@@ -15,7 +15,6 @@ import android.util.Log
 import android.view.*
 import android.widget.PopupWindow
 import android.widget.RelativeLayout
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.view.isVisible
@@ -27,6 +26,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
 import com.jakewharton.rxbinding2.view.clicks
 import com.jakewharton.rxbinding2.widget.textChanges
+import com.sms.moLotus.GetThreadListQuery
 import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
 import com.sms.moLotus.common.Navigator
@@ -40,9 +40,6 @@ import com.sms.moLotus.feature.chat.adapter.ChatListAdapter
 import com.sms.moLotus.feature.chat.listener.OnItemClickListener
 import com.sms.moLotus.feature.conversations.ConversationsAdapter
 import com.sms.moLotus.feature.intro.IntroActivity
-import com.sms.moLotus.feature.model.ChatList
-import com.sms.moLotus.feature.retrofit.MainRepository
-import com.sms.moLotus.feature.retrofit.MyViewModelFactory
 import com.sms.moLotus.feature.retrofit.RetrofitService
 import com.sms.moLotus.manager.ChangelogManager
 import com.sms.moLotus.repository.SyncRepository
@@ -52,12 +49,15 @@ import dagger.android.AndroidInjection
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
+import io.socket.client.IO
+import io.socket.client.Socket
 import kotlinx.android.synthetic.main.fragment_mchat.*
 import kotlinx.android.synthetic.main.layout_more_options.view.*
 import kotlinx.android.synthetic.main.layout_toolbar.*
 import kotlinx.android.synthetic.main.main_activity.*
 import kotlinx.android.synthetic.main.main_permission_hint.*
 import kotlinx.android.synthetic.main.main_syncing.*
+import java.net.URISyntaxException
 import javax.inject.Inject
 
 class MainActivity : QkThemedActivity(), MainView, OnItemClickListener {
@@ -155,10 +155,23 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener {
         var toolbarVisible: androidx.appcompat.widget.Toolbar? = null
     }
 
+
+    private var mSocket: Socket? = null
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
+        mSocket  = try {
+            IO.socket(Constants.SOCKET_URL)
+        } catch ( e: URISyntaxException) {
+            throw e
+        }
+        mSocket?.on(Socket.EVENT_CONNECT){
+            Log.e("=========", "Socket Connected")
+        }
+        mSocket?.connect()
         toolbarVisible = toolbar
         mainViewModel =
             ViewModelProvider(this/*, MyViewModelFactory(MainRepository(retrofitService))*/).get(
@@ -218,7 +231,7 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener {
 
         imgMenu.setOnClickListener { v ->
             val inflater =
-                applicationContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+                applicationContext.getSystemService(LAYOUT_INFLATER_SERVICE) as LayoutInflater
             val view = inflater.inflate(R.layout.layout_more_options, null)
             val myPopupWindow = PopupWindow(
                 view,
@@ -347,14 +360,13 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener {
         mainViewModel.chatList.observe(this, {
             Log.e("=====", "response:: $it")
 
-            if (it.isNullOrEmpty()) {
+            if (it.getThreadList?.recipientUser?.size == 0) {
                 rvChatRecyclerView?.visibility = View.GONE
                 txtNoChat?.visibility = View.VISIBLE
-
             } else {
                 rvChatRecyclerView?.visibility = View.VISIBLE
                 txtNoChat?.visibility = View.GONE
-                initRecyclerView(it)
+                it.getThreadList?.let { it1 -> initRecyclerView(it1) }
             }
         })
         mainViewModel.errorMessage.observe(this, {
@@ -384,6 +396,10 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener {
             }
         })
         mainViewModel.getChatList(
+            PreferenceHelper.getStringPreference(
+                this,
+                Constants.USERID
+            ).toString(),
             "Bearer ${
                 PreferenceHelper.getStringPreference(
                     this,
@@ -393,17 +409,17 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener {
         )
     }
 
-    override fun onItemClick(item: ChatList?) {
-        Toast.makeText(this, item?.id.toString(), Toast.LENGTH_SHORT).show()
+    override fun onItemClick(item: GetThreadListQuery.RecipientUser?) {
         val intent = Intent(this, ChatActivity::class.java)
-            .putExtra("currentUser", item?.current_user)
-            .putExtra("threadId", item?.id)
-            .putExtra("userName", item?.recipient_user?.get(0)?.name.toString())
+            .putExtra("currentUserId", PreferenceHelper.getStringPreference(this, Constants.USERID))
+            .putExtra("receiverUserId", item?.userId)
+            .putExtra("threadId", item?.threadId)
+            .putExtra("userName", item?.name.toString())
         startActivity(intent)
         overridePendingTransition(0, 0)
     }
 
-    private fun initRecyclerView(chatList: ArrayList<ChatList>) {
+    private fun initRecyclerView(chatList: GetThreadListQuery.GetThreadList) {
         rvChatRecyclerView?.layoutManager = LinearLayoutManager(this)
 
         // This will pass the ArrayList to our Adapter

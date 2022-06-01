@@ -1,21 +1,26 @@
 package com.sms.moLotus.feature.chat.adapter
 
-import android.util.Log
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.sms.moLotus.GetMessageListQuery
+import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
+import com.sms.moLotus.feature.Constants
 import com.sms.moLotus.feature.chat.MessageViewHolder
-import com.sms.moLotus.feature.model.Message
 
-class ChatAdapter(var currentUserId: String, var data: MutableList<Message>) :
+class ChatAdapter(var list: MutableList<GetMessageListQuery.Message?>, context: Context) :
     RecyclerView.Adapter<MessageViewHolder<*>>() {
     companion object {
         const val TYPE_MY_MESSAGE = 0
         const val TYPE_FRIEND_MESSAGE = 1
     }
+
+    var getContext = context
+
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MessageViewHolder<*> {
         val context = parent.context
@@ -35,40 +40,41 @@ class ChatAdapter(var currentUserId: String, var data: MutableList<Message>) :
     }
 
     override fun onBindViewHolder(holder: MessageViewHolder<*>, position: Int) {
-        val item = data[position]
-        Log.d("adapter View", position.toString() + item.message)
         when (holder) {
-            is MyMessageViewHolder -> holder.bind(item)
-            is FriendMessageViewHolder -> holder.bind(item)
+            is MyMessageViewHolder -> holder.bind(list)
+            is FriendMessageViewHolder -> holder.bind(list)
             else -> throw IllegalArgumentException()
         }
     }
 
-    override fun getItemCount(): Int = data.size
+    override fun getItemCount(): Int = list.size
     override fun getItemViewType(position: Int): Int {
-        Log.e("=====", "currentUserId adapter:: $currentUserId")
-        Log.e("=====", "senderID adapter:: ${data[position].sender_id}")
-
-        return if (data[position].sender_id.equals(currentUserId)) {
+        return if (list[position]?.senderId.toString() == PreferenceHelper.getStringPreference(
+            getContext,
+            Constants.USERID
+        )
+        ) {
             TYPE_MY_MESSAGE
         } else {
             TYPE_FRIEND_MESSAGE
         }
     }
 
-    class MyMessageViewHolder(val view: View) : MessageViewHolder<Message>(view) {
+    class MyMessageViewHolder(val view: View) :
+        MessageViewHolder<GetMessageListQuery.Message>(view) {
         private val messageContent = view.findViewById<TextView>(R.id.message)
 
-        override fun bind(item: Message) {
-            messageContent.text = item.message
+        override fun bind(item: List<GetMessageListQuery.Message?>?) {
+            messageContent.text = item?.get(adapterPosition)?.message
         }
     }
 
-    class FriendMessageViewHolder(val view: View) : MessageViewHolder<Message>(view) {
+    class FriendMessageViewHolder(val view: View) :
+        MessageViewHolder<GetMessageListQuery.Message>(view) {
         private val messageContent = view.findViewById<TextView>(R.id.message)
 
-        override fun bind(item: Message) {
-            messageContent.text = item.message
+        override fun bind(item: List<GetMessageListQuery.Message?>?) {
+            messageContent.text = item?.get(adapterPosition)?.message
         }
     }
 }

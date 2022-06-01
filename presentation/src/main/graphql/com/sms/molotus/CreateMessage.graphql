@@ -1,5 +1,5 @@
 mutation CreateMessage($message: String!, $threadId: ID!, $senderId:ID!){
-    createMessege(messageInput: {
+    createMessage(messageInput: {
         threadId:$threadId
         senderId:$senderId
         message:$message

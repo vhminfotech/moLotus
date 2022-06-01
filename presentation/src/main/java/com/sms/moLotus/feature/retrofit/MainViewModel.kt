@@ -7,7 +7,6 @@ import com.apollographql.apollo3.exception.ApolloException
 import com.sms.moLotus.*
 import com.sms.moLotus.feature.Constants
 import com.sms.moLotus.feature.apollo.ApolloClientService
-import com.sms.moLotus.feature.model.ChatList
 import com.sms.moLotus.feature.model.MessageList
 import com.sms.moLotus.feature.model.Operators
 import kotlinx.coroutines.Dispatchers
@@ -21,8 +20,8 @@ class MainViewModel constructor(/*private val repository: MainRepository*/) : Vi
     val userUsingApp = MutableLiveData<GetUserUsingAppQuery.Data>()
 
     //    val loginResponse = MutableLiveData<LoginResponse>()
-    val chatList = MutableLiveData<ArrayList<ChatList>>()
-    val allMessages = MutableLiveData<MessageList>()
+    val chatList = MutableLiveData<GetThreadListQuery.Data>()
+    val allMessages = MutableLiveData<GetMessageListQuery.Data>()
     val sendMessage = MutableLiveData<MessageList>()
     private var client: ApolloClient? = null
     val registerUser = MutableLiveData<RegisterUserMutation.Data>()
@@ -104,52 +103,30 @@ class MainViewModel constructor(/*private val repository: MainRepository*/) : Vi
          })
      }*/
 
-    fun getChatList(token: String) {
-       /* val response = repository.getChatList(token)
-        response.enqueue(object : Callback<ArrayList<ChatList>> {
-            override fun onResponse(
-                call: Call<ArrayList<ChatList>>,
-                response: Response<ArrayList<ChatList>>
-            ) {
-                chatList.postValue(response.body())
+    fun getChatList(userId: String,token: String) {
+        client = ApolloClientService.setUpApolloClient("")
+        val getChatList = GetThreadListQuery(userId)
+        try {
+            GlobalScope.launch(Dispatchers.IO) {
+                val response = client?.query(getChatList)?.execute()
+                chatList.postValue(response?.data)
             }
-
-            override fun onFailure(call: Call<ArrayList<ChatList>>, t: Throwable) {
-                errorMessage.postValue(t.message)
-            }
-        })*/
+        } catch (e: ApolloException) {
+            errorMessage.postValue(e.message)
+        }
     }
 
-    fun getAllMessages(threadId: Int, token: String) {
-        /*val response = repository.getAllMessages(threadId, token)
-        response.enqueue(object : Callback<MessageList> {
-            override fun onResponse(
-                call: Call<MessageList>,
-                response: Response<MessageList>
-            ) {
-                allMessages.postValue(response.body())
+    fun getAllMessages(threadId: String,receiverId: String, senderId: String, token: String) {
+        client = ApolloClientService.setUpApolloClient("")
+        val getAllMessages = GetMessageListQuery(threadId, senderId, receiverId)
+        try {
+            GlobalScope.launch(Dispatchers.IO) {
+                val response = client?.query(getAllMessages)?.execute()
+                allMessages.postValue(response?.data)
             }
-
-            override fun onFailure(call: Call<MessageList>, t: Throwable) {
-                errorMessage.postValue(t.message)
-            }
-        })*/
-    }
-
-    fun sendMessage(user_id: ArrayList<Int>, text: String, threadId: Int, token: String) {
-       /* val response = repository.sendMessage(user_id, text, threadId, token)
-        response.enqueue(object : Callback<MessageList> {
-            override fun onResponse(
-                call: Call<MessageList>,
-                response: Response<MessageList>
-            ) {
-                sendMessage.postValue(response.body())
-            }
-
-            override fun onFailure(call: Call<MessageList>, t: Throwable) {
-                errorMessage.postValue(t.message)
-            }
-        })*/
+        } catch (e: ApolloException) {
+            errorMessage.postValue(e.message)
+        }
     }
 
     fun registerUser(name: String, operator: String, MSISDN: String) {

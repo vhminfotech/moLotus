@@ -1,0 +1,11 @@
+query GetMessageList($threadId: ID!,$senderId: ID!, $receiverId:ID!){
+    getMessageList(threadId:$threadId,senderId:$senderId,receiverId:$receiverId){
+        messages{
+            senderId
+            threadId
+            message
+            dateSent
+            id
+        }
+    }
+}

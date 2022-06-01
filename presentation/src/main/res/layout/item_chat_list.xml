@@ -90,6 +90,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
+        android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="@id/txtUserName"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="100"

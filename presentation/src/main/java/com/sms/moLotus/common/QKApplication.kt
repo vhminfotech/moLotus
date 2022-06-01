@@ -19,6 +19,7 @@ import com.google.firebase.FirebaseApp
 import com.sms.moLotus.R
 import com.sms.moLotus.common.util.CrashlyticsTree
 import com.sms.moLotus.common.util.FileLoggingTree
+import com.sms.moLotus.feature.Constants
 import com.sms.moLotus.injection.AppComponentManager
 import com.sms.moLotus.injection.appComponent
 import com.sms.moLotus.manager.AnalyticsManager
@@ -32,12 +33,15 @@ import com.uber.rxdogtag.autodispose.AutoDisposeConfigurer
 import dagger.android.*
 import io.realm.Realm
 import io.realm.RealmConfiguration
+import io.socket.client.IO
+import io.socket.client.Socket
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.io.File
 import java.io.IOException
+import java.net.URISyntaxException
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
@@ -79,7 +83,6 @@ class QKApplication : Application(), HasActivityInjector, HasBroadcastReceiverIn
 
     @Inject
     lateinit var referralManager: ReferralManager
-
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate() {

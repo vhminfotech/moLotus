@@ -557,9 +557,9 @@ object Utils {
     fun covertTimeToText(dataDate: String?): String? {
         var convTime: String? = null
         val prefix = ""
-        val suffix = "Ago"
+        val suffix = "ago"
         try {
-            val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+            val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
             dateFormat.timeZone = TimeZone.getTimeZone("UTC")
             val pasTime = dateFormat.parse(dataDate)
             val nowTime = Date()
@@ -569,11 +569,11 @@ object Utils {
             val hour = TimeUnit.MILLISECONDS.toHours(dateDiff)
             val day = TimeUnit.MILLISECONDS.toDays(dateDiff)
             if (second < 60) {
-                convTime = "$second Seconds $suffix"
+                convTime = "$second sec $suffix"
             } else if (minute < 60) {
-                convTime = "$minute Minutes $suffix"
+                convTime = "$minute min $suffix"
             } else if (hour < 24) {
-                convTime = "$hour Hours $suffix"
+                convTime = "$hour hr $suffix"
             } else if (day >= 7) {
                 convTime = if (day > 360) {
                     (day / 360).toString() + " Years " + suffix

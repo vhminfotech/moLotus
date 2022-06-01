@@ -1,20 +1,21 @@
 package com.sms.moLotus.feature.chat.adapter
 
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
+import com.sms.moLotus.GetThreadListQuery
 import com.sms.moLotus.R
 import com.sms.moLotus.common.widget.QkTextView
 import com.sms.moLotus.feature.Utils
 import com.sms.moLotus.feature.chat.listener.OnItemClickListener
-import com.sms.moLotus.feature.model.ChatList
 
 class ChatListAdapter(
     private val context: Context,
-    private val mList: List<ChatList>,
+    private val mList: GetThreadListQuery.GetThreadList,
     private val listener: OnItemClickListener
 ) :
     RecyclerView.Adapter<ChatListAdapter.ViewHolder>() {
@@ -29,10 +30,12 @@ class ChatListAdapter(
 
     // binds the list items to a view
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val chatList = mList[position]
-        holder.txtUserName.text = chatList.recipient_user[0].name
-        holder.txtLastMessage.text = chatList.message
-        holder.txtDate.text = Utils.covertTimeToText(chatList.date)
+        val chatList = mList.recipientUser?.get(position)
+        holder.txtUserName.text = chatList?.name
+        holder.txtLastMessage.text = chatList?.message
+        holder.txtDate.text = Utils.covertTimeToText(chatList?.messageDate.toString())
+        Log.e("==========", "chatList:: $chatList")
+
         holder.constraintLayout.setOnClickListener {
             listener.onItemClick(chatList)
         }
@@ -40,7 +43,7 @@ class ChatListAdapter(
 
     // return the number of the items in the list
     override fun getItemCount(): Int {
-        return mList.size
+        return mList.recipientUser?.size?:0
     }
 
     // Holds the views for adding it to image and text

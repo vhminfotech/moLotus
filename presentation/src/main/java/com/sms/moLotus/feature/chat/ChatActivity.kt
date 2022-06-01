@@ -9,12 +9,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
+import com.sms.moLotus.GetMessageListQuery
 import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
 import com.sms.moLotus.extension.toast
 import com.sms.moLotus.feature.Constants
 import com.sms.moLotus.feature.chat.adapter.ChatAdapter
-import com.sms.moLotus.feature.model.Message
 import com.sms.moLotus.feature.retrofit.MainViewModel
 import com.sms.moLotus.feature.retrofit.RetrofitService
 import kotlinx.android.synthetic.main.activity_chat.*
@@ -24,13 +24,13 @@ import timber.log.Timber
 class ChatActivity : AppCompatActivity() {
     lateinit var viewModel: MainViewModel
     private val retrofitService = RetrofitService.getInstance()
-    var messageList: ArrayList<Message> = ArrayList()
     private var chatAdapter: ChatAdapter? = null
-    private var currentUserId: String = ""
     private var receiverUserId: String = ""
+    private var currentUserId: String = ""
     var userName: String = ""
     var recipientsIds: ArrayList<String>? = ArrayList()
     var threadId: String = ""
+    var getMessageList: MutableList<GetMessageListQuery.Message> = mutableListOf()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
@@ -38,8 +38,6 @@ class ChatActivity : AppCompatActivity() {
         receiverUserId = intent?.getStringExtra("receiverUserId").toString()
         threadId = intent?.getStringExtra("threadId").toString()
         userName = intent?.getStringExtra("userName").toString()
-        Log.e("==========", "currentUserId:: $currentUserId")
-        Log.e("==========", "recieverUserId:: $receiverUserId")
         txtTitle?.text = userName
         recipientsIds?.add(receiverUserId)
         imgBack?.setOnClickListener {
@@ -49,13 +47,20 @@ class ChatActivity : AppCompatActivity() {
             ViewModelProvider(this/*, MyViewModelFactory(MainRepository(retrofitService))*/).get(
                 MainViewModel::class.java
             )
-        // getChatList()
+        //
 
+        getMessageList()
 
-        imgSend.setOnClickListener { //getMessage list empty then create thread else create message
-            if (threadId.isEmpty()) {
+        imgSend.setOnClickListener {
+            //getMessage list empty then create thread else create message
+            Log.e("=====", "getMessageList.size:: ${getMessageList.size}")
+            if (threadId.isEmpty() && getMessageList.size == 0) {
+                Log.e("=====", "createThread")
+
                 createThread()
             } else {
+                Log.e("=====", "createMessage : $threadId")
+
                 createMessage(threadId)
             }
         }
@@ -69,13 +74,11 @@ class ChatActivity : AppCompatActivity() {
         })*/
     }
 
-    private fun initRecyclerView(list: ArrayList<Message>) {
+    private fun initRecyclerView(list: MutableList<GetMessageListQuery.Message>) {
         val layoutMgr = LinearLayoutManager(this)
         layoutMgr.stackFromEnd = true
         rvMessageList.layoutManager = layoutMgr
-        Log.e("=====", "currentUserId:: $currentUserId")
-
-        chatAdapter = ChatAdapter(currentUserId, list)
+        chatAdapter = ChatAdapter(list.toMutableList(), this)
         rvMessageList.adapter = chatAdapter
         chatAdapter?.notifyDataSetChanged()
     }
@@ -86,8 +89,8 @@ class ChatActivity : AppCompatActivity() {
             // initRecyclerView(it)
             /*val list : ArrayList<CreateThreadMutation.CreateThread> = it
             messageList = it*/
-
             Timber.e("createThread:: $it")
+            getMessageList()
 
         })
         viewModel.errorMessage.observe(this, {
@@ -126,7 +129,7 @@ class ChatActivity : AppCompatActivity() {
             /*val list : ArrayList<CreateThreadMutation.CreateThread> = it
             messageList = it*/
             Timber.e("createMessage:: $it")
-
+            getMessageList()
         })
         viewModel.errorMessage.observe(this, {
             Log.e("=====", "errorMessage:: $it")
@@ -151,18 +154,26 @@ class ChatActivity : AppCompatActivity() {
         })
 
         viewModel.createMessage(
-            txtMessage.text.toString(), threadId,
-            currentUserId, PreferenceHelper.getStringPreference(this, Constants.TOKEN).toString()
+            txtMessage.text.toString(),
+            threadId,
+            PreferenceHelper.getStringPreference(this, Constants.USERID).toString(),
+            PreferenceHelper.getStringPreference(this, Constants.TOKEN).toString()
         )
     }
 
-    private fun getChatList() {
+    private fun getMessageList() {
         viewModel.allMessages.observe(this, {
             Log.e("=====", "response:: $it")
-            // initRecyclerView(it)
-            if (it.messages.isNotEmpty()) {
-                messageList = it.messages
-                initRecyclerView(messageList)
+            txtMessage.setText("")
+            if (it.getMessageList?.messages?.isNotEmpty() == true) {
+                getMessageList =
+                    it.getMessageList.messages as MutableList<GetMessageListQuery.Message>
+                threadId = if (threadId.isNullOrEmpty()) {
+                    getMessageList[0].threadId.toString()
+                } else {
+                    threadId
+                }
+                initRecyclerView(getMessageList)
             }
         })
         viewModel.errorMessage.observe(this, {
@@ -187,11 +198,10 @@ class ChatActivity : AppCompatActivity() {
             }
         })
         viewModel.getAllMessages(
-            1,
-            PreferenceHelper.getStringPreference(
-                this,
-                Constants.TOKEN
-            ).toString()
+            threadId,
+            receiverUserId,
+            PreferenceHelper.getStringPreference(this, Constants.USERID).toString(),
+            PreferenceHelper.getStringPreference(this, Constants.TOKEN).toString()
 
         )
     }

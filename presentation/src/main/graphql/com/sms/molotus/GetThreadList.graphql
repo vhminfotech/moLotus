@@ -1,0 +1,13 @@
+query GetThreadList($userId: ID!){
+    getThreadList(userId:$userId){
+        recipientUser{
+            name
+            message
+            msisdn
+            userId
+            operator
+            messageDate
+            threadId
+        }
+    }
+}
