@@ -83,6 +83,16 @@ class QKApplication : Application(), HasActivityInjector, HasBroadcastReceiverIn
 
     @Inject
     lateinit var referralManager: ReferralManager
+    var socket: Socket? = null
+
+    init {
+        try {
+            socket = IO.socket(Constants.SOCKET_URL)
+        } catch (e: URISyntaxException) {
+            throw RuntimeException(e)
+        }
+    }
+
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate() {

@@ -49,15 +49,12 @@ import dagger.android.AndroidInjection
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
-import io.socket.client.IO
-import io.socket.client.Socket
 import kotlinx.android.synthetic.main.fragment_mchat.*
 import kotlinx.android.synthetic.main.layout_more_options.view.*
 import kotlinx.android.synthetic.main.layout_toolbar.*
 import kotlinx.android.synthetic.main.main_activity.*
 import kotlinx.android.synthetic.main.main_permission_hint.*
 import kotlinx.android.synthetic.main.main_syncing.*
-import java.net.URISyntaxException
 import javax.inject.Inject
 
 class MainActivity : QkThemedActivity(), MainView, OnItemClickListener {
@@ -150,28 +147,17 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener {
     private val backPressedSubject: Subject<NavItem> = PublishSubject.create()
     lateinit var mainViewModel: com.sms.moLotus.feature.retrofit.MainViewModel
     private val retrofitService = RetrofitService.getInstance()
-
+    var tabAppears  = false
     companion object {
         var toolbarVisible: androidx.appcompat.widget.Toolbar? = null
     }
-
-
-    private var mSocket: Socket? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
-        mSocket  = try {
-            IO.socket(Constants.SOCKET_URL)
-        } catch ( e: URISyntaxException) {
-            throw e
-        }
-        mSocket?.on(Socket.EVENT_CONNECT){
-            Log.e("=========", "Socket Connected")
-        }
-        mSocket?.connect()
+
         toolbarVisible = toolbar
         mainViewModel =
             ViewModelProvider(this/*, MyViewModelFactory(MainRepository(retrofitService))*/).get(
@@ -207,6 +193,7 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener {
                     rvChatRecyclerView?.visibility = View.GONE
                     compose?.visibility = View.VISIBLE
                     createChat?.visibility = View.GONE
+                    tabAppears = true
                     if (conversationsAdapter.itemCount == 0) {
                         empty?.visibility = View.VISIBLE
                     }
@@ -580,6 +567,9 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener {
     override fun onResume() {
         super.onResume()
         activityResumedIntent.onNext(true)
+        if (tabAppears) {
+            getChatList()
+        }
     }
 
     override fun onPause() {

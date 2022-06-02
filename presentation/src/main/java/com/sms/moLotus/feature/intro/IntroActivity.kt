@@ -19,56 +19,26 @@ import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
 import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
+import com.sms.moLotus.common.QKApplication
 import com.sms.moLotus.extension.toast
 import com.sms.moLotus.feature.Constants
 import com.sms.moLotus.feature.authentication.VerifyOtpActivity
 import com.sms.moLotus.feature.networkcall.ApiHelper
-import com.sms.moLotus.feature.retrofit.MainRepository
 import com.sms.moLotus.feature.retrofit.MainViewModel
-import com.sms.moLotus.feature.retrofit.MyViewModelFactory
 import com.sms.moLotus.feature.retrofit.RetrofitService
+import io.socket.client.Socket
 import kotlinx.android.synthetic.main.intro_activity_main.*
 
 class IntroActivity : AppCompatActivity() {
 
     var languages = mutableListOf<String>()
+    var userId: String = ""
 
     //var languages = mutableListOf("Telkomsel", "Indosat", "XL Axiata", "Celcom", "U Mobile")
     private var api: ApiHelper? = null
     lateinit var viewModel: MainViewModel
     private val retrofitService = RetrofitService.getInstance()
-
-    private fun getOperators() {
-        viewModel.operatorsList.observe(this, {
-            Log.e("=====", "response:: $it")
-            it.forEach { element ->
-                languages.add(element.operator_name)
-            }
-            Log.e("=====", "languages added:: $languages")
-        })
-        viewModel.errorMessage.observe(this, {
-            Log.e("=====", "errorMessage:: $it")
-            //Toast.makeText(this, it.toString(),Toast.LENGTH_SHORT).show()
-            val conMgr = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-            val netInfo = conMgr.activeNetworkInfo
-            if (netInfo == null) {
-                //No internet
-                Snackbar.make(
-                    findViewById(R.id.introlinearlayout),
-                    "No Internet Connection. Please turn on your internet!",
-                    Snackbar.LENGTH_INDEFINITE
-                )
-                    .setAction("Retry") {
-                        viewModel.getAllOperators()
-                    }
-                    .setActionTextColor(resources.getColor(android.R.color.holo_red_light))
-                    .show()
-            } else {
-                toast(it.toString(), Toast.LENGTH_SHORT)
-            }
-        })
-        viewModel.getAllOperators()
-    }
+    private var mSocket: Socket? = null
 
     private fun registerUser() {
         viewModel.registerUser.observe(this, {
@@ -84,16 +54,22 @@ class IntroActivity : AppCompatActivity() {
                 "OTP sent successfully.!!",
                 Toast.LENGTH_SHORT
             ).show()
-            PreferenceHelper.setStringPreference(this, Constants.USERID,
-                it.registerUser?.userData?.userId.toString()
+            userId = it.registerUser?.userData?.userId.toString()
+            PreferenceHelper.setStringPreference(
+                this, Constants.USERID,
+                userId
             )
-            PreferenceHelper.setStringPreference(this, Constants.TOKEN,
+            PreferenceHelper.setStringPreference(
+                this, Constants.TOKEN,
                 it.registerUser?.token.toString()
             )
+            mSocket?.emit("addUser",userId)
             val intent = Intent(this, VerifyOtpActivity::class.java)
             intent.putExtra("PhoneNumber", phone_number.text.toString())
             startActivity(intent)
             finish()
+
+          //  mSocket?.on("getUsers", getUsers)
         })
         viewModel.errorMessage.observe(this, {
             Log.e("=====", "errorMessage:: $it")
@@ -127,9 +103,21 @@ class IntroActivity : AppCompatActivity() {
         )
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+       // mSocket?.off("getUsers", getUsers)
+    }
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.intro_activity_main)
+        val app = application as QKApplication
+        mSocket = app.socket
+        mSocket?.on(Socket.EVENT_CONNECT) {
+            Log.e("=========", "Socket Connected")
+        }
+        mSocket?.connect()
         //CustomStringBuilder.mChatBuilder(txtMchat)
 
         languages.add(0, "Select carrier provider")
@@ -219,14 +207,14 @@ class IntroActivity : AppCompatActivity() {
             } else if (phone_number.text.isEmpty()) {
                 btnLogin.isEnabled = true
                 showToast(message = "Phone number is empty")
-            }else if(phone_number.text.length <= 7 || phone_number.text.length > 14) {
+            } else if (phone_number.text.length <= 7 || phone_number.text.length > 14) {
                 btnLogin.isEnabled = true
 
                 toast("Please enter valid phone number having 7 to 14 digits!")
-            /*else if (carrierText == "Select carrier provider") {
-                               btnLogin.isEnabled = true
-                               showToast(message = "Please select carrier provider")
-                           }*/
+                /*else if (carrierText == "Select carrier provider") {
+                                   btnLogin.isEnabled = true
+                                   showToast(message = "Please select carrier provider")
+                               }*/
             } else if (/*carrierText != "Select carrier provider" &&*/ phone_number.text.isNotEmpty() && phone_number.text.length >= 7 && etName.text.isNotEmpty()) {
                 btnLogin.isEnabled = false
                 registerUser()
@@ -242,6 +230,20 @@ class IntroActivity : AppCompatActivity() {
         finishAffinity()
         finish()
     }
+
+    /*private val getUsers = Emitter.Listener { args ->
+        val data = args[0] as JSONObject
+        val getUsers: Int = try {
+            data.getInt("getUsers")
+        } catch (e: JSONException) {
+            return@Listener
+        }
+        val intent = Intent()
+        intent.putExtra("userId", userId)
+        intent.putExtra("getUsers", getUsers)
+        setResult(RESULT_OK, intent)
+        finish()
+    }*/
 
     private fun requestOtp(phoneNo: String, carrierText: String, carrierId: Int) {
         api?.request(phoneNo,

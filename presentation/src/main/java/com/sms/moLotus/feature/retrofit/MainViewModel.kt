@@ -13,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
+
 class MainViewModel constructor(/*private val repository: MainRepository*/) : ViewModel() {
     val operatorsList = MutableLiveData<List<Operators>>()
     val versionCode = MutableLiveData<GetAppConfigQuery.GetAppConfig>()
@@ -49,7 +50,7 @@ class MainViewModel constructor(/*private val repository: MainRepository*/) : Vi
         client = ApolloClientService.setUpApolloClient("")
         val getAppConfig = GetAppConfigQuery(Constants.CARRIER_ID.toString())
         try {
-            GlobalScope.launch(Dispatchers.IO) {
+            GlobalScope.launch(Dispatchers.Main) {
                 val response = client?.query(getAppConfig)?.execute()
                 if (response?.data?.getAppConfig != null) {
                     versionCode.postValue(response.data?.getAppConfig)
@@ -66,7 +67,7 @@ class MainViewModel constructor(/*private val repository: MainRepository*/) : Vi
         client = ApolloClientService.setUpApolloClient("")
         val getAPNParamDetails = GetApnDetailsQuery(id.toString())
         try {
-            GlobalScope.launch(Dispatchers.IO) {
+            GlobalScope.launch(Dispatchers.Main) {
                 val response = client?.query(getAPNParamDetails)?.execute()
                 apnDetails.postValue(response?.data)
             }
@@ -79,7 +80,7 @@ class MainViewModel constructor(/*private val repository: MainRepository*/) : Vi
         client = ApolloClientService.setUpApolloClient("")
         val getUserUsingApp = GetUserUsingAppQuery(userId, contactList)
         try {
-            GlobalScope.launch(Dispatchers.IO) {
+            GlobalScope.launch(Dispatchers.Main) {
                 val response = client?.query(getUserUsingApp)?.execute()
                 userUsingApp.postValue(response?.data)
             }
@@ -107,7 +108,7 @@ class MainViewModel constructor(/*private val repository: MainRepository*/) : Vi
         client = ApolloClientService.setUpApolloClient("")
         val getChatList = GetThreadListQuery(userId)
         try {
-            GlobalScope.launch(Dispatchers.IO) {
+            GlobalScope.launch(Dispatchers.Main) {
                 val response = client?.query(getChatList)?.execute()
                 chatList.postValue(response?.data)
             }
@@ -120,7 +121,7 @@ class MainViewModel constructor(/*private val repository: MainRepository*/) : Vi
         client = ApolloClientService.setUpApolloClient("")
         val getAllMessages = GetMessageListQuery(threadId, senderId, receiverId)
         try {
-            GlobalScope.launch(Dispatchers.IO) {
+            GlobalScope.launch(Dispatchers.Main) {
                 val response = client?.query(getAllMessages)?.execute()
                 allMessages.postValue(response?.data)
             }
@@ -133,7 +134,7 @@ class MainViewModel constructor(/*private val repository: MainRepository*/) : Vi
         client = ApolloClientService.setUpApolloClient("")
         val registerUserMutation = RegisterUserMutation(name, operator, MSISDN)
         try {
-            GlobalScope.launch(Dispatchers.IO) {
+            GlobalScope.launch(Dispatchers.Main) {
                 val response = client?.mutation(registerUserMutation)?.execute()
                 registerUser.postValue(response?.data)
             }
@@ -146,7 +147,7 @@ class MainViewModel constructor(/*private val repository: MainRepository*/) : Vi
         client = ApolloClientService.setUpApolloClient(token)
         val createThreadMutation = CreateThreadMutation(message, userId, recipientsIds)
         try {
-            GlobalScope.launch(Dispatchers.IO) {
+            GlobalScope.launch(Dispatchers.Main) {
                 val response = client?.mutation(createThreadMutation)?.execute()
                 createThread.postValue(response?.data)
             }
@@ -159,7 +160,7 @@ class MainViewModel constructor(/*private val repository: MainRepository*/) : Vi
         client = ApolloClientService.setUpApolloClient(token)
         val createMessageMutation = CreateMessageMutation(message, threadId, senderId)
         try {
-            GlobalScope.launch(Dispatchers.IO) {
+            GlobalScope.launch(Dispatchers.Main) {
                 val response = client?.mutation(createMessageMutation)?.execute()
                 createMessage.postValue(response?.data)
             }

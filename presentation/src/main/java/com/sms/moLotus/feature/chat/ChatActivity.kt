@@ -12,13 +12,19 @@ import com.google.android.material.snackbar.Snackbar
 import com.sms.moLotus.GetMessageListQuery
 import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
+import com.sms.moLotus.common.QKApplication
 import com.sms.moLotus.extension.toast
 import com.sms.moLotus.feature.Constants
 import com.sms.moLotus.feature.chat.adapter.ChatAdapter
+import com.sms.moLotus.feature.chat.model.ChatMessage
 import com.sms.moLotus.feature.retrofit.MainViewModel
 import com.sms.moLotus.feature.retrofit.RetrofitService
+import io.socket.client.Socket
+import io.socket.emitter.Emitter
 import kotlinx.android.synthetic.main.activity_chat.*
 import kotlinx.android.synthetic.main.layout_header.*
+import org.json.JSONException
+import org.json.JSONObject
 import timber.log.Timber
 
 class ChatActivity : AppCompatActivity() {
@@ -31,9 +37,104 @@ class ChatActivity : AppCompatActivity() {
     var recipientsIds: ArrayList<String>? = ArrayList()
     var threadId: String = ""
     var getMessageList: MutableList<GetMessageListQuery.Message> = mutableListOf()
+    var chatMessageModel: ChatMessage? = null
+    var chatMessageList: MutableList<ChatMessage>? = mutableListOf()
+    private var mSocket: Socket? = null
+    private var isConnected = true
+    var myUserId = ""
+
+
+    override fun onDestroy() {
+        super.onDestroy()
+        mSocket?.disconnect()
+        mSocket?.off(Socket.EVENT_CONNECT, onConnect)
+        mSocket?.off(Socket.EVENT_DISCONNECT, onDisconnect)
+        mSocket?.off(Socket.EVENT_CONNECT_ERROR, onConnectError)
+        mSocket?.off("getMessage", getMessage)
+    }
+
+    private val onConnect = Emitter.Listener {
+        Log.i("====================", "connected")
+        // mSocket?.emit("addUser", myUserId)
+        if (!isConnected) {
+            mSocket?.emit("addUser", myUserId)
+
+            isConnected = true
+        }
+
+    }
+    private val onDisconnect = Emitter.Listener {
+        runOnUiThread {
+            Log.i("====================", "disconnected")
+            isConnected = false
+            // mSocket?.emit("removeUser", myUserId)
+
+        }
+    }
+    private val onConnectError = Emitter.Listener {
+        runOnUiThread {
+            Log.e("====================", "Error connecting")
+
+        }
+    }
+    private val getMessage = Emitter.Listener { args ->
+        runOnUiThread(Runnable {
+            val data = args[0] as JSONObject
+            val senderId: String
+            val text: String
+            try {
+                senderId = data.getString("senderId")
+                text = data.getString("text")
+            } catch (e: JSONException) {
+                Log.e("====================", e.message.toString())
+                return@Runnable
+            }
+            //removeTyping(username)
+            addMessage(senderId, text)
+        })
+    }
+
+    private fun addMessage(senderId: String, message: String) {
+        Log.e("=============", "senderId:: $senderId")
+        Log.e("=============", "message:: $message")
+        for (i in chatMessageList!!) {
+            chatMessageModel = ChatMessage(
+                senderId,
+                i.threadId.toString(),
+                message,
+                i.dateSent.toString(),
+                i.id.toString()
+            )
+            chatMessageList?.add(chatMessageModel!!)
+
+        }
+        chatMessageList?.size?.minus(1)?.let { chatAdapter!!.notifyItemInserted(it) }
+
+        Log.e("CHATMESSAGE", "chatMessageList after : $chatMessageList")
+
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+
+    }
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
+        myUserId = PreferenceHelper.getStringPreference(this, Constants.USERID).toString()
+        val app = application as QKApplication
+        mSocket = app.socket
+
+        mSocket?.on(Socket.EVENT_CONNECT) {
+            mSocket?.emit("addUser", currentUserId)
+        }
+        mSocket?.on(Socket.EVENT_DISCONNECT, onDisconnect)
+        mSocket?.on(Socket.EVENT_CONNECT_ERROR, onConnectError)
+        mSocket?.on("getMessage", getMessage)
+        mSocket?.connect()
+
         currentUserId = intent?.getStringExtra("currentUserId").toString()
         receiverUserId = intent?.getStringExtra("receiverUserId").toString()
         threadId = intent?.getStringExtra("threadId").toString()
@@ -91,7 +192,8 @@ class ChatActivity : AppCompatActivity() {
             messageList = it*/
             Timber.e("createThread:: $it")
             getMessageList()
-
+            mSocket?.emit("sendMessage",
+                { currentUserId;recipientsIds.toString();txtMessage.text.toString() })
         })
         viewModel.errorMessage.observe(this, {
             Log.e("=====", "errorMessage:: $it")
@@ -130,6 +232,8 @@ class ChatActivity : AppCompatActivity() {
             messageList = it*/
             Timber.e("createMessage:: $it")
             getMessageList()
+            mSocket?.emit("sendMessage", { myUserId;currentUserId;txtMessage.text.toString() })
+
         })
         viewModel.errorMessage.observe(this, {
             Log.e("=====", "errorMessage:: $it")
@@ -168,11 +272,26 @@ class ChatActivity : AppCompatActivity() {
             if (it.getMessageList?.messages?.isNotEmpty() == true) {
                 getMessageList =
                     it.getMessageList.messages as MutableList<GetMessageListQuery.Message>
-                threadId = if (threadId.isNullOrEmpty()) {
+                /*for (i in getMessageList) {
+                    chatMessageModel = ChatMessage(
+                        i.senderId.toString(),
+                        i.threadId.toString(),
+                        i.message.toString(),
+                        i.dateSent.toString(),
+                        i.id.toString()
+                    )
+                    chatMessageList?.add(chatMessageModel!!)
+
+                }*/
+
+
+                Log.e("CHATMESSAGE", "list : $chatMessageList")
+                threadId = if (threadId.isEmpty()) {
                     getMessageList[0].threadId.toString()
                 } else {
                     threadId
                 }
+
                 initRecyclerView(getMessageList)
             }
         })

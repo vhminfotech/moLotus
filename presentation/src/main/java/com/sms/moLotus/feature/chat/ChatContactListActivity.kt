@@ -25,6 +25,9 @@ import com.sms.moLotus.feature.retrofit.MainViewModel
 import com.sms.moLotus.feature.retrofit.RetrofitService
 import kotlinx.android.synthetic.main.activity_chat_contact_list.*
 import kotlinx.android.synthetic.main.layout_header.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener {
 
@@ -46,8 +49,12 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
         imgBack?.setOnClickListener {
             onBackPressed()
         }
-
-        getContactList()
+        GlobalScope.launch(Dispatchers.IO){
+            getContactList()
+            GlobalScope.launch (Dispatchers.Main){
+                getUserUsingAppList(contactList)
+            }
+        }
 
     }
 
@@ -88,12 +95,11 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
                                 ContactsContract.CommonDataKinds.Phone.NUMBER
                             )
                         )
-                        Log.i("CHATCONTACT", "Name: $name")
-                        Log.i(
-                            "CHATCONTACT",
-                            "Phone Number: $phoneNo"
-                        )
-                        contactList.add(phoneNo.replace("\\s".toRegex(), ""))
+
+                        phoneNo.replace("\\s".toRegex(), "")
+                        phoneNo.replace("+", "")
+                        phoneNo.replace(" ", "")
+                        contactList.add(phoneNo.trim())
                     }
                     pCur.close()
                 }
@@ -102,12 +108,15 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
         cur?.close()
 
 
-        Log.e(
+        LogHelper.e(
             "CHATCONTACT",
             "contactList: $contactList"
         )
-        getUserUsingAppList(contactList)
-//        initRecyclerView(contactList)
+
+        Log.d(
+            "CHATCONTACT",
+            "contactList: ${contactList.size}"
+        )
 
     }
 
