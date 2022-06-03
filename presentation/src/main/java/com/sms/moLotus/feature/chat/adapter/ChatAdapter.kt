@@ -6,13 +6,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.sms.moLotus.GetMessageListQuery
 import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
 import com.sms.moLotus.feature.Constants
 import com.sms.moLotus.feature.chat.MessageViewHolder
+import com.sms.moLotus.feature.chat.model.ChatMessage
 
-class ChatAdapter(var list: MutableList<GetMessageListQuery.Message?>, context: Context) :
+class ChatAdapter(var list: MutableList<ChatMessage>, context: Context) :
     RecyclerView.Adapter<MessageViewHolder<*>>() {
     companion object {
         const val TYPE_MY_MESSAGE = 0
@@ -61,19 +61,19 @@ class ChatAdapter(var list: MutableList<GetMessageListQuery.Message?>, context: 
     }
 
     class MyMessageViewHolder(val view: View) :
-        MessageViewHolder<GetMessageListQuery.Message>(view) {
+        MessageViewHolder<ChatMessage>(view) {
         private val messageContent = view.findViewById<TextView>(R.id.message)
 
-        override fun bind(item: List<GetMessageListQuery.Message?>?) {
+        override fun bind(item: List<ChatMessage?>?) {
             messageContent.text = item?.get(adapterPosition)?.message
         }
     }
 
     class FriendMessageViewHolder(val view: View) :
-        MessageViewHolder<GetMessageListQuery.Message>(view) {
+        MessageViewHolder<ChatMessage>(view) {
         private val messageContent = view.findViewById<TextView>(R.id.message)
 
-        override fun bind(item: List<GetMessageListQuery.Message?>?) {
+        override fun bind(item: List<ChatMessage?>?) {
             messageContent.text = item?.get(adapterPosition)?.message
         }
     }

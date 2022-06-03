@@ -30,6 +30,7 @@ import com.sms.moLotus.GetThreadListQuery
 import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
 import com.sms.moLotus.common.Navigator
+import com.sms.moLotus.common.QKApplication
 import com.sms.moLotus.common.base.QkThemedActivity
 import com.sms.moLotus.common.util.extensions.*
 import com.sms.moLotus.feature.Constants
@@ -49,6 +50,8 @@ import dagger.android.AndroidInjection
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
+import io.socket.client.Socket
+import io.socket.emitter.Emitter
 import kotlinx.android.synthetic.main.fragment_mchat.*
 import kotlinx.android.synthetic.main.layout_more_options.view.*
 import kotlinx.android.synthetic.main.layout_toolbar.*
@@ -147,10 +150,14 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener {
     private val backPressedSubject: Subject<NavItem> = PublishSubject.create()
     lateinit var mainViewModel: com.sms.moLotus.feature.retrofit.MainViewModel
     private val retrofitService = RetrofitService.getInstance()
-    var tabAppears  = false
+    var tabAppears = false
+
     companion object {
         var toolbarVisible: androidx.appcompat.widget.Toolbar? = null
     }
+
+    private var mSocket: Socket? = null
+    var currentUserId: String? = ""
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -186,6 +193,7 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener {
                     empty?.visibility = View.GONE
                     compose?.visibility = View.GONE
                     createChat?.visibility = View.VISIBLE
+
                     getChatList()
                 } else {
                     txtNoChat?.visibility = View.GONE
@@ -567,6 +575,17 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener {
     override fun onResume() {
         super.onResume()
         activityResumedIntent.onNext(true)
+        val app = application as QKApplication
+        mSocket = app.socket
+        currentUserId = PreferenceHelper.getStringPreference(this, Constants.USERID).toString()
+        mSocket?.on(Socket.EVENT_CONNECT) {
+            mSocket?.emit("addUser", currentUserId)
+            mSocket?.emit("addUser", currentUserId)
+            mSocket?.emit("addUser", currentUserId)
+            mSocket?.emit("addUser", currentUserId)
+        }
+        mSocket?.on(Socket.EVENT_DISCONNECT, onDisconnect)
+        mSocket?.connect()
         if (tabAppears) {
             getChatList()
         }
@@ -580,6 +599,28 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener {
     override fun onDestroy() {
         super.onDestroy()
         disposables.dispose()
+        mSocket?.disconnect()
+        mSocket?.off(Socket.EVENT_CONNECT, onConnect)
+        /*mSocket?.off(Socket.EVENT_DISCONNECT, onDisconnect)*/
+    }
+
+    private val onDisconnect = Emitter.Listener {
+        runOnUiThread {
+            Log.i("====================", "disconnected")
+            // mSocket?.emit("removeUser", myUserId)
+
+        }
+    }
+
+    private val onConnect = Emitter.Listener {
+        Log.i("====================", "connected")
+        // mSocket?.emit("addUser", myUserId)
+        mSocket?.emit("addUser", currentUserId)
+        mSocket?.emit("addUser", currentUserId)
+        mSocket?.emit("addUser", currentUserId)
+        mSocket?.emit("addUser", currentUserId)
+
+
     }
 
     override fun showBackButton(show: Boolean) {

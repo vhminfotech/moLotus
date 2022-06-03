@@ -27,8 +27,10 @@ import org.json.JSONException
 import org.json.JSONObject
 import timber.log.Timber
 
+
 class ChatActivity : AppCompatActivity() {
     lateinit var viewModel: MainViewModel
+//    lateinit var chatViewModel: ChatViewModel
     private val retrofitService = RetrofitService.getInstance()
     private var chatAdapter: ChatAdapter? = null
     private var receiverUserId: String = ""
@@ -48,7 +50,7 @@ class ChatActivity : AppCompatActivity() {
         super.onDestroy()
         mSocket?.disconnect()
         mSocket?.off(Socket.EVENT_CONNECT, onConnect)
-        mSocket?.off(Socket.EVENT_DISCONNECT, onDisconnect)
+        /*mSocket?.off(Socket.EVENT_DISCONNECT, onDisconnect)*/
         mSocket?.off(Socket.EVENT_CONNECT_ERROR, onConnectError)
         mSocket?.off("getMessage", getMessage)
     }
@@ -80,6 +82,8 @@ class ChatActivity : AppCompatActivity() {
     private val getMessage = Emitter.Listener { args ->
         runOnUiThread(Runnable {
             val data = args[0] as JSONObject
+            Log.e("=============", "data:: $data")
+
             val senderId: String
             val text: String
             try {
@@ -90,6 +94,9 @@ class ChatActivity : AppCompatActivity() {
                 return@Runnable
             }
             //removeTyping(username)
+
+            Log.e("=============", "senderId:: $senderId")
+            Log.e("=============", "message:: $text")
             addMessage(senderId, text)
         })
     }
@@ -97,20 +104,28 @@ class ChatActivity : AppCompatActivity() {
     private fun addMessage(senderId: String, message: String) {
         Log.e("=============", "senderId:: $senderId")
         Log.e("=============", "message:: $message")
-        for (i in chatMessageList!!) {
+        Log.e("=============", "chatMessage before :: ${chatMessageList?.size}")
+        val iterator: MutableIterator<ChatMessage>? = chatMessageList?.iterator()
+        while (iterator?.hasNext() == true) {
+            val c: ChatMessage = iterator.next()
             chatMessageModel = ChatMessage(
                 senderId,
-                i.threadId.toString(),
+                c.threadId,
                 message,
-                i.dateSent.toString(),
-                i.id.toString()
+                c.dateSent,
+                c.id
             )
-            chatMessageList?.add(chatMessageModel!!)
-
         }
-        chatMessageList?.size?.minus(1)?.let { chatAdapter!!.notifyItemInserted(it) }
+        Log.e("CHATMESSAGE", "chatMessageModel ::: $chatMessageModel")
 
-        Log.e("CHATMESSAGE", "chatMessageList after : $chatMessageList")
+        chatMessageModel?.let { chatMessageList?.add(it) }
+//        chatMessageList?.size?.minus(1)?.let { chatAdapter?.notifyItemChanged(it) }
+//        chatAdapter?.notifyDataSetChanged()
+        //chatMessageList?.size?.minus(1)?.let { chatAdapter?.notifyItemInserted(it) }
+
+        chatMessageList?.let { initRecyclerView(it) }
+
+        Log.e("CHATMESSAGE", "chatMessageList after : ${chatMessageList?.size}")
 
     }
 
@@ -128,6 +143,9 @@ class ChatActivity : AppCompatActivity() {
         mSocket = app.socket
 
         mSocket?.on(Socket.EVENT_CONNECT) {
+            mSocket?.emit("addUser", currentUserId)
+            mSocket?.emit("addUser", currentUserId)
+            mSocket?.emit("addUser", currentUserId)
             mSocket?.emit("addUser", currentUserId)
         }
         mSocket?.on(Socket.EVENT_DISCONNECT, onDisconnect)
@@ -148,7 +166,8 @@ class ChatActivity : AppCompatActivity() {
             ViewModelProvider(this/*, MyViewModelFactory(MainRepository(retrofitService))*/).get(
                 MainViewModel::class.java
             )
-        //
+
+        //chatViewModel = ViewModelProvider(this).get(ChatViewModel::class.java)
 
         getMessageList()
 
@@ -158,11 +177,11 @@ class ChatActivity : AppCompatActivity() {
             if (threadId.isEmpty() && getMessageList.size == 0) {
                 Log.e("=====", "createThread")
 
-                createThread()
+                createThread(txtMessage.text.toString())
             } else {
                 Log.e("=====", "createMessage : $threadId")
 
-                createMessage(threadId)
+                createMessage(threadId, txtMessage.text.toString())
             }
         }
 
@@ -175,16 +194,16 @@ class ChatActivity : AppCompatActivity() {
         })*/
     }
 
-    private fun initRecyclerView(list: MutableList<GetMessageListQuery.Message>) {
+    private fun initRecyclerView(list: MutableList<ChatMessage>) {
         val layoutMgr = LinearLayoutManager(this)
+        rvMessageList?.hasFixedSize()
         layoutMgr.stackFromEnd = true
         rvMessageList.layoutManager = layoutMgr
         chatAdapter = ChatAdapter(list.toMutableList(), this)
         rvMessageList.adapter = chatAdapter
-        chatAdapter?.notifyDataSetChanged()
     }
 
-    private fun createThread() {
+    private fun createThread(message: String) {
         viewModel.createThread.observe(this, {
             Log.e("=====", "response:: $it")
             // initRecyclerView(it)
@@ -192,8 +211,12 @@ class ChatActivity : AppCompatActivity() {
             messageList = it*/
             Timber.e("createThread:: $it")
             getMessageList()
-            mSocket?.emit("sendMessage",
-                { currentUserId;recipientsIds.toString();txtMessage.text.toString() })
+            mSocket?.emit(
+                "sendMessage", currentUserId,
+                recipientsIds?.get(0).toString(),
+                it.createThread?.message.toString()
+            )
+
         })
         viewModel.errorMessage.observe(this, {
             Log.e("=====", "errorMessage:: $it")
@@ -218,13 +241,13 @@ class ChatActivity : AppCompatActivity() {
         })
         recipientsIds?.let {
             viewModel.createThread(
-                txtMessage.text.toString(), currentUserId,
+                message, currentUserId,
                 it, PreferenceHelper.getStringPreference(this, Constants.TOKEN).toString()
             )
         }
     }
 
-    private fun createMessage(threadId: String) {
+    private fun createMessage(threadId: String, message: String) {
         viewModel.createMessage.observe(this, {
             Log.e("=====", "response:: $it")
             // initRecyclerView(it)
@@ -232,13 +255,16 @@ class ChatActivity : AppCompatActivity() {
             messageList = it*/
             Timber.e("createMessage:: $it")
             getMessageList()
-            mSocket?.emit("sendMessage", { myUserId;currentUserId;txtMessage.text.toString() })
+            mSocket?.emit(
+                "sendMessage", currentUserId,
+                recipientsIds?.get(0).toString(),
+                it.createMessage?.message.toString()
+            )
 
         })
         viewModel.errorMessage.observe(this, {
             Log.e("=====", "errorMessage:: $it")
-            val conMgr =
-                getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val conMgr = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             val netInfo = conMgr.activeNetworkInfo
             if (netInfo == null) {
                 //No internet
@@ -258,41 +284,52 @@ class ChatActivity : AppCompatActivity() {
         })
 
         viewModel.createMessage(
-            txtMessage.text.toString(),
+            message,
             threadId,
             PreferenceHelper.getStringPreference(this, Constants.USERID).toString(),
             PreferenceHelper.getStringPreference(this, Constants.TOKEN).toString()
         )
     }
 
+
+
+
     private fun getMessageList() {
         viewModel.allMessages.observe(this, {
             Log.e("=====", "response:: $it")
-            txtMessage.setText("")
+
             if (it.getMessageList?.messages?.isNotEmpty() == true) {
                 getMessageList =
                     it.getMessageList.messages as MutableList<GetMessageListQuery.Message>
-                /*for (i in getMessageList) {
+                for (i in getMessageList) {
                     chatMessageModel = ChatMessage(
                         i.senderId.toString(),
                         i.threadId.toString(),
                         i.message.toString(),
                         i.dateSent.toString(),
-                        i.id.toString()
+                        i.id.toString(),
+                        //myUserId
                     )
                     chatMessageList?.add(chatMessageModel!!)
+                    //chatViewModel.insert(chatMessageModel)
 
-                }*/
+                }
 
 
                 Log.e("CHATMESSAGE", "list : $chatMessageList")
+
+
+
+
                 threadId = if (threadId.isEmpty()) {
                     getMessageList[0].threadId.toString()
                 } else {
                     threadId
                 }
 
-                initRecyclerView(getMessageList)
+                chatMessageList?.let { it1 -> initRecyclerView(it1) }
+                txtMessage.text = null
+
             }
         })
         viewModel.errorMessage.observe(this, {
