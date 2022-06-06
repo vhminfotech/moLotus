@@ -1,10 +1,9 @@
 package com.sms.moLotus.entity
 
 import androidx.room.ColumnInfo
-import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "MessageTable")
+//@Entity(tableName = "MessageTable")
 data class Message(
     var username: String = "",
     var message: String = "",

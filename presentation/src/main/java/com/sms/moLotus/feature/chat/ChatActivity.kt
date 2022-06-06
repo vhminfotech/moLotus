@@ -3,26 +3,32 @@ package com.sms.moLotus.feature.chat
 import android.content.Context
 import android.net.ConnectivityManager
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.sms.moLotus.GetMessageListQuery
 import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
 import com.sms.moLotus.common.QKApplication
+import com.sms.moLotus.db.ChatDatabase
 import com.sms.moLotus.extension.toast
 import com.sms.moLotus.feature.Constants
 import com.sms.moLotus.feature.chat.adapter.ChatAdapter
 import com.sms.moLotus.feature.chat.model.ChatMessage
 import com.sms.moLotus.feature.retrofit.MainViewModel
 import com.sms.moLotus.feature.retrofit.RetrofitService
+import com.sms.moLotus.viewmodel.ChatViewModel
 import io.socket.client.Socket
 import io.socket.emitter.Emitter
 import kotlinx.android.synthetic.main.activity_chat.*
 import kotlinx.android.synthetic.main.layout_header.*
+import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
 import timber.log.Timber
@@ -30,7 +36,8 @@ import timber.log.Timber
 
 class ChatActivity : AppCompatActivity() {
     lateinit var viewModel: MainViewModel
-//    lateinit var chatViewModel: ChatViewModel
+
+    lateinit var chatViewModel: ChatViewModel
     private val retrofitService = RetrofitService.getInstance()
     private var chatAdapter: ChatAdapter? = null
     private var receiverUserId: String = ""
@@ -39,12 +46,14 @@ class ChatActivity : AppCompatActivity() {
     var recipientsIds: ArrayList<String>? = ArrayList()
     var threadId: String = ""
     var getMessageList: MutableList<GetMessageListQuery.Message> = mutableListOf()
-    var chatMessageModel: ChatMessage? = null
-    var chatMessageList: MutableList<ChatMessage>? = mutableListOf()
+
+    //    var chatMessageModel: ChatMessage? = null
+    var chatMessageList: ArrayList<ChatMessage>? = ArrayList()
     private var mSocket: Socket? = null
     private var isConnected = true
     var myUserId = ""
 
+    private val chatDatabase by lazy { ChatDatabase.getDatabase(this).getChatDao() }
 
     override fun onDestroy() {
         super.onDestroy()
@@ -104,11 +113,14 @@ class ChatActivity : AppCompatActivity() {
     private fun addMessage(senderId: String, message: String) {
         Log.e("=============", "senderId:: $senderId")
         Log.e("=============", "message:: $message")
-        Log.e("=============", "chatMessage before :: ${chatMessageList?.size}")
-        val iterator: MutableIterator<ChatMessage>? = chatMessageList?.iterator()
+        // Log.e("=============", "chatMessage before :: ${chatMessageList?.size}")
+        val iterator: MutableIterator<ChatMessage>? =
+            chatMessageList?.iterator() as MutableIterator<ChatMessage>?
+        var chatMessageModel: ChatMessage? = null
         while (iterator?.hasNext() == true) {
             val c: ChatMessage = iterator.next()
             chatMessageModel = ChatMessage(
+                myUserId,
                 senderId,
                 c.threadId,
                 message,
@@ -167,7 +179,8 @@ class ChatActivity : AppCompatActivity() {
                 MainViewModel::class.java
             )
 
-        //chatViewModel = ViewModelProvider(this).get(ChatViewModel::class.java)
+        chatViewModel =
+            ViewModelProvider(this).get(ChatViewModel::class.java)
 
         getMessageList()
 
@@ -186,6 +199,11 @@ class ChatActivity : AppCompatActivity() {
         }
 
 
+        Handler(Looper.getMainLooper()).postDelayed({
+            // observeNotes()
+
+        }, 10000)
+
     }
 
     private fun subscribeOnAddMessage() {
@@ -194,7 +212,7 @@ class ChatActivity : AppCompatActivity() {
         })*/
     }
 
-    private fun initRecyclerView(list: MutableList<ChatMessage>) {
+    private fun initRecyclerView(list: List<ChatMessage>) {
         val layoutMgr = LinearLayoutManager(this)
         rvMessageList?.hasFixedSize()
         layoutMgr.stackFromEnd = true
@@ -292,6 +310,25 @@ class ChatActivity : AppCompatActivity() {
     }
 
 
+    private fun observeNotes() {
+        lifecycleScope.launch {
+            chatDatabase.getAllChat(
+                PreferenceHelper.getStringPreference(
+                    this@ChatActivity,
+                    Constants.USERID
+                ).toString()
+            ).observe(this@ChatActivity, { list ->
+                Log.e("=============", "list:: $list")
+                // chatMessageList = list as MutableList<ChatMessage>?
+                // chatMessageList?.let { initRecyclerView(it) }
+
+                /*if (chatMessageList.isNotEmpty()) {
+                    adapter.submitList(notesList)
+                }*/
+            })
+
+        }
+    }
 
 
     private fun getMessageList() {
@@ -301,25 +338,33 @@ class ChatActivity : AppCompatActivity() {
             if (it.getMessageList?.messages?.isNotEmpty() == true) {
                 getMessageList =
                     it.getMessageList.messages as MutableList<GetMessageListQuery.Message>
-                for (i in getMessageList) {
+                var chatMessageModel: ChatMessage? = null
+                getMessageList.forEachIndexed { index, message ->
                     chatMessageModel = ChatMessage(
-                        i.senderId.toString(),
-                        i.threadId.toString(),
-                        i.message.toString(),
-                        i.dateSent.toString(),
-                        i.id.toString(),
-                        //myUserId
+                        myUserId,
+                        getMessageList[index].id.toString(),
+                        getMessageList[index].senderId.toString(),
+                        getMessageList[index].threadId.toString(),
+                        getMessageList[index].message.toString(),
+                        getMessageList[index].dateSent.toString(),
                     )
+
+                    Log.e("===================", "Chat Message Model: $chatMessageModel")
+
+
+//                    lifecycleScope.launch {
+//                    }
+
                     chatMessageList?.add(chatMessageModel!!)
-                    //chatViewModel.insert(chatMessageModel)
+
+                    chatViewModel.insert(chatMessageModel!!)
+                   // chatViewModel.insertAllMessages(chatMessageList!!)
 
                 }
+                Log.e("===================", "chatMessageList::: $$chatMessageList")
 
 
-                Log.e("CHATMESSAGE", "list : $chatMessageList")
-
-
-
+                //Log.e("CHATMESSAGE", "list : $chatMessageList")
 
                 threadId = if (threadId.isEmpty()) {
                     getMessageList[0].threadId.toString()
@@ -327,7 +372,6 @@ class ChatActivity : AppCompatActivity() {
                     threadId
                 }
 
-                chatMessageList?.let { it1 -> initRecyclerView(it1) }
                 txtMessage.text = null
 
             }

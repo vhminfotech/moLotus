@@ -1,11 +1,32 @@
 package com.sms.moLotus.feature.chat.model
 
-data class ChatMessage(
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+/*data class ChatMessage(
+    val id: String,
     val senderId: String,
     val threadId: String,
     val message: String,
     val dateSent: String,
+)*/
+
+@Entity(tableName = "ChatMessageTable")
+data class ChatMessage(
+    @ColumnInfo(name = "userId")
+    val userId: String,
+    @PrimaryKey
+    @ColumnInfo(name = "id")
     val id: String,
+    @ColumnInfo(name = "senderId")
+    val senderId: String,
+    @ColumnInfo(name = "threadId")
+    val threadId: String,
+    @ColumnInfo(name = "message")
+    val message: String,
+    @ColumnInfo(name = "dateSent")
+    val dateSent: String,
 )
 /*@Entity(tableName = "MessageTable")
 data class ChatMessage(
