@@ -16,7 +16,9 @@ interface ChatDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAllMessages(order: List<ChatMessage?>?)
 
-    @Query("SELECT * FROM ChatMessageTable WHERE userId=:userId ORDER BY dateSent DESC")
-    fun getAllChat(userId: String): LiveData<List<ChatMessage>>
+    @Query("SELECT * FROM ChatMessageTable WHERE threadId=:threadId ORDER BY dateSent DESC")
+    fun getAllChat(threadId: String): LiveData<List<ChatMessage>>
 
+    @Query("DELETE FROM ChatMessageTable")
+    fun deleteTable()
 }

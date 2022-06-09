@@ -6,6 +6,8 @@ import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.provider.ContactsContract
 import android.util.Log
 import android.view.View
@@ -31,10 +33,12 @@ import kotlinx.coroutines.launch
 
 class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener {
 
-    var contactList = ArrayList<String>()
+    var contactList: List<String> = ArrayList<String>()
     lateinit var viewModel: MainViewModel
     private val retrofitService = RetrofitService.getInstance()
     var userId: String = ""
+    val allContactList : ArrayList<String> = ArrayList()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,12 +53,13 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
         imgBack?.setOnClickListener {
             onBackPressed()
         }
-        GlobalScope.launch(Dispatchers.IO){
+        GlobalScope.launch(Dispatchers.IO) {
             getContactList()
-            GlobalScope.launch (Dispatchers.Main){
-                getUserUsingAppList(contactList)
-            }
+
         }
+        Handler(Looper.getMainLooper()).postDelayed({
+            getUserUsingAppList(contactList)
+        },5000)
 
     }
 
@@ -97,9 +102,19 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
                         )
 
                         phoneNo.replace("\\s".toRegex(), "")
+                        phoneNo.replace("\\s+", "")
                         phoneNo.replace("+", "")
                         phoneNo.replace(" ", "")
-                        contactList.add(phoneNo.trim())
+                        allContactList.add(
+                            phoneNo.replace(" ", "").replace("+", "").replace("-", "").trim()
+                        )
+                        LogHelper.e(
+                            "CHATCONTACT",
+                            "allContactList: ${allContactList.size}"
+                        )
+
+                        contactList = allContactList.distinct().toList()
+
                     }
                     pCur.close()
                 }
@@ -110,13 +125,10 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
 
         LogHelper.e(
             "CHATCONTACT",
-            "contactList: $contactList"
+            "contactList: $contactList == ${contactList.size}"
         )
 
-        Log.d(
-            "CHATCONTACT",
-            "contactList: ${contactList.size}"
-        )
+
 
     }
 
@@ -133,7 +145,7 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
     }
 
 
-    private fun getUserUsingAppList(contactList: ArrayList<String>) {
+    private fun getUserUsingAppList(contactList: List<String>) {
         viewModel.userUsingApp.observe(this, {
             Log.e("=====", "response:: ${it.getUserUsingApp?.userData}")
             val list: ArrayList<GetUserUsingAppQuery.UserDatum> =

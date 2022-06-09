@@ -1,12 +1,20 @@
 package com.sms.moLotus.feature.chat
 
+import android.app.Dialog
 import android.content.Context
 import android.net.ConnectivityManager
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
+import android.view.View
+import android.view.Window
+import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -20,6 +28,7 @@ import com.sms.moLotus.db.ChatDatabase
 import com.sms.moLotus.extension.toast
 import com.sms.moLotus.feature.Constants
 import com.sms.moLotus.feature.chat.adapter.ChatAdapter
+import com.sms.moLotus.feature.chat.listener.OnMessageClickListener
 import com.sms.moLotus.feature.chat.model.ChatMessage
 import com.sms.moLotus.feature.retrofit.MainViewModel
 import com.sms.moLotus.feature.retrofit.RetrofitService
@@ -27,14 +36,14 @@ import com.sms.moLotus.viewmodel.ChatViewModel
 import io.socket.client.Socket
 import io.socket.emitter.Emitter
 import kotlinx.android.synthetic.main.activity_chat.*
-import kotlinx.android.synthetic.main.layout_header.*
+import kotlinx.android.synthetic.main.dialog_delete_message.*
 import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
 import timber.log.Timber
 
-
-class ChatActivity : AppCompatActivity() {
+@RequiresApi(Build.VERSION_CODES.M)
+class ChatActivity : AppCompatActivity(), OnMessageClickListener {
     lateinit var viewModel: MainViewModel
 
     lateinit var chatViewModel: ChatViewModel
@@ -54,6 +63,18 @@ class ChatActivity : AppCompatActivity() {
     var myUserId = ""
 
     private val chatDatabase by lazy { ChatDatabase.getDatabase(this).getChatDao() }
+    var delay: Long = 1000 // 1 seconds after user stops typing
+
+    var last_text_edit: Long = 0
+    var handler = Handler()
+
+    private val input_finish_checker = Runnable {
+        if (System.currentTimeMillis() > last_text_edit + delay - 500) {
+            LogHelper.e("=============","input_finish_checker")
+            txtTyping?.visibility = View.GONE
+            mSocket?.off("typing", typing)
+        }
+    }
 
     override fun onDestroy() {
         super.onDestroy()
@@ -62,6 +83,7 @@ class ChatActivity : AppCompatActivity() {
         /*mSocket?.off(Socket.EVENT_DISCONNECT, onDisconnect)*/
         mSocket?.off(Socket.EVENT_CONNECT_ERROR, onConnectError)
         mSocket?.off("getMessage", getMessage)
+        mSocket?.off("typing", typing)
     }
 
     private val onConnect = Emitter.Listener {
@@ -88,6 +110,13 @@ class ChatActivity : AppCompatActivity() {
 
         }
     }
+
+    private val typing = Emitter.Listener { args ->
+        runOnUiThread(Runnable {
+            txtTyping?.visibility = View.VISIBLE
+        })
+    }
+
     private val getMessage = Emitter.Listener { args ->
         runOnUiThread(Runnable {
             val data = args[0] as JSONObject
@@ -95,50 +124,52 @@ class ChatActivity : AppCompatActivity() {
 
             val senderId: String
             val text: String
+            val currTime: String
             try {
                 senderId = data.getString("senderId")
                 text = data.getString("text")
+                currTime = data.getString("currTime")
             } catch (e: JSONException) {
                 Log.e("====================", e.message.toString())
                 return@Runnable
             }
             //removeTyping(username)
 
-            Log.e("=============", "senderId:: $senderId")
-            Log.e("=============", "message:: $text")
-            addMessage(senderId, text)
+            txtTyping?.visibility = View.GONE
+            addMessage(senderId, text, currTime)
         })
     }
 
-    private fun addMessage(senderId: String, message: String) {
+    private fun addMessage(senderId: String, message: String, currTime: String) {
         Log.e("=============", "senderId:: $senderId")
         Log.e("=============", "message:: $message")
-        // Log.e("=============", "chatMessage before :: ${chatMessageList?.size}")
         val iterator: MutableIterator<ChatMessage>? =
-            chatMessageList?.iterator() as MutableIterator<ChatMessage>?
+            chatMessageList?.iterator()
         var chatMessageModel: ChatMessage? = null
+
         while (iterator?.hasNext() == true) {
             val c: ChatMessage = iterator.next()
+            val time = if (currTime.isEmpty()) {
+                c.dateSent
+            } else {
+                currTime
+            }
             chatMessageModel = ChatMessage(
                 myUserId,
+                c.id,
                 senderId,
                 c.threadId,
                 message,
-                c.dateSent,
-                c.id
+                time,
             )
         }
         Log.e("CHATMESSAGE", "chatMessageModel ::: $chatMessageModel")
 
         chatMessageModel?.let { chatMessageList?.add(it) }
-//        chatMessageList?.size?.minus(1)?.let { chatAdapter?.notifyItemChanged(it) }
-//        chatAdapter?.notifyDataSetChanged()
-        //chatMessageList?.size?.minus(1)?.let { chatAdapter?.notifyItemInserted(it) }
-
-        chatMessageList?.let { initRecyclerView(it) }
+        chatMessageList?.let { chatAdapter?.updateList(it) }
+        rvMessageList?.scrollToPosition(chatMessageList?.size!!.toInt() - 1)
 
         Log.e("CHATMESSAGE", "chatMessageList after : ${chatMessageList?.size}")
-
     }
 
     override fun onBackPressed() {
@@ -162,7 +193,8 @@ class ChatActivity : AppCompatActivity() {
         }
         mSocket?.on(Socket.EVENT_DISCONNECT, onDisconnect)
         mSocket?.on(Socket.EVENT_CONNECT_ERROR, onConnectError)
-        mSocket?.on("getMessage", getMessage)
+        mSocket?.off("getMessage")?.on("getMessage", getMessage)
+
         mSocket?.connect()
 
         currentUserId = intent?.getStringExtra("currentUserId").toString()
@@ -174,42 +206,66 @@ class ChatActivity : AppCompatActivity() {
         imgBack?.setOnClickListener {
             onBackPressed()
         }
-        viewModel =
-            ViewModelProvider(this/*, MyViewModelFactory(MainRepository(retrofitService))*/).get(
-                MainViewModel::class.java
-            )
+        viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
 
-        chatViewModel =
-            ViewModelProvider(this).get(ChatViewModel::class.java)
+        chatViewModel = ViewModelProvider(this).get(ChatViewModel::class.java)
+
+        runOnUiThread {
+            //chatViewModel.deleteTable()
+        }
 
         getMessageList()
 
         imgSend.setOnClickListener {
             //getMessage list empty then create thread else create message
+
             Log.e("=====", "getMessageList.size:: ${getMessageList.size}")
             if (threadId.isEmpty() && getMessageList.size == 0) {
                 Log.e("=====", "createThread")
-
                 createThread(txtMessage.text.toString())
+
             } else {
                 Log.e("=====", "createMessage : $threadId")
-
                 createMessage(threadId, txtMessage.text.toString())
+
             }
         }
 
 
         Handler(Looper.getMainLooper()).postDelayed({
-            // observeNotes()
+            observeMessages(threadId)
+        }, 500)
 
-        }, 10000)
+        txtMessage?.addTextChangedListener(object : TextWatcher{
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
 
-    }
+            }
 
-    private fun subscribeOnAddMessage() {
-        /*viewModel.notifyNewMessageInsertedLiveData.observe(this, Observer {
-            chatAdapter.notifyItemInserted(it)
-        })*/
+            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                handler.removeCallbacks(input_finish_checker);
+               /* if (p0?.length!! > 0) {
+                    mSocket?.off("typing")?.on("typing", typing)
+                    mSocket?.emit("typing")
+                }else{
+                    mSocket?.off("typing")
+                }*/
+            }
+
+            override fun afterTextChanged(p0: Editable?) {
+                if (p0?.length!! > 0) {
+                    last_text_edit = System.currentTimeMillis();
+                    handler.postDelayed(input_finish_checker, delay);
+                    LogHelper.e("=============","afterTextChanged")
+
+                    mSocket?.on("typing", typing)
+                    mSocket?.emit("typing")
+                } else {
+                    mSocket?.off("typing", typing)
+                }
+            }
+
+        })
+
     }
 
     private fun initRecyclerView(list: List<ChatMessage>) {
@@ -217,24 +273,20 @@ class ChatActivity : AppCompatActivity() {
         rvMessageList?.hasFixedSize()
         layoutMgr.stackFromEnd = true
         rvMessageList.layoutManager = layoutMgr
-        chatAdapter = ChatAdapter(list.toMutableList(), this)
+        chatAdapter = ChatAdapter(list.toMutableList(), this, this)
         rvMessageList.adapter = chatAdapter
     }
 
     private fun createThread(message: String) {
+        mSocket?.emit(
+            "sendMessage", currentUserId,
+            recipientsIds?.get(0).toString(),
+            message
+        )
+        addMessage(currentUserId, message,"")
         viewModel.createThread.observe(this, {
-            Log.e("=====", "response:: $it")
-            // initRecyclerView(it)
-            /*val list : ArrayList<CreateThreadMutation.CreateThread> = it
-            messageList = it*/
             Timber.e("createThread:: $it")
-            getMessageList()
-            mSocket?.emit(
-                "sendMessage", currentUserId,
-                recipientsIds?.get(0).toString(),
-                it.createThread?.message.toString()
-            )
-
+            txtMessage.text = null
         })
         viewModel.errorMessage.observe(this, {
             Log.e("=====", "errorMessage:: $it")
@@ -263,22 +315,20 @@ class ChatActivity : AppCompatActivity() {
                 it, PreferenceHelper.getStringPreference(this, Constants.TOKEN).toString()
             )
         }
+
     }
 
     private fun createMessage(threadId: String, message: String) {
-        viewModel.createMessage.observe(this, {
-            Log.e("=====", "response:: $it")
-            // initRecyclerView(it)
-            /*val list : ArrayList<CreateThreadMutation.CreateThread> = it
-            messageList = it*/
-            Timber.e("createMessage:: $it")
-            getMessageList()
-            mSocket?.emit(
-                "sendMessage", currentUserId,
-                recipientsIds?.get(0).toString(),
-                it.createMessage?.message.toString()
-            )
+        mSocket?.emit(
+            "sendMessage", currentUserId,
+            recipientsIds?.get(0).toString(),
+            message
+        )
+        addMessage(currentUserId, message,"")
 
+        viewModel.createMessage.observe(this, {
+            Timber.e("createMessage:: $it")
+            txtMessage.text = null
         })
         viewModel.errorMessage.observe(this, {
             Log.e("=====", "errorMessage:: $it")
@@ -309,22 +359,14 @@ class ChatActivity : AppCompatActivity() {
         )
     }
 
-
-    private fun observeNotes() {
+    private fun observeMessages(threadId: String) {
         lifecycleScope.launch {
             chatDatabase.getAllChat(
-                PreferenceHelper.getStringPreference(
-                    this@ChatActivity,
-                    Constants.USERID
-                ).toString()
+                threadId
             ).observe(this@ChatActivity, { list ->
                 Log.e("=============", "list:: $list")
-                // chatMessageList = list as MutableList<ChatMessage>?
-                // chatMessageList?.let { initRecyclerView(it) }
-
-                /*if (chatMessageList.isNotEmpty()) {
-                    adapter.submitList(notesList)
-                }*/
+                chatMessageList = list as ArrayList<ChatMessage>?
+                initRecyclerView(list.reversed())
             })
 
         }
@@ -349,22 +391,12 @@ class ChatActivity : AppCompatActivity() {
                         getMessageList[index].dateSent.toString(),
                     )
 
-                    Log.e("===================", "Chat Message Model: $chatMessageModel")
-
-
-//                    lifecycleScope.launch {
-//                    }
-
-                    chatMessageList?.add(chatMessageModel!!)
-
+                    // chatMessageList?.add(chatMessageModel!!)
                     chatViewModel.insert(chatMessageModel!!)
-                   // chatViewModel.insertAllMessages(chatMessageList!!)
+                    // chatViewModel.insertAllMessages(chatMessageList!!)
 
                 }
                 Log.e("===================", "chatMessageList::: $$chatMessageList")
-
-
-                //Log.e("CHATMESSAGE", "list : $chatMessageList")
 
                 threadId = if (threadId.isEmpty()) {
                     getMessageList[0].threadId.toString()
@@ -404,5 +436,33 @@ class ChatActivity : AppCompatActivity() {
             PreferenceHelper.getStringPreference(this, Constants.TOKEN).toString()
 
         )
+    }
+
+    override fun onMessageClick(item: List<ChatMessage?>?, llOnClick: LinearLayout) {
+        LogHelper.e("onMessageClick", "===== itemclicked : $item")
+        showDialog(llOnClick)
+
+
+    }
+
+    private fun showDialog(llOnClick: LinearLayout) {
+        val dialog = Dialog(this)
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        dialog.setCancelable(false)
+        dialog.setContentView(R.layout.dialog_delete_message)
+
+
+        dialog.btnCancel.setOnClickListener {
+            llOnClick.setBackgroundColor(resources.getColor(android.R.color.transparent, theme))
+            dialog.dismiss()
+        }
+        dialog.btnDelete.setOnClickListener {
+            llOnClick.setBackgroundColor(resources.getColor(android.R.color.transparent, theme))
+
+
+            dialog.dismiss()
+        }
+        dialog.show()
+
     }
 }

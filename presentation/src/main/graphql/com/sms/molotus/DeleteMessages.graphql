@@ -1,0 +1,5 @@
+mutation DeleteMessages($deleteMessageInput: DeleteMessageInput){
+    deleteMessages(deleteMessageInput: [$deleteMessageInput]){
+        messageRes
+    }
+}
