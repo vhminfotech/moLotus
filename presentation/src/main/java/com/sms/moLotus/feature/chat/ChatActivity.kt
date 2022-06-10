@@ -10,6 +10,8 @@ import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.view.Window
 import android.widget.LinearLayout
@@ -66,13 +68,12 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
     var delay: Long = 1000 // 1 seconds after user stops typing
 
     var last_text_edit: Long = 0
-    var handler = Handler()
+    var handler = Handler(Looper.getMainLooper())
 
     private val input_finish_checker = Runnable {
         if (System.currentTimeMillis() > last_text_edit + delay - 500) {
-            LogHelper.e("=============","input_finish_checker")
-            txtTyping?.visibility = View.GONE
-            mSocket?.off("typing", typing)
+            mSocket?.emit("typing", false)
+            LogHelper.e("=============", "input_finish_checker")
         }
     }
 
@@ -111,10 +112,19 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
         }
     }
 
-    private val typing = Emitter.Listener { args ->
-        runOnUiThread(Runnable {
-            txtTyping?.visibility = View.VISIBLE
-        })
+    private val typing = Emitter.Listener { data ->
+        runOnUiThread {
+            LogHelper.e("==============", "data:: $data")
+            val userTyping = data[0] as JSONObject
+            txtTyping?.text = userTyping.getString("data").toString()
+
+            if (userTyping.getString("data").toString().isNotEmpty()) {
+                txtTyping?.visibility = View.VISIBLE
+            } else {
+                txtTyping?.visibility = View.GONE
+            }
+
+        }
     }
 
     private val getMessage = Emitter.Listener { args ->
@@ -134,8 +144,9 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
                 return@Runnable
             }
             //removeTyping(username)
-
+            txtTyping?.text = ""
             txtTyping?.visibility = View.GONE
+
             addMessage(senderId, text, currTime)
         })
     }
@@ -181,6 +192,8 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
+        setSupportActionBar(toolbar)
+        toolbar?.title = ""
         myUserId = PreferenceHelper.getStringPreference(this, Constants.USERID).toString()
         val app = application as QKApplication
         mSocket = app.socket
@@ -194,7 +207,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
         mSocket?.on(Socket.EVENT_DISCONNECT, onDisconnect)
         mSocket?.on(Socket.EVENT_CONNECT_ERROR, onConnectError)
         mSocket?.off("getMessage")?.on("getMessage", getMessage)
-
+        mSocket?.off("typing")?.on("typing", typing)
         mSocket?.connect()
 
         currentUserId = intent?.getStringExtra("currentUserId").toString()
@@ -236,31 +249,32 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
             observeMessages(threadId)
         }, 500)
 
-        txtMessage?.addTextChangedListener(object : TextWatcher{
+        txtMessage?.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
 
             }
 
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
                 handler.removeCallbacks(input_finish_checker);
-               /* if (p0?.length!! > 0) {
-                    mSocket?.off("typing")?.on("typing", typing)
-                    mSocket?.emit("typing")
-                }else{
-                    mSocket?.off("typing")
-                }*/
+                /* if (p0?.length!! > 0) {
+                     mSocket?.off("typing")?.on("typing", typing)
+                     mSocket?.emit("typing")
+                 }else{
+                     mSocket?.off("typing")
+                 }*/
             }
 
             override fun afterTextChanged(p0: Editable?) {
                 if (p0?.length!! > 0) {
+
+                    mSocket?.emit("typing", true)
                     last_text_edit = System.currentTimeMillis();
                     handler.postDelayed(input_finish_checker, delay);
-                    LogHelper.e("=============","afterTextChanged")
+                    LogHelper.e("=============", "afterTextChanged")
 
-                    mSocket?.on("typing", typing)
-                    mSocket?.emit("typing")
+
                 } else {
-                    mSocket?.off("typing", typing)
+
                 }
             }
 
@@ -283,10 +297,11 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
             recipientsIds?.get(0).toString(),
             message
         )
-        addMessage(currentUserId, message,"")
+        //addMessage(currentUserId, message, "")
         viewModel.createThread.observe(this, {
             Timber.e("createThread:: $it")
             txtMessage.text = null
+            getMessageList()
         })
         viewModel.errorMessage.observe(this, {
             Log.e("=====", "errorMessage:: $it")
@@ -324,7 +339,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
             recipientsIds?.get(0).toString(),
             message
         )
-        addMessage(currentUserId, message,"")
+        addMessage(currentUserId, message, "")
 
         viewModel.createMessage.observe(this, {
             Timber.e("createMessage:: $it")
@@ -438,19 +453,47 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
         )
     }
 
-    override fun onMessageClick(item: List<ChatMessage?>?, llOnClick: LinearLayout) {
+    private val messageIdList: ArrayList<String> = ArrayList()
+    var linearLayout: LinearLayout ?=null
+    var pos = 0
+
+    override fun onMessageClick(item: ChatMessage?, llOnClick: LinearLayout, adapterPosition: Int) {
         LogHelper.e("onMessageClick", "===== itemclicked : $item")
-        showDialog(llOnClick)
+        messageIdList.add(item?.id.toString())
+        toolbar?.visibility = View.VISIBLE
+        LogHelper.e("MESSAGEIDLIST", "==== $messageIdList")
+        linearLayout = llOnClick
+        pos = adapterPosition
 
 
     }
 
-    private fun showDialog(llOnClick: LinearLayout) {
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.chat_options, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == R.id.delete){
+            toast("Delete Clicked")
+            toolbar?.visibility = View.GONE
+            linearLayout?.let { showDialog(it, messageIdList, pos) }
+
+        }
+        return true
+    }
+
+    private fun showDialog(
+        llOnClick: LinearLayout,
+        messageIdList: ArrayList<String>,
+        adapterPosition: Int
+    ) {
         val dialog = Dialog(this)
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
         dialog.setCancelable(false)
         dialog.setContentView(R.layout.dialog_delete_message)
 
+        dialog.txtDesc?.text = "Do you want to delete the message?"
 
         dialog.btnCancel.setOnClickListener {
             llOnClick.setBackgroundColor(resources.getColor(android.R.color.transparent, theme))
@@ -458,11 +501,42 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
         }
         dialog.btnDelete.setOnClickListener {
             llOnClick.setBackgroundColor(resources.getColor(android.R.color.transparent, theme))
-
-
+            chatAdapter?.deleteMessage(adapterPosition)
+            deleteMessage(messageIdList)
             dialog.dismiss()
         }
         dialog.show()
 
+    }
+
+    private fun deleteMessage(messageIdList: ArrayList<String>) {
+        viewModel.deleteMessage.observe(this, {
+            runOnUiThread {
+                chatViewModel.deleteMessage(messageIdList)
+                toast("Message Deleted!")
+            }
+        })
+        viewModel.errorMessage.observe(this, {
+            Log.e("=====", "errorMessage:: $it")
+            val conMgr =
+                getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val netInfo = conMgr.activeNetworkInfo
+            if (netInfo == null) {
+                //No internet
+                Snackbar.make(
+                    findViewById(R.id.relMain),
+                    "No Internet Connection. Please turn on your internet!",
+                    Snackbar.LENGTH_INDEFINITE
+                )
+                    .setAction("Retry") {
+
+                    }
+                    .setActionTextColor(resources.getColor(android.R.color.holo_red_light))
+                    .show()
+            } else {
+                toast(it.toString(), Toast.LENGTH_SHORT)
+            }
+        })
+        viewModel.deleteMessage(threadId, myUserId, messageIdList)
     }
 }

@@ -1,5 +1,8 @@
-mutation DeleteThread($deleteThreadInput: DeleteThreadInput){
-    deleteThread(deleteThreadInput: [$deleteThreadInput]){
+mutation DeleteThread($threadId: [ID!]!, $userId: ID!){
+    deleteThread(deleteThreadInput:  {
+        threadId:$threadId,
+        userId: $userId
+    }){
         threadDelRes
     }
 }

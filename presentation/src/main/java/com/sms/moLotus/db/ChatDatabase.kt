@@ -37,7 +37,7 @@ abstract class ChatDatabase : RoomDatabase() {
                 context.applicationContext,
                 ChatDatabase::class.java,
                 "chat_database"
-            )
+            ).allowMainThreadQueries()
                 .build()
         }
     }

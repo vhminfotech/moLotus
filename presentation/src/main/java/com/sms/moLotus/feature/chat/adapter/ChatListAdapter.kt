@@ -1,22 +1,26 @@
 package com.sms.moLotus.feature.chat.adapter
 
 import android.content.Context
+import android.os.Build
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.sms.moLotus.GetThreadListQuery
 import com.sms.moLotus.R
 import com.sms.moLotus.common.widget.QkTextView
 import com.sms.moLotus.feature.Utils
+import com.sms.moLotus.feature.chat.listener.OnChatClickListener
 import com.sms.moLotus.feature.chat.listener.OnItemClickListener
 
 class ChatListAdapter(
     private val context: Context,
     private val mList: GetThreadListQuery.GetThreadList,
-    private val listener: OnItemClickListener
+    private val listener: OnItemClickListener,
+    private val onChatClickListener: OnChatClickListener,
 ) :
     RecyclerView.Adapter<ChatListAdapter.ViewHolder>() {
 
@@ -29,6 +33,7 @@ class ChatListAdapter(
     }
 
     // binds the list items to a view
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val chatList = mList.recipientUser?.get(position)
         holder.txtUserName.text = chatList?.name
@@ -38,6 +43,17 @@ class ChatListAdapter(
 
         holder.constraintLayout.setOnClickListener {
             listener.onItemClick(chatList)
+        }
+
+        holder.constraintLayout.setOnLongClickListener {
+            onChatClickListener.onChatClick(chatList, holder.constraintLayout, position)
+            holder.constraintLayout.setBackgroundColor(
+                context.resources.getColor(
+                    R.color.grey_translucent,
+                    context.theme
+                )
+            )
+            return@setOnLongClickListener true
         }
     }
 

@@ -22,6 +22,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun getAllChat(id: String) = chatRepository.getAllChat(id)
+    fun deleteMessage(id: List<String>) = chatRepository.deleteMessage(id)
 
     fun deleteTable() = chatRepository.deleteTable()
 

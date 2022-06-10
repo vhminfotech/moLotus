@@ -53,9 +53,9 @@
         android:layout_width="0dp"
         android:layout_height="50dp"
         android:layout_margin="10dp"
-        android:backgroundTint="#D3D3D3"
         android:layout_weight="1"
         android:background="@drawable/circle"
+        android:backgroundTint="#D3D3D3"
         android:gravity="center_vertical"
         android:hint="@string/compose_hint"
         android:inputType="textLongMessage|textCapSentences|textMultiLine"
@@ -77,8 +77,8 @@
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_margin="10dp"
-        android:backgroundTint="@color/tools_theme"
         android:background="@drawable/circle"
+        android:backgroundTint="@color/tools_theme"
         android:contentDescription="@string/compose_send_cd"
         android:padding="10dp"
         android:src="@drawable/ic_send_black_24dp"
@@ -88,33 +88,32 @@
 
 
     <LinearLayout
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_width="match_parent"
         android:id="@+id/layoutHeader"
+        android:layout_width="match_parent"
         android:layout_height="?actionBarSize"
         android:background="@color/tools_theme"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
             android:id="@+id/imgBack"
             android:layout_width="40dp"
             android:layout_height="match_parent"
             android:padding="7dp"
-            android:src="@drawable/ic_baseline_arrow_back_24"
-            />
+            android:src="@drawable/ic_baseline_arrow_back_24" />
 
         <LinearLayout
-            android:orientation="vertical"
+            android:id="@+id/llName"
             android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_height="wrap_content">
+            android:orientation="vertical">
 
             <com.sms.moLotus.common.widget.QkTextView
                 android:id="@+id/txtTitle"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_gravity="center"
                 android:paddingStart="10dp"
                 android:text="Settings"
                 android:textColor="@color/white"
@@ -122,17 +121,35 @@
 
             <com.sms.moLotus.common.widget.QkTextView
                 android:id="@+id/txtTyping"
-                android:visibility="gone"
-                android:text="typing...."
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
                 android:paddingStart="10dp"
                 android:textColor="@color/white"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                android:visibility="gone" />
         </LinearLayout>
 
 
     </LinearLayout>
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:animateLayoutChanges="true"
+        android:backgroundTint="@color/tools_theme"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:gravity="center_vertical"
+        app:contentInsetStartWithNavigation="0dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:titleTextColor="@color/tools_theme"
+        android:visibility="gone"
+        app:navigationIcon="@drawable/ic_baseline_arrow_back_24"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/tools_theme"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+         />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

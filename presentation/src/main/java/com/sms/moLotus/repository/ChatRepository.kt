@@ -16,6 +16,8 @@ class ChatRepository(val db: ChatDatabase) {
 
     fun getAllChat(id: String) = db.getChatDao().getAllChat(id)
 
+    fun deleteMessage(id: List<String>) = db.getChatDao().deleteMessage(id)
+
     fun deleteTable() = db.getChatDao().deleteTable()
 
 }

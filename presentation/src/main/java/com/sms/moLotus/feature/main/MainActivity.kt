@@ -5,6 +5,7 @@ package com.sms.moLotus.feature.main
 import android.Manifest
 import android.animation.ObjectAnimator
 import android.app.AlertDialog
+import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
@@ -15,7 +16,9 @@ import android.util.Log
 import android.view.*
 import android.widget.PopupWindow
 import android.widget.RelativeLayout
+import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
@@ -33,11 +36,14 @@ import com.sms.moLotus.common.Navigator
 import com.sms.moLotus.common.QKApplication
 import com.sms.moLotus.common.base.QkThemedActivity
 import com.sms.moLotus.common.util.extensions.*
+import com.sms.moLotus.extension.toast
 import com.sms.moLotus.feature.Constants
 import com.sms.moLotus.feature.blocking.BlockingDialog
 import com.sms.moLotus.feature.changelog.ChangelogDialog
 import com.sms.moLotus.feature.chat.ChatActivity
+import com.sms.moLotus.feature.chat.LogHelper
 import com.sms.moLotus.feature.chat.adapter.ChatListAdapter
+import com.sms.moLotus.feature.chat.listener.OnChatClickListener
 import com.sms.moLotus.feature.chat.listener.OnItemClickListener
 import com.sms.moLotus.feature.conversations.ConversationsAdapter
 import com.sms.moLotus.feature.intro.IntroActivity
@@ -52,6 +58,7 @@ import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
 import io.socket.client.Socket
 import io.socket.emitter.Emitter
+import kotlinx.android.synthetic.main.dialog_delete_message.*
 import kotlinx.android.synthetic.main.fragment_mchat.*
 import kotlinx.android.synthetic.main.layout_more_options.view.*
 import kotlinx.android.synthetic.main.layout_toolbar.*
@@ -60,7 +67,8 @@ import kotlinx.android.synthetic.main.main_permission_hint.*
 import kotlinx.android.synthetic.main.main_syncing.*
 import javax.inject.Inject
 
-class MainActivity : QkThemedActivity(), MainView, OnItemClickListener {
+@RequiresApi(Build.VERSION_CODES.M)
+class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatClickListener {
 
     @Inject
     lateinit var blockingDialog: BlockingDialog
@@ -141,8 +149,6 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener {
         )[MainViewModel::class.java]
     }
 
-    /*private val toggle by lazy { ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.main_drawer_open_cd, 0) }*/
-//    private val itemTouchHelper by lazy { ItemTouchHelper(itemTouchCallback) }
     private val progressAnimator by lazy { ObjectAnimator.ofInt(syncingProgress, "progress", 0, 0) }
     private val changelogDialog by lazy { ChangelogDialog(this) }
     private val snackbar by lazy { findViewById<View>(R.id.snackbar) }
@@ -151,6 +157,8 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener {
     lateinit var mainViewModel: com.sms.moLotus.feature.retrofit.MainViewModel
     private val retrofitService = RetrofitService.getInstance()
     var tabAppears = false
+    var chatClicked = false
+    private var chatListAdapter: ChatListAdapter? = null
 
     companion object {
         var toolbarVisible: androidx.appcompat.widget.Toolbar? = null
@@ -164,7 +172,6 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
-
         toolbarVisible = toolbar
         mainViewModel =
             ViewModelProvider(this/*, MyViewModelFactory(MainRepository(retrofitService))*/).get(
@@ -193,8 +200,9 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener {
                     empty?.visibility = View.GONE
                     compose?.visibility = View.GONE
                     createChat?.visibility = View.VISIBLE
-
                     getChatList()
+                    chatClicked = true
+                    toolbarVisible?.visibility = View.GONE
                 } else {
                     txtNoChat?.visibility = View.GONE
                     recyclerView?.visibility = View.VISIBLE
@@ -202,6 +210,9 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener {
                     compose?.visibility = View.VISIBLE
                     createChat?.visibility = View.GONE
                     tabAppears = true
+                    chatClicked = false
+
+                    toolbarVisible?.visibility = View.GONE
                     if (conversationsAdapter.itemCount == 0) {
                         empty?.visibility = View.VISIBLE
                     }
@@ -246,32 +257,7 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener {
                 myPopupWindow.dismiss()
             }
             myPopupWindow.showAsDropDown(v, 0, -170)
-            //val popup = PopupMenu(this@MainActivity, v)
-            //popup.menuInflater.inflate(R.menu.main_menu, popup.menu)
-            /*popup.setOnMenuItemClickListener { item ->
-                Toast.makeText(this@MainActivity, item.title, Toast.LENGTH_SHORT)
-                    .show()
-                true
-            }
-            popup.show()*/ //showing popup menu
         }
-
-        /*imgMenu.setOnClickListener {
-            val dialog = Dialog(this)
-
-            dialog.setCancelable(true)
-            dialog.setContentView(R.layout.layout_more_options)
-            val window: Window? = dialog.window
-
-            val wlp: WindowManager.LayoutParams? = window?.attributes
-            wlp?.gravity = Gravity.TOP or Gravity.RIGHT
-
-            wlp?.width = FrameLayout.LayoutParams.WRAP_CONTENT
-            wlp?.flags = wlp?.flags?.and(WindowManager.LayoutParams.FLAG_DIM_BEHIND.inv())
-            window?.attributes = wlp
-
-            dialog.show()
-        }*/
 
         val settings = getSharedPreferences("appInfo", 0)
         val firstTime = settings.getBoolean("first_time", true)
@@ -302,7 +288,6 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener {
             homeIntent.onNext(Unit)
         }
 
-//        itemTouchCallback.adapter = conversationsAdapter
         conversationsAdapter.autoScrollToStart(recyclerView)
 
         // Don't allow clicks to pass through the drawer layout
@@ -326,29 +311,12 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener {
                         )
                     }
                     .let { tintList ->
-                        // inboxIcon.imageTintList = tintList
-                        // archivedIcon.imageTintList = tintList
-                    }
 
-                // Miscellaneous views
-                /*listOf(plusBadge1, plusBadge2).forEach { badge ->
-                    badge.setBackgroundTint(theme.theme)
-                    badge.setTextColor(theme.textPrimary)
-                }*/
+                    }
                 syncingProgress?.progressTintList = ColorStateList.valueOf(theme.theme)
                 syncingProgress?.indeterminateTintList = ColorStateList.valueOf(theme.theme)
-                //plusIcon.setTint(theme.theme)
-//                    rateIcon.setTint(theme.theme)
-//                compose.setBackgroundTint(theme.theme)
 
-                // Set the FAB compose icon color
-                //          compose.setTint(theme.textPrimary)
             }
-
-        // These theme attributes don't apply themselves on API 21
-        /*if (Build.VERSION.SDK_INT <= 22) {
-            toolbarSearch.setBackgroundTint(resolveThemeColor(R.attr.bubbleColor))
-        }*/
     }
 
     private fun getChatList() {
@@ -418,10 +386,10 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener {
         rvChatRecyclerView?.layoutManager = LinearLayoutManager(this)
 
         // This will pass the ArrayList to our Adapter
-        val adapter = ChatListAdapter(this, chatList, this)
+        chatListAdapter = ChatListAdapter(this, chatList, this,this)
 
         // Setting the Adapter with the recyclerview
-        rvChatRecyclerView?.adapter = adapter
+        rvChatRecyclerView?.adapter = chatListAdapter
         rvChatRecyclerView?.adapter?.notifyDataSetChanged()
     }
 
@@ -600,7 +568,6 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener {
         super.onDestroy()
         disposables.dispose()
         mSocket?.disconnect()
-        mSocket?.off(Socket.EVENT_CONNECT, onConnect)
         /*mSocket?.off(Socket.EVENT_DISCONNECT, onDisconnect)*/
     }
 
@@ -613,7 +580,6 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener {
     }
 
     private val onConnect = Emitter.Listener {
-        Log.i("====================", "connected")
         // mSocket?.emit("addUser", myUserId)
         mSocket?.emit("addUser", currentUserId)
         mSocket?.emit("addUser", currentUserId)
@@ -697,7 +663,11 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener {
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.main, menu)
+        if (chatClicked) {
+            menuInflater.inflate(R.menu.chat_options, menu)
+        }else{
+            menuInflater.inflate(R.menu.main, menu)
+        }
         return super.onCreateOptionsMenu(menu)
     }
 
@@ -708,6 +678,78 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener {
 
     override fun onBackPressed() {
         super.onBackPressed()
+    }
+    val threadIdList: ArrayList<String> = ArrayList()
+
+    override fun onChatClick(
+        item: GetThreadListQuery.RecipientUser?,
+        llOnClick: ConstraintLayout,
+        adapterPosition: Int
+    ) {
+        chatClicked = true
+        toolbarVisible?.visibility = View.GONE
+        LogHelper.e("onChatClick", "===== item : $item")
+        threadIdList.add(item?.threadId.toString())
+
+        LogHelper.e("MESSAGEIDLIST", "==== $threadIdList")
+
+        showDialog(llOnClick, threadIdList, adapterPosition)
+    }
+
+    private fun deleteThread(threadIdList: ArrayList<String>) {
+        mainViewModel.deleteThread.observe(this, {
+            runOnUiThread {
+                toast("Chat Deleted!")
+                getChatList()
+            }
+        })
+        mainViewModel.errorMessage.observe(this, {
+            Log.e("=====", "errorMessage:: $it")
+            val conMgr =
+                getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val netInfo = conMgr.activeNetworkInfo
+            if (netInfo == null) {
+                //No internet
+                Snackbar.make(
+                    findViewById(R.id.relMain),
+                    "No Internet Connection. Please turn on your internet!",
+                    Snackbar.LENGTH_INDEFINITE
+                )
+                    .setAction("Retry") {
+
+                    }
+                    .setActionTextColor(resources.getColor(android.R.color.holo_red_light))
+                    .show()
+            } else {
+                toast(it.toString(), Toast.LENGTH_SHORT)
+            }
+        })
+        mainViewModel.deleteThread(currentUserId.toString(), threadIdList)
+    }
+
+    private fun showDialog(
+        llOnClick: ConstraintLayout,
+        threadIdList: ArrayList<String>,
+        adapterPosition: Int
+    ) {
+        val dialog = Dialog(this)
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        dialog.setCancelable(false)
+        dialog.setContentView(R.layout.dialog_delete_message)
+        dialog.txtDesc?.text = "Do you want to delete this chat?"
+
+        dialog.btnCancel.setOnClickListener {
+            llOnClick.setBackgroundColor(resources.getColor(android.R.color.transparent))
+            dialog.dismiss()
+        }
+        dialog.btnDelete.setOnClickListener {
+            llOnClick.setBackgroundColor(resources.getColor(android.R.color.transparent))
+            //chalis?.deleteMessage(adapterPosition)
+            deleteThread(threadIdList)
+            dialog.dismiss()
+        }
+        dialog.show()
+
     }
 
     /*override fun onBackPressed() {

@@ -37,6 +37,12 @@ class ChatAdapter(
         notifyDataSetChanged()
     }
 
+    fun deleteMessage(position: Int) {
+        list.removeAt(position)
+        notifyItemRemoved(position)
+        notifyItemRangeChanged(position, list.size)
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MessageViewHolder<*> {
         val context = parent.context
         return when (viewType) {
@@ -87,8 +93,9 @@ class ChatAdapter(
             context: Context
         ) {
             messageContent.text = item?.get(adapterPosition)?.message
+            val data = item?.get(adapterPosition)
             constraintMyMsg?.setOnLongClickListener {
-                listener.onMessageClick(item, llOnClick)
+                listener.onMessageClick(data, llOnClick, adapterPosition)
                 llOnClick.setBackgroundColor(
                     context.resources.getColor(
                         R.color.grey_translucent,
@@ -113,8 +120,9 @@ class ChatAdapter(
             context: Context
         ) {
             messageContent.text = item?.get(adapterPosition)?.message
+            val data = item?.get(adapterPosition)
             constraintFriendMsg?.setOnLongClickListener {
-                listener.onMessageClick(item, llOnClick)
+                listener.onMessageClick(data, llOnClick, adapterPosition)
                 llOnClick.setBackgroundColor(
                     context.resources.getColor(
                         R.color.grey_translucent,

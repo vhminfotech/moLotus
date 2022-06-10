@@ -28,6 +28,8 @@ class MainViewModel constructor(/*private val repository: MainRepository*/) : Vi
     val registerUser = MutableLiveData<RegisterUserMutation.Data>()
     val createThread = MutableLiveData<CreateThreadMutation.Data>()
     val createMessage = MutableLiveData<CreateMessageMutation.Data>()
+    val deleteMessage = MutableLiveData<DeleteMessagesMutation.Data>()
+    val deleteThread = MutableLiveData<DeleteThreadMutation.Data>()
     val errorMessage = MutableLiveData<String>()
 
     fun getAllOperators() {
@@ -163,6 +165,32 @@ class MainViewModel constructor(/*private val repository: MainRepository*/) : Vi
             GlobalScope.launch(Dispatchers.Main) {
                 val response = client?.mutation(createMessageMutation)?.execute()
                 createMessage.postValue(response?.data)
+            }
+        } catch (e: ApolloException) {
+            errorMessage.postValue(e.message)
+        }
+    }
+
+    fun deleteMessage(threadId: String, userId: String, messageId: List<String>){
+        client = ApolloClientService.setUpApolloClient("")
+        val deleteMessageMutation = DeleteMessagesMutation(threadId, userId,messageId)
+        try {
+            GlobalScope.launch(Dispatchers.Main) {
+                val response = client?.mutation(deleteMessageMutation)?.execute()
+                deleteMessage.postValue(response?.data)
+            }
+        } catch (e: ApolloException) {
+            errorMessage.postValue(e.message)
+        }
+    }
+
+    fun deleteThread(userId: String, threadId: List<String>){
+        client = ApolloClientService.setUpApolloClient("")
+        val deleteThreadMutation = DeleteThreadMutation(threadId, userId)
+        try {
+            GlobalScope.launch(Dispatchers.Main) {
+                val response = client?.mutation(deleteThreadMutation)?.execute()
+                deleteThread.postValue(response?.data)
             }
         } catch (e: ApolloException) {
             errorMessage.postValue(e.message)

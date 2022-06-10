@@ -1,5 +1,8 @@
-mutation DeleteMessages($deleteMessageInput: DeleteMessageInput){
-    deleteMessages(deleteMessageInput: [$deleteMessageInput]){
+mutation DeleteMessages($threadId: ID!, $userId: ID!, $messageId:[ID!]!){
+    deleteMessages(deleteMessageInput: {
+        threadId: $threadId,
+        messageId: $messageId,
+        userId: $userId}){
         messageRes
     }
 }
