@@ -50,6 +50,7 @@ import com.sms.moLotus.feature.intro.IntroActivity
 import com.sms.moLotus.feature.retrofit.RetrofitService
 import com.sms.moLotus.manager.ChangelogManager
 import com.sms.moLotus.repository.SyncRepository
+import com.sms.moLotus.viewmodel.ChatViewModel
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
 import dagger.android.AndroidInjection
@@ -69,6 +70,8 @@ import javax.inject.Inject
 
 @RequiresApi(Build.VERSION_CODES.M)
 class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatClickListener {
+
+    lateinit var chatViewModel: ChatViewModel
 
     @Inject
     lateinit var blockingDialog: BlockingDialog
@@ -177,6 +180,7 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
             ViewModelProvider(this/*, MyViewModelFactory(MainRepository(retrofitService))*/).get(
                 com.sms.moLotus.feature.retrofit.MainViewModel::class.java
             )
+        chatViewModel = ViewModelProvider(this).get(ChatViewModel::class.java)
         imgSearch.setOnClickListener {
             relSearch?.visibility = View.VISIBLE
         }
@@ -744,7 +748,7 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
         }
         dialog.btnDelete.setOnClickListener {
             llOnClick.setBackgroundColor(resources.getColor(android.R.color.transparent))
-            //chalis?.deleteMessage(adapterPosition)
+            chatViewModel.deleteAllMessages(threadIdList)
             deleteThread(threadIdList)
             dialog.dismiss()
         }

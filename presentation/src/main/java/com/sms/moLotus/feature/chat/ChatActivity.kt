@@ -193,7 +193,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
         setSupportActionBar(toolbar)
-        toolbar?.title = ""
+        toolbar?.title = "Delete Message"
         myUserId = PreferenceHelper.getStringPreference(this, Constants.USERID).toString()
         val app = application as QKApplication
         mSocket = app.socket
@@ -379,7 +379,8 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
             chatDatabase.getAllChat(
                 threadId
             ).observe(this@ChatActivity, { list ->
-                Log.e("=============", "list:: $list")
+                Log.e("allMessages", "chatMessageList:: $list")
+                Log.e("allMessages", "chatMessageList length:: ${chatMessageList?.size}")
                 chatMessageList = list as ArrayList<ChatMessage>?
                 initRecyclerView(list.reversed())
             })
@@ -390,7 +391,8 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
 
     private fun getMessageList() {
         viewModel.allMessages.observe(this, {
-            Log.e("=====", "response:: $it")
+            Log.e("allMessages", "allMessages:: $it")
+            Log.e("allMessages", "allMessages lengtj::: ${it.getMessageList?.messages?.size}")
 
             if (it.getMessageList?.messages?.isNotEmpty() == true) {
                 getMessageList =
@@ -411,7 +413,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
                     // chatViewModel.insertAllMessages(chatMessageList!!)
 
                 }
-                Log.e("===================", "chatMessageList::: $$chatMessageList")
+                //Log.e("===================", "chatMessageList::: $$chatMessageList")
 
                 threadId = if (threadId.isEmpty()) {
                     getMessageList[0].threadId.toString()
@@ -454,7 +456,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
     }
 
     private val messageIdList: ArrayList<String> = ArrayList()
-    var linearLayout: LinearLayout ?=null
+    var linearLayout: LinearLayout? = null
     var pos = 0
 
     override fun onMessageClick(item: ChatMessage?, llOnClick: LinearLayout, adapterPosition: Int) {
@@ -464,8 +466,6 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
         LogHelper.e("MESSAGEIDLIST", "==== $messageIdList")
         linearLayout = llOnClick
         pos = adapterPosition
-
-
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -474,11 +474,18 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.delete){
-            toast("Delete Clicked")
-            toolbar?.visibility = View.GONE
-            linearLayout?.let { showDialog(it, messageIdList, pos) }
+        when (item.itemId) {
+            android.R.id.home -> {
+                toolbar?.visibility = View.GONE
+                linearLayout?.setBackgroundColor(resources.getColor(android.R.color.transparent, theme))
 
+                return true
+            }
+
+            R.id.delete -> {
+                toolbar?.visibility = View.GONE
+                linearLayout?.let { showDialog(it, messageIdList, pos) }
+            }
         }
         return true
     }

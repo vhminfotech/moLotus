@@ -94,6 +94,13 @@ class ChatAdapter(
         ) {
             messageContent.text = item?.get(adapterPosition)?.message
             val data = item?.get(adapterPosition)
+            constraintMyMsg?.setOnClickListener {
+                llOnClick.setBackgroundColor(
+                    context.resources.getColor(
+                        android.R.color.transparent,
+                        context.theme
+                    ))
+            }
             constraintMyMsg?.setOnLongClickListener {
                 listener.onMessageClick(data, llOnClick, adapterPosition)
                 llOnClick.setBackgroundColor(
@@ -121,6 +128,13 @@ class ChatAdapter(
         ) {
             messageContent.text = item?.get(adapterPosition)?.message
             val data = item?.get(adapterPosition)
+            constraintFriendMsg?.setOnClickListener {
+                llOnClick.setBackgroundColor(
+                    context.resources.getColor(
+                        android.R.color.transparent,
+                        context.theme
+                    ))
+            }
             constraintFriendMsg?.setOnLongClickListener {
                 listener.onMessageClick(data, llOnClick, adapterPosition)
                 llOnClick.setBackgroundColor(

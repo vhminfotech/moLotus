@@ -1,31 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
     android:id="@+id/llOnClick"
-    android:layout_height="wrap_content">
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    android:layout_gravity="end|center"
-
-    android:id="@+id/constraintMyMsg"
-    android:layout_marginStart="50dp"
-    android:layout_marginEnd="15dp"
-    android:layout_marginTop="5dp"
-    android:layout_marginBottom="5dp"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <TextView
-        android:id="@+id/message"
-        android:layout_width="wrap_content"
+    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/constraintMyMsg"
+        android:layout_width="match_parent"
+
         android:layout_height="wrap_content"
-        android:textColor="@color/black"
-        android:textSize="15sp"
-        android:padding="7dp"
-        android:background="@drawable/my_bubble_shape"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
-</androidx.constraintlayout.widget.ConstraintLayout>
+        android:layout_gravity="end|center"
+        android:layout_marginStart="50dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="15dp"
+        android:layout_marginBottom="5dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/my_bubble_shape"
+            android:padding="7dp"
+            android:textColor="@color/black"
+            android:textSize="15sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>

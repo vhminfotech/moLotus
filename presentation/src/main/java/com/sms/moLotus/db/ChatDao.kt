@@ -22,6 +22,9 @@ interface ChatDao {
     @Query("DELETE FROM ChatMessageTable")
     fun deleteTable()
 
-    @Query("DELETE FROM ChatMessageTable WHERE id=:messageId")
+    @Query("DELETE FROM ChatMessageTable WHERE id in (:messageId)")
     fun deleteMessage(messageId: List<String>)
+
+    @Query("DELETE FROM ChatMessageTable WHERE threadId in (:threadId)")
+    fun deleteAllMessages(threadId: List<String>)
 }
