@@ -236,14 +236,11 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
             if (threadId.isEmpty() && getMessageList.size == 0) {
                 Log.e("=====", "createThread")
                 createThread(txtMessage.text.toString())
-
             } else {
                 Log.e("=====", "createMessage : $threadId")
                 createMessage(threadId, txtMessage.text.toString())
-
             }
         }
-
 
         Handler(Looper.getMainLooper()).postDelayed({
             observeMessages(threadId)
@@ -255,7 +252,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
             }
 
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                handler.removeCallbacks(input_finish_checker);
+                handler.removeCallbacks(input_finish_checker)
                 /* if (p0?.length!! > 0) {
                      mSocket?.off("typing")?.on("typing", typing)
                      mSocket?.emit("typing")
@@ -268,8 +265,8 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
                 if (p0?.length!! > 0) {
 
                     mSocket?.emit("typing", true)
-                    last_text_edit = System.currentTimeMillis();
-                    handler.postDelayed(input_finish_checker, delay);
+                    last_text_edit = System.currentTimeMillis()
+                    handler.postDelayed(input_finish_checker, delay)
                     LogHelper.e("=============", "afterTextChanged")
 
 

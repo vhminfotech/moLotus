@@ -45,10 +45,7 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
         setContentView(R.layout.activity_chat_contact_list)
         userId = PreferenceHelper.getStringPreference(this, Constants.USERID).toString()
         Log.e("==========", "userId :: $userId")
-        viewModel =
-            ViewModelProvider(this/*, MyViewModelFactory(MainRepository(retrofitService))*/).get(
-                MainViewModel::class.java
-            )
+        viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
         txtTitle.text = "Chat Contacts List"
         imgBack?.setOnClickListener {
             onBackPressed()
@@ -56,10 +53,14 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
         GlobalScope.launch(Dispatchers.IO) {
             getContactList()
 
+            GlobalScope.launch (Dispatchers.Main){
+                Handler(Looper.getMainLooper()).postDelayed({
+                    getUserUsingAppList(contactList)
+                },2000)
+            }
+
         }
-        Handler(Looper.getMainLooper()).postDelayed({
-            getUserUsingAppList(contactList)
-        },5000)
+
 
     }
 
