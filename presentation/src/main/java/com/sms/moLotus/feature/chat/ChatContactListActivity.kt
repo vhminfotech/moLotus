@@ -53,14 +53,13 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
         GlobalScope.launch(Dispatchers.IO) {
             getContactList()
 
-            GlobalScope.launch (Dispatchers.Main){
-                Handler(Looper.getMainLooper()).postDelayed({
-                    getUserUsingAppList(contactList)
-                },2000)
-            }
+
 
         }
 
+            Handler(Looper.getMainLooper()).postDelayed({
+                getUserUsingAppList(contactList.sorted())
+            },4000)
 
     }
 
@@ -191,8 +190,9 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
         val intent = Intent(this, ChatActivity::class.java)
             .putExtra("currentUserId", userId)
             .putExtra("receiverUserId", item?.userId.toString())
-            .putExtra("threadId", "")
+            .putExtra("threadId", item?.threadId.toString())
             .putExtra("userName", item?.name.toString())
+            .putExtra("flag", true)
         startActivity(intent)
         overridePendingTransition(0, 0)
     }

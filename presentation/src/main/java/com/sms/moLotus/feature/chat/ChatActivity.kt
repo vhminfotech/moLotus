@@ -63,6 +63,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
     private var mSocket: Socket? = null
     private var isConnected = true
     var myUserId = ""
+    var flag: Boolean? = true
 
     private val chatDatabase by lazy { ChatDatabase.getDatabase(this).getChatDao() }
     var delay: Long = 1000 // 1 seconds after user stops typing
@@ -72,7 +73,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
 
     private val input_finish_checker = Runnable {
         if (System.currentTimeMillis() > last_text_edit + delay - 500) {
-            mSocket?.emit("typing", false)
+            //  mSocket?.emit("typing", false)
             LogHelper.e("=============", "input_finish_checker")
         }
     }
@@ -84,7 +85,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
         /*mSocket?.off(Socket.EVENT_DISCONNECT, onDisconnect)*/
         mSocket?.off(Socket.EVENT_CONNECT_ERROR, onConnectError)
         mSocket?.off("getMessage", getMessage)
-        mSocket?.off("typing", typing)
+        //  mSocket?.off("typing", typing)
     }
 
     private val onConnect = Emitter.Listener {
@@ -154,8 +155,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
     private fun addMessage(senderId: String, message: String, currTime: String) {
         Log.e("=============", "senderId:: $senderId")
         Log.e("=============", "message:: $message")
-        val iterator: MutableIterator<ChatMessage>? =
-            chatMessageList?.iterator()
+        val iterator: MutableIterator<ChatMessage>? = chatMessageList?.iterator()
         var chatMessageModel: ChatMessage? = null
 
         while (iterator?.hasNext() == true) {
@@ -173,11 +173,14 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
                 message,
                 time,
             )
+
         }
         Log.e("CHATMESSAGE", "chatMessageModel ::: $chatMessageModel")
 
+        //chatAdapter?.updateList(chatMessageModel)
         chatMessageModel?.let { chatMessageList?.add(it) }
-        chatMessageList?.let { chatAdapter?.updateList(it) }
+
+        chatMessageList?.let { chatAdapter?.updateList(it as MutableList<ChatMessage>) }
         rvMessageList?.scrollToPosition(chatMessageList?.size!!.toInt() - 1)
 
         Log.e("CHATMESSAGE", "chatMessageList after : ${chatMessageList?.size}")
@@ -207,12 +210,13 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
         mSocket?.on(Socket.EVENT_DISCONNECT, onDisconnect)
         mSocket?.on(Socket.EVENT_CONNECT_ERROR, onConnectError)
         mSocket?.off("getMessage")?.on("getMessage", getMessage)
-        mSocket?.off("typing")?.on("typing", typing)
+        // mSocket?.off("typing")?.on("typing", typing)
         mSocket?.connect()
 
         currentUserId = intent?.getStringExtra("currentUserId").toString()
         receiverUserId = intent?.getStringExtra("receiverUserId").toString()
         threadId = intent?.getStringExtra("threadId").toString()
+        flag = intent?.getBooleanExtra("flag", false)
         userName = intent?.getStringExtra("userName").toString()
         txtTitle?.text = userName
         recipientsIds?.add(receiverUserId)
@@ -231,20 +235,24 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
 
         imgSend.setOnClickListener {
             //getMessage list empty then create thread else create message
+            Log.e("==================", "flag:: $flag")
 
-            Log.e("=====", "getMessageList.size:: ${getMessageList.size}")
-            if (threadId.isEmpty() && getMessageList.size == 0) {
-                Log.e("=====", "createThread")
+            if (flag == true) {
                 createThread(txtMessage.text.toString())
             } else {
-                Log.e("=====", "createMessage : $threadId")
-                createMessage(threadId, txtMessage.text.toString())
+                Log.e("=====", "getMessageList.size:: ${getMessageList.size}")
+                Log.e("==================", "threadId:: $threadId")
+                if ((threadId.isEmpty() || threadId == "null") /*&& getMessageList.size == 0*/) {
+                    Log.e("=====", "createThread")
+                    createThread(txtMessage.text.toString())
+                } else {
+                    Log.e("=====", "createMessage : $threadId")
+                    createMessage(threadId, txtMessage.text.toString())
+                }
             }
         }
 
-        Handler(Looper.getMainLooper()).postDelayed({
-            observeMessages(threadId)
-        }, 500)
+
 
         txtMessage?.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
@@ -264,7 +272,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
             override fun afterTextChanged(p0: Editable?) {
                 if (p0?.length!! > 0) {
 
-                    mSocket?.emit("typing", true)
+                    //mSocket?.emit("typing", true)
                     last_text_edit = System.currentTimeMillis()
                     handler.postDelayed(input_finish_checker, delay)
                     LogHelper.e("=============", "afterTextChanged")
@@ -294,11 +302,12 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
             recipientsIds?.get(0).toString(),
             message
         )
-        //addMessage(currentUserId, message, "")
+        // addMessage(currentUserId, message, "")
         viewModel.createThread.observe(this, {
-            Timber.e("createThread:: $it")
+            LogHelper.e("======================", "createThread:: $it")
             txtMessage.text = null
             getMessageList()
+
         })
         viewModel.errorMessage.observe(this, {
             Log.e("=====", "errorMessage:: $it")
@@ -327,6 +336,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
                 it, PreferenceHelper.getStringPreference(this, Constants.TOKEN).toString()
             )
         }
+
 
     }
 
@@ -376,8 +386,8 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
             chatDatabase.getAllChat(
                 threadId
             ).observe(this@ChatActivity, { list ->
-                Log.e("allMessages", "chatMessageList:: $list")
-                Log.e("allMessages", "chatMessageList length:: ${chatMessageList?.size}")
+                Log.e("======================", "chatMessageList:: $list")
+                Log.e("======================", "chatMessageList length:: ${chatMessageList?.size}")
                 chatMessageList = list as ArrayList<ChatMessage>?
                 initRecyclerView(list.reversed())
             })
@@ -388,8 +398,11 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
 
     private fun getMessageList() {
         viewModel.allMessages.observe(this, {
-            Log.e("allMessages", "allMessages:: $it")
-            Log.e("allMessages", "allMessages lengtj::: ${it.getMessageList?.messages?.size}")
+            LogHelper.e("======================", "getMessageList:: $it")
+            LogHelper.e(
+                "======================",
+                "getMessageList:: ${it.getMessageList?.messages?.size}"
+            )
 
             if (it.getMessageList?.messages?.isNotEmpty() == true) {
                 getMessageList =
@@ -412,13 +425,19 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
                 }
                 //Log.e("===================", "chatMessageList::: $$chatMessageList")
 
-                threadId = if (threadId.isEmpty()) {
+                threadId = if (threadId.isEmpty() || threadId == "null") {
                     getMessageList[0].threadId.toString()
                 } else {
                     threadId
                 }
 
                 txtMessage.text = null
+
+
+                LogHelper.e("==================", "thread id create message: $threadId")
+                Handler(Looper.getMainLooper()).postDelayed({
+                    observeMessages(threadId)
+                }, 500)
 
             }
         })
@@ -474,7 +493,12 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
         when (item.itemId) {
             android.R.id.home -> {
                 toolbar?.visibility = View.GONE
-                linearLayout?.setBackgroundColor(resources.getColor(android.R.color.transparent, theme))
+                linearLayout?.setBackgroundColor(
+                    resources.getColor(
+                        android.R.color.transparent,
+                        theme
+                    )
+                )
 
                 return true
             }

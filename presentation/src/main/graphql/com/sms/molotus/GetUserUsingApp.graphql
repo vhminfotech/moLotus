@@ -5,6 +5,7 @@ query GetUserUsingApp($userId: ID!,$userData:[String!]!){
             msisdn
             operator
             userId
+            threadId
         }
     }
 }

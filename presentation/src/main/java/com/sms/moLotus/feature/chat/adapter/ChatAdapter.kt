@@ -32,9 +32,11 @@ class ChatAdapter(
     fun updateList(data: MutableList<ChatMessage>) {
         list.clear()
         list.addAll(data)
-        list.sortBy { it.dateSent }
-        notifyItemInserted(itemCount - 1)
-        notifyDataSetChanged()
+        notifyItemInserted(list.size - 1)
+        notifyItemRangeInserted(list.size - 1, itemCount)
+        /*list?.sortByDescending { it.dateSent }
+        notifyItemInserted(list.size - 1)
+        notifyItemRangeInserted(list.size - 1, list.size)*/
     }
 
     fun deleteMessage(position: Int) {
@@ -99,7 +101,8 @@ class ChatAdapter(
                     context.resources.getColor(
                         android.R.color.transparent,
                         context.theme
-                    ))
+                    )
+                )
             }
             constraintMyMsg?.setOnLongClickListener {
                 listener.onMessageClick(data, llOnClick, adapterPosition)
@@ -133,7 +136,8 @@ class ChatAdapter(
                     context.resources.getColor(
                         android.R.color.transparent,
                         context.theme
-                    ))
+                    )
+                )
             }
             constraintFriendMsg?.setOnLongClickListener {
                 listener.onMessageClick(data, llOnClick, adapterPosition)
