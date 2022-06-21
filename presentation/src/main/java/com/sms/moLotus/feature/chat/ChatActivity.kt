@@ -22,6 +22,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
+import com.sms.moLotus.GetGroupMessageListQuery
 import com.sms.moLotus.GetMessageListQuery
 import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
@@ -47,27 +48,27 @@ import timber.log.Timber
 @RequiresApi(Build.VERSION_CODES.M)
 class ChatActivity : AppCompatActivity(), OnMessageClickListener {
     lateinit var viewModel: MainViewModel
-
     lateinit var chatViewModel: ChatViewModel
     private val retrofitService = RetrofitService.getInstance()
     private var chatAdapter: ChatAdapter? = null
-    private var receiverUserId: String = ""
     private var currentUserId: String = ""
     var userName: String = ""
+    var groupName: String = ""
     var recipientsIds: ArrayList<String>? = ArrayList()
     var threadId: String = ""
-    var getMessageList: MutableList<GetMessageListQuery.Message> = mutableListOf()
-
-    //    var chatMessageModel: ChatMessage? = null
+    private var getMessageList: MutableList<GetMessageListQuery.Message> = mutableListOf()
+    var getGroupMessageList: MutableList<GetGroupMessageListQuery.Message> = mutableListOf()
+    private val messageIdList: ArrayList<String> = ArrayList()
+    var linearLayout: LinearLayout? = null
+    var pos = 0
     var chatMessageList: ArrayList<ChatMessage>? = ArrayList()
     private var mSocket: Socket? = null
     private var isConnected = true
     var myUserId = ""
     var flag: Boolean? = true
-
+    var isGroup: Boolean = false
     private val chatDatabase by lazy { ChatDatabase.getDatabase(this).getChatDao() }
     var delay: Long = 1000 // 1 seconds after user stops typing
-
     var last_text_edit: Long = 0
     var handler = Handler(Looper.getMainLooper())
 
@@ -77,120 +78,6 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
             LogHelper.e("=============", "input_finish_checker")
         }
     }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        mSocket?.disconnect()
-        mSocket?.off(Socket.EVENT_CONNECT, onConnect)
-        /*mSocket?.off(Socket.EVENT_DISCONNECT, onDisconnect)*/
-        mSocket?.off(Socket.EVENT_CONNECT_ERROR, onConnectError)
-        mSocket?.off("getMessage", getMessage)
-        //  mSocket?.off("typing", typing)
-    }
-
-    private val onConnect = Emitter.Listener {
-        Log.i("====================", "connected")
-        // mSocket?.emit("addUser", myUserId)
-        if (!isConnected) {
-            mSocket?.emit("addUser", myUserId)
-
-            isConnected = true
-        }
-
-    }
-    private val onDisconnect = Emitter.Listener {
-        runOnUiThread {
-            Log.i("====================", "disconnected")
-            isConnected = false
-            // mSocket?.emit("removeUser", myUserId)
-
-        }
-    }
-    private val onConnectError = Emitter.Listener {
-        runOnUiThread {
-            Log.e("====================", "Error connecting")
-
-        }
-    }
-
-    private val typing = Emitter.Listener { data ->
-        runOnUiThread {
-            LogHelper.e("==============", "data:: $data")
-            val userTyping = data[0] as JSONObject
-            txtTyping?.text = userTyping.getString("data").toString()
-
-            if (userTyping.getString("data").toString().isNotEmpty()) {
-                txtTyping?.visibility = View.VISIBLE
-            } else {
-                txtTyping?.visibility = View.GONE
-            }
-
-        }
-    }
-
-    private val getMessage = Emitter.Listener { args ->
-        runOnUiThread(Runnable {
-            val data = args[0] as JSONObject
-            Log.e("=============", "data:: $data")
-
-            val senderId: String
-            val text: String
-            val currTime: String
-            try {
-                senderId = data.getString("senderId")
-                text = data.getString("text")
-                currTime = data.getString("currTime")
-            } catch (e: JSONException) {
-                Log.e("====================", e.message.toString())
-                return@Runnable
-            }
-            //removeTyping(username)
-            txtTyping?.text = ""
-            txtTyping?.visibility = View.GONE
-
-            addMessage(senderId, text, currTime)
-        })
-    }
-
-    private fun addMessage(senderId: String, message: String, currTime: String) {
-        Log.e("=============", "senderId:: $senderId")
-        Log.e("=============", "message:: $message")
-        val iterator: MutableIterator<ChatMessage>? = chatMessageList?.iterator()
-        var chatMessageModel: ChatMessage? = null
-
-        while (iterator?.hasNext() == true) {
-            val c: ChatMessage = iterator.next()
-            val time = if (currTime.isEmpty()) {
-                c.dateSent
-            } else {
-                currTime
-            }
-            chatMessageModel = ChatMessage(
-                myUserId,
-                c.id,
-                senderId,
-                c.threadId,
-                message,
-                time,
-            )
-
-        }
-        Log.e("CHATMESSAGE", "chatMessageModel ::: $chatMessageModel")
-
-        //chatAdapter?.updateList(chatMessageModel)
-        chatMessageModel?.let { chatMessageList?.add(it) }
-
-        chatMessageList?.let { chatAdapter?.updateList(it as MutableList<ChatMessage>) }
-        rvMessageList?.scrollToPosition(chatMessageList?.size!!.toInt() - 1)
-
-        Log.e("CHATMESSAGE", "chatMessageList after : ${chatMessageList?.size}")
-    }
-
-    override fun onBackPressed() {
-        super.onBackPressed()
-
-    }
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -214,12 +101,26 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
         mSocket?.connect()
 
         currentUserId = intent?.getStringExtra("currentUserId").toString()
-        receiverUserId = intent?.getStringExtra("receiverUserId").toString()
+        //receiverUserId = intent?.getStringExtra("receiverUserId").toString()
+        recipientsIds = intent?.getStringArrayListExtra("receiverUserId")
         threadId = intent?.getStringExtra("threadId").toString()
         flag = intent?.getBooleanExtra("flag", false)
+        isGroup = intent.getBooleanExtra("isGroup", false)
         userName = intent?.getStringExtra("userName").toString()
-        txtTitle?.text = userName
-        recipientsIds?.add(receiverUserId)
+        groupName = intent?.getStringExtra("groupName").toString()
+        if (userName.isEmpty() || userName == "") {
+            txtTitle?.text = userName
+        } else {
+            txtTitle?.text = groupName
+        }
+//        LogHelper.e("NewGroupActivity","receiverUserId:: $receiverUserId")
+
+        //recipientsIds?.add(receiverUserId)
+
+
+        LogHelper.e("NewGroupActivity", "recipientsIds:: $recipientsIds")
+
+
         imgBack?.setOnClickListener {
             onBackPressed()
         }
@@ -231,20 +132,23 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
             //chatViewModel.deleteTable()
         }
 
-        getMessageList()
+        if (!isGroup) {
+            getMessageList()
+        } else {
+            getGroupMessageList()
+        }
 
         imgSend.setOnClickListener {
             //getMessage list empty then create thread else create message
             Log.e("==================", "flag:: $flag")
+            Log.e("==================", "isGroup:: $isGroup :: groupName:: $groupName")
 
             if (flag == true) {
-                createThread(txtMessage.text.toString())
+                createThread(txtMessage.text.toString(), isGroup, groupName)
             } else {
-                Log.e("=====", "getMessageList.size:: ${getMessageList.size}")
-                Log.e("==================", "threadId:: $threadId")
-                if ((threadId.isEmpty() || threadId == "null") /*&& getMessageList.size == 0*/) {
+                if ((threadId.isEmpty() || threadId == "null")) {
                     Log.e("=====", "createThread")
-                    createThread(txtMessage.text.toString())
+                    createThread(txtMessage.text.toString(), isGroup, groupName)
                 } else {
                     Log.e("=====", "createMessage : $threadId")
                     createMessage(threadId, txtMessage.text.toString())
@@ -261,12 +165,6 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
 
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
                 handler.removeCallbacks(input_finish_checker)
-                /* if (p0?.length!! > 0) {
-                     mSocket?.off("typing")?.on("typing", typing)
-                     mSocket?.emit("typing")
-                 }else{
-                     mSocket?.off("typing")
-                 }*/
             }
 
             override fun afterTextChanged(p0: Editable?) {
@@ -276,7 +174,6 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
                     last_text_edit = System.currentTimeMillis()
                     handler.postDelayed(input_finish_checker, delay)
                     LogHelper.e("=============", "afterTextChanged")
-
 
                 } else {
 
@@ -296,7 +193,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
         rvMessageList.adapter = chatAdapter
     }
 
-    private fun createThread(message: String) {
+    private fun createThread(message: String, isGroup: Boolean, groupName: String) {
         mSocket?.emit(
             "sendMessage", currentUserId,
             recipientsIds?.get(0).toString(),
@@ -306,8 +203,11 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
         viewModel.createThread.observe(this, {
             LogHelper.e("======================", "createThread:: $it")
             txtMessage.text = null
-            getMessageList()
-
+            if (!isGroup) {
+                getMessageList()
+            } else {
+                getGroupMessageList()
+            }
         })
         viewModel.errorMessage.observe(this, {
             Log.e("=====", "errorMessage:: $it")
@@ -333,7 +233,8 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
         recipientsIds?.let {
             viewModel.createThread(
                 message, currentUserId,
-                it, PreferenceHelper.getStringPreference(this, Constants.TOKEN).toString()
+                it, PreferenceHelper.getStringPreference(this, Constants.TOKEN).toString(),
+                isGroup, groupName
             )
         }
 
@@ -395,7 +296,6 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
         }
     }
 
-
     private fun getMessageList() {
         viewModel.allMessages.observe(this, {
             LogHelper.e("======================", "getMessageList:: $it")
@@ -416,6 +316,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
                         getMessageList[index].threadId.toString(),
                         getMessageList[index].message.toString(),
                         getMessageList[index].dateSent.toString(),
+                        ""
                     )
 
                     // chatMessageList?.add(chatMessageModel!!)
@@ -432,7 +333,6 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
                 }
 
                 txtMessage.text = null
-
 
                 LogHelper.e("==================", "thread id create message: $threadId")
                 Handler(Looper.getMainLooper()).postDelayed({
@@ -464,16 +364,86 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
         })
         viewModel.getAllMessages(
             threadId,
-            receiverUserId,
+            recipientsIds?.get(0).toString(),
             PreferenceHelper.getStringPreference(this, Constants.USERID).toString(),
             PreferenceHelper.getStringPreference(this, Constants.TOKEN).toString()
 
         )
     }
 
-    private val messageIdList: ArrayList<String> = ArrayList()
-    var linearLayout: LinearLayout? = null
-    var pos = 0
+    private fun getGroupMessageList() {
+        viewModel.allGroupMessages.observe(this, {
+            LogHelper.e("======================", "getMessageList:: $it")
+            LogHelper.e(
+                "======================",
+                "getGroupMessageList:: ${it.getGroupMessageList?.messages?.size}"
+            )
+
+            if (it.getGroupMessageList?.messages?.isNotEmpty() == true) {
+                getGroupMessageList =
+                    it.getGroupMessageList.messages as MutableList<GetGroupMessageListQuery.Message>
+                var chatMessageModel: ChatMessage? = null
+                getGroupMessageList.forEachIndexed { index, message ->
+                    chatMessageModel = ChatMessage(
+                        myUserId,
+                        getGroupMessageList[index].id.toString(),
+                        getGroupMessageList[index].senderId.toString(),
+                        getGroupMessageList[index].threadId.toString(),
+                        getGroupMessageList[index].message.toString(),
+                        getGroupMessageList[index].dateSent.toString(),
+                        getGroupMessageList[index].userName.toString(),
+                    )
+
+                    // chatMessageList?.add(chatMessageModel!!)
+                    chatViewModel.insert(chatMessageModel!!)
+                    // chatViewModel.insertAllMessages(chatMessageList!!)
+
+                }
+                //Log.e("===================", "chatMessageList::: $$chatMessageList")
+
+                threadId = if (threadId.isEmpty() || threadId == "null") {
+                    getGroupMessageList[0].threadId.toString()
+                } else {
+                    threadId
+                }
+
+                txtMessage.text = null
+
+                LogHelper.e("==================", "thread id create message: $threadId")
+                Handler(Looper.getMainLooper()).postDelayed({
+                    observeMessages(threadId)
+                }, 500)
+
+            }
+        })
+        viewModel.errorMessage.observe(this, {
+            Log.e("=====", "errorMessage:: $it")
+            val conMgr =
+                getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val netInfo = conMgr.activeNetworkInfo
+            if (netInfo == null) {
+                //No internet
+                Snackbar.make(
+                    findViewById(R.id.relMain),
+                    "No Internet Connection. Please turn on your internet!",
+                    Snackbar.LENGTH_INDEFINITE
+                )
+                    .setAction("Retry") {
+
+                    }
+                    .setActionTextColor(resources.getColor(android.R.color.holo_red_light))
+                    .show()
+            } else {
+                toast(it.toString(), Toast.LENGTH_SHORT)
+            }
+        })
+        viewModel.getAllGroupMessages(
+            threadId,
+            PreferenceHelper.getStringPreference(this, Constants.USERID).toString(),
+            PreferenceHelper.getStringPreference(this, Constants.TOKEN).toString()
+
+        )
+    }
 
     override fun onMessageClick(item: ChatMessage?, llOnClick: LinearLayout, adapterPosition: Int) {
         LogHelper.e("onMessageClick", "===== itemclicked : $item")
@@ -567,4 +537,122 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
         })
         viewModel.deleteMessage(threadId, myUserId, messageIdList)
     }
+
+
+    override fun onDestroy() {
+        super.onDestroy()
+        mSocket?.disconnect()
+        mSocket?.off(Socket.EVENT_CONNECT, onConnect)
+        /*mSocket?.off(Socket.EVENT_DISCONNECT, onDisconnect)*/
+        mSocket?.off(Socket.EVENT_CONNECT_ERROR, onConnectError)
+        mSocket?.off("getMessage", getMessage)
+        //  mSocket?.off("typing", typing)
+    }
+
+    private val onConnect = Emitter.Listener {
+        Log.i("====================", "connected")
+        // mSocket?.emit("addUser", myUserId)
+        if (!isConnected) {
+            mSocket?.emit("addUser", myUserId)
+
+            isConnected = true
+        }
+
+    }
+    private val onDisconnect = Emitter.Listener {
+        runOnUiThread {
+            Log.i("====================", "disconnected")
+            isConnected = false
+            // mSocket?.emit("removeUser", myUserId)
+
+        }
+    }
+    private val onConnectError = Emitter.Listener {
+        runOnUiThread {
+            Log.e("====================", "Error connecting")
+
+        }
+    }
+
+    private val typing = Emitter.Listener { data ->
+        runOnUiThread {
+            LogHelper.e("==============", "data:: $data")
+            val userTyping = data[0] as JSONObject
+            txtTyping?.text = userTyping.getString("data").toString()
+
+            if (userTyping.getString("data").toString().isNotEmpty()) {
+                txtTyping?.visibility = View.VISIBLE
+            } else {
+                txtTyping?.visibility = View.GONE
+            }
+
+        }
+    }
+
+    private val getMessage = Emitter.Listener { args ->
+        runOnUiThread(Runnable {
+            val data = args[0] as JSONObject
+            Log.e("=============", "data:: $data")
+
+            val senderId: String
+            val text: String
+            val currTime: String
+            val name: String
+            try {
+                senderId = data.getString("senderId")
+                text = data.getString("text")
+//                name = data.getString("name")
+                currTime = data.getString("currTime")
+            } catch (e: JSONException) {
+                Log.e("====================", e.message.toString())
+                return@Runnable
+            }
+            //removeTyping(username)
+            txtTyping?.text = ""
+            txtTyping?.visibility = View.GONE
+
+            addMessage(senderId, text, currTime)
+        })
+    }
+
+    private fun addMessage(senderId: String, message: String, currTime: String) {
+        Log.e("=============", "senderId:: $senderId")
+        Log.e("=============", "message:: $message")
+        val iterator: MutableIterator<ChatMessage>? = chatMessageList?.iterator()
+        var chatMessageModel: ChatMessage? = null
+
+        while (iterator?.hasNext() == true) {
+            val c: ChatMessage = iterator.next()
+            val time = if (currTime.isEmpty()) {
+                c.dateSent
+            } else {
+                currTime
+            }
+            chatMessageModel = ChatMessage(
+                myUserId,
+                c.id,
+                senderId,
+                c.threadId,
+                message,
+                time,
+                c.userName
+            )
+
+        }
+        Log.e("CHATMESSAGE", "chatMessageModel ::: $chatMessageModel")
+
+        //chatAdapter?.updateList(chatMessageModel)
+        chatMessageModel?.let { chatMessageList?.add(it) }
+
+        chatMessageList?.let { chatAdapter?.updateList(it as MutableList<ChatMessage>) }
+        rvMessageList?.scrollToPosition(chatMessageList?.size!!.toInt() - 1)
+
+        Log.e("CHATMESSAGE", "chatMessageList after : ${chatMessageList?.size}")
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+
+    }
+
 }

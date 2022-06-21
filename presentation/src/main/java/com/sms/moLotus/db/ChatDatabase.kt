@@ -5,10 +5,11 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.sms.moLotus.feature.chat.model.ChatMessage
+import com.sms.moLotus.feature.chat.model.Users
 
 
 @Database(
-    entities = [ChatMessage::class],
+    entities = [ChatMessage::class, Users::class],
     version = 1, exportSchema = true)
 abstract class ChatDatabase : RoomDatabase() {
 

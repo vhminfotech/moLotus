@@ -23,6 +23,7 @@ class MainViewModel constructor(/*private val repository: MainRepository*/) : Vi
     //    val loginResponse = MutableLiveData<LoginResponse>()
     val chatList = MutableLiveData<GetThreadListQuery.Data>()
     val allMessages = MutableLiveData<GetMessageListQuery.Data>()
+    val allGroupMessages = MutableLiveData<GetGroupMessageListQuery.Data>()
     val sendMessage = MutableLiveData<MessageList>()
     private var client: ApolloClient? = null
     val registerUser = MutableLiveData<RegisterUserMutation.Data>()
@@ -33,62 +34,68 @@ class MainViewModel constructor(/*private val repository: MainRepository*/) : Vi
     val errorMessage = MutableLiveData<String>()
 
     fun getAllOperators() {
-      /*  val response = repository.getAllOperators()
-        response.enqueue(object : Callback<List<Operators>> {
-            override fun onResponse(
-                call: Call<List<Operators>>,
-                response: Response<List<Operators>>
-            ) {
-                operatorsList.postValue(response.body())
-            }
+        /*  val response = repository.getAllOperators()
+          response.enqueue(object : Callback<List<Operators>> {
+              override fun onResponse(
+                  call: Call<List<Operators>>,
+                  response: Response<List<Operators>>
+              ) {
+                  operatorsList.postValue(response.body())
+              }
 
-            override fun onFailure(call: Call<List<Operators>>, t: Throwable) {
-                errorMessage.postValue(t.message)
-            }
-        })*/
+              override fun onFailure(call: Call<List<Operators>>, t: Throwable) {
+                  errorMessage.postValue(t.message)
+              }
+          })*/
     }
 
     fun getVersionCode() {
         client = ApolloClientService.setUpApolloClient("")
         val getAppConfig = GetAppConfigQuery(Constants.CARRIER_ID.toString())
-        try {
-            GlobalScope.launch(Dispatchers.Main) {
+
+        GlobalScope.launch(Dispatchers.Main) {
+            try {
                 val response = client?.query(getAppConfig)?.execute()
                 if (response?.data?.getAppConfig != null) {
                     versionCode.postValue(response.data?.getAppConfig)
                 } else {
                     errorMessage.postValue("null")
                 }
+            } catch (e: ApolloException) {
+                errorMessage.postValue(e.message)
             }
-        } catch (e: ApolloException) {
-            errorMessage.postValue(e.message)
         }
+
     }
 
     fun getApnDetails(id: Int) {
         client = ApolloClientService.setUpApolloClient("")
         val getAPNParamDetails = GetApnDetailsQuery(id.toString())
-        try {
-            GlobalScope.launch(Dispatchers.Main) {
+
+        GlobalScope.launch(Dispatchers.Main) {
+            try {
                 val response = client?.query(getAPNParamDetails)?.execute()
                 apnDetails.postValue(response?.data)
+            } catch (e: ApolloException) {
+                errorMessage.postValue(e.message)
             }
-        } catch (e: ApolloException) {
-            errorMessage.postValue(e.message)
         }
+
     }
 
     fun getUserUsingAppList(userId: String, contactList: List<String>) {
         client = ApolloClientService.setUpApolloClient("")
         val getUserUsingApp = GetUserUsingAppQuery(userId, contactList)
-        try {
-            GlobalScope.launch(Dispatchers.Main) {
+
+        GlobalScope.launch(Dispatchers.Main) {
+            try {
                 val response = client?.query(getUserUsingApp)?.execute()
                 userUsingApp.postValue(response?.data)
+            } catch (e: ApolloException) {
+                errorMessage.postValue(e.message)
             }
-        } catch (e: ApolloException) {
-            errorMessage.postValue(e.message)
         }
+
     }
     /* fun registerUser(name: String, operator: Int, MSISDN: String) {
          val response = repository.registerUser(name, operator, MSISDN)
@@ -106,94 +113,130 @@ class MainViewModel constructor(/*private val repository: MainRepository*/) : Vi
          })
      }*/
 
-    fun getChatList(userId: String,token: String) {
+    fun getChatList(userId: String, token: String) {
         client = ApolloClientService.setUpApolloClient("")
         val getChatList = GetThreadListQuery(userId)
-        try {
-            GlobalScope.launch(Dispatchers.Main) {
+
+        GlobalScope.launch(Dispatchers.Main) {
+            try {
                 val response = client?.query(getChatList)?.execute()
                 chatList.postValue(response?.data)
+            } catch (e: ApolloException) {
+                errorMessage.postValue(e.message)
             }
-        } catch (e: ApolloException) {
-            errorMessage.postValue(e.message)
         }
+
     }
 
-    fun getAllMessages(threadId: String,receiverId: String, senderId: String, token: String) {
+    fun getAllMessages(threadId: String, receiverId: String, senderId: String, token: String) {
         client = ApolloClientService.setUpApolloClient("")
         val getAllMessages = GetMessageListQuery(threadId, senderId, receiverId)
-        try {
-            GlobalScope.launch(Dispatchers.Main) {
+
+        GlobalScope.launch(Dispatchers.Main) {
+            try {
                 val response = client?.query(getAllMessages)?.execute()
                 allMessages.postValue(response?.data)
+            } catch (e: ApolloException) {
+                errorMessage.postValue(e.message)
             }
-        } catch (e: ApolloException) {
-            errorMessage.postValue(e.message)
         }
+
+    }
+
+    fun getAllGroupMessages(threadId: String,  senderId: String, token: String) {
+        client = ApolloClientService.setUpApolloClient("")
+        val getAllGroupMessages = GetGroupMessageListQuery(threadId, senderId)
+
+        GlobalScope.launch(Dispatchers.Main) {
+            try {
+                val response = client?.query(getAllGroupMessages)?.execute()
+                allGroupMessages.postValue(response?.data)
+            } catch (e: ApolloException) {
+                errorMessage.postValue(e.message)
+            }
+        }
+
     }
 
     fun registerUser(name: String, operator: String, MSISDN: String) {
         client = ApolloClientService.setUpApolloClient("")
         val registerUserMutation = RegisterUserMutation(name, operator, MSISDN)
-        try {
-            GlobalScope.launch(Dispatchers.Main) {
+
+        GlobalScope.launch(Dispatchers.Main) {
+            try {
                 val response = client?.mutation(registerUserMutation)?.execute()
                 registerUser.postValue(response?.data)
+            } catch (e: ApolloException) {
+                errorMessage.postValue(e.message)
             }
-        } catch (e: ApolloException) {
-            errorMessage.postValue(e.message)
         }
+
     }
 
-    fun createThread(message: String, userId: String, recipientsIds: ArrayList<String>, token: String) {
+    fun createThread(
+        message: String,
+        userId: String,
+        recipientsIds: ArrayList<String>,
+        token: String,
+        isGroup: Boolean,
+        groupName : String
+    ) {
         client = ApolloClientService.setUpApolloClient(token)
-        val createThreadMutation = CreateThreadMutation(message, userId, recipientsIds)
-        try {
-            GlobalScope.launch(Dispatchers.Main) {
+        val createThreadMutation = CreateThreadMutation(message, userId, recipientsIds, isGroup, groupName)
+
+        GlobalScope.launch(Dispatchers.Main) {
+            try {
                 val response = client?.mutation(createThreadMutation)?.execute()
                 createThread.postValue(response?.data)
+            } catch (e: ApolloException) {
+                errorMessage.postValue(e.message)
             }
-        } catch (e: ApolloException) {
-            errorMessage.postValue(e.message)
         }
+
     }
 
     fun createMessage(message: String, threadId: String, senderId: String, token: String) {
         client = ApolloClientService.setUpApolloClient(token)
         val createMessageMutation = CreateMessageMutation(message, threadId, senderId)
-        try {
-            GlobalScope.launch(Dispatchers.Main) {
+
+        GlobalScope.launch(Dispatchers.Main) {
+            try {
                 val response = client?.mutation(createMessageMutation)?.execute()
                 createMessage.postValue(response?.data)
+            } catch (e: ApolloException) {
+                errorMessage.postValue(e.message)
             }
-        } catch (e: ApolloException) {
-            errorMessage.postValue(e.message)
         }
+
     }
 
-    fun deleteMessage(threadId: String, userId: String, messageId: List<String>){
+    fun deleteMessage(threadId: String, userId: String, messageId: List<String>) {
         client = ApolloClientService.setUpApolloClient("")
-        val deleteMessageMutation = DeleteMessagesMutation(threadId, userId,messageId)
-        try {
-            GlobalScope.launch(Dispatchers.Main) {
+        val deleteMessageMutation = DeleteMessagesMutation(threadId, userId, messageId)
+
+        GlobalScope.launch(Dispatchers.Main) {
+            try {
                 val response = client?.mutation(deleteMessageMutation)?.execute()
                 deleteMessage.postValue(response?.data)
+            } catch (e: ApolloException) {
+                errorMessage.postValue(e.message)
             }
-        } catch (e: ApolloException) {
-            errorMessage.postValue(e.message)
         }
+
     }
 
-    fun deleteThread(userId: String, threadId: List<String>){
+    fun deleteThread(userId: String, threadId: List<String>) {
         client = ApolloClientService.setUpApolloClient("")
         val deleteThreadMutation = DeleteThreadMutation(threadId, userId)
-        try {
-            GlobalScope.launch(Dispatchers.Main) {
+
+        GlobalScope.launch(Dispatchers.Main) {
+            try {
                 val response = client?.mutation(deleteThreadMutation)?.execute()
                 deleteThread.postValue(response?.data)
+            } catch (e: ApolloException) {
+                errorMessage.postValue(e.message)
             }
-        } catch (e: ApolloException) {
-            errorMessage.postValue(e.message)
         }
+
     }
 }

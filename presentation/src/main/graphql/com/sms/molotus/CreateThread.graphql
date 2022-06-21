@@ -1,8 +1,11 @@
-mutation CreateThread($message: String!, $lastSenderId: ID!, $recipientsIds:[ID!]!){
+mutation CreateThread($message: String!, $lastSenderId: ID!, $recipientsIds:[ID!]!,
+    $isGroup: Boolean!, $groupName: String!){
     createThread(threadInput: {
         message:$message,
         lastSenderId:$lastSenderId,
         recipientsIds:$recipientsIds
+        isGroup: $isGroup
+        groupName: $groupName
     }) {
         id
         lastSenderId

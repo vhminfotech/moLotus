@@ -27,6 +27,8 @@ data class ChatMessage(
     val message: String,
     @ColumnInfo(name = "dateSent")
     val dateSent: String,
+    @ColumnInfo(name = "userName")
+    val userName: String,
 )
 /*@Entity(tableName = "MessageTable")
 data class ChatMessage(

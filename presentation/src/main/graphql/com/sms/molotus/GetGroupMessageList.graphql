@@ -1,0 +1,12 @@
+query GetGroupMessageList($threadId: ID!,$senderId: ID!){
+    getGroupMessageList(threadId:$threadId,senderId:$senderId){
+        messages{
+            senderId
+            threadId
+            message
+            dateSent
+            userName
+            id
+        }
+    }
+}

@@ -50,9 +50,13 @@
         android:theme="@style/AppLaunchTheme"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".feature.chat.NewGroupActivity"
+            android:exported="true"
+            android:theme="@style/AppTheme1" />
+        <activity
             android:name=".feature.chat.ChatContactListActivity"
-            android:theme="@style/AppTheme1"
-            android:exported="true" />
+            android:exported="true"
+            android:theme="@style/AppTheme1" />
         <activity
             android:name=".feature.chat.ChatActivity"
             android:exported="true"

@@ -123,14 +123,21 @@ class ChatAdapter(
         private val constraintFriendMsg =
             view.findViewById<ConstraintLayout>(R.id.constraintFriendMsg)
         private val llOnClick = view.findViewById<LinearLayout>(R.id.llOnClick)
+        private val txtName = view.findViewById<TextView>(R.id.txtName)
 
         override fun bind(
             item: List<ChatMessage?>?,
             listener: OnMessageClickListener,
             context: Context
         ) {
-            messageContent.text = item?.get(adapterPosition)?.message
             val data = item?.get(adapterPosition)
+            messageContent.text = data?.message
+            if (!data?.userName.isNullOrEmpty()){
+                txtName.visibility = View.VISIBLE
+                txtName.text = data?.userName
+            }else{
+                txtName.visibility = View.GONE
+            }
             constraintFriendMsg?.setOnClickListener {
                 llOnClick.setBackgroundColor(
                     context.resources.getColor(
