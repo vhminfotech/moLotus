@@ -40,11 +40,11 @@ import com.sms.moLotus.extension.toast
 import com.sms.moLotus.feature.Constants
 import com.sms.moLotus.feature.blocking.BlockingDialog
 import com.sms.moLotus.feature.changelog.ChangelogDialog
-import com.sms.moLotus.feature.chat.ChatActivity
 import com.sms.moLotus.feature.chat.LogHelper
 import com.sms.moLotus.feature.chat.adapter.ChatListAdapter
 import com.sms.moLotus.feature.chat.listener.OnChatClickListener
 import com.sms.moLotus.feature.chat.listener.OnItemClickListener
+import com.sms.moLotus.feature.chat.ui.ChatActivity
 import com.sms.moLotus.feature.conversations.ConversationsAdapter
 import com.sms.moLotus.feature.intro.IntroActivity
 import com.sms.moLotus.feature.retrofit.RetrofitService
@@ -375,16 +375,16 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
             }"
         )
     }
-    private val receiverUserIdList = ArrayList<String>()
 
     override fun onItemClick(item: GetThreadListQuery.RecipientUser?) {
+         val receiverUserIdList = ArrayList<String>()
         receiverUserIdList.add(item?.userId.toString())
         val intent = Intent(this, ChatActivity::class.java)
             .putExtra("currentUserId", PreferenceHelper.getStringPreference(this, Constants.USERID))
             .putStringArrayListExtra("receiverUserId", receiverUserIdList)
             .putExtra("threadId", item?.threadId)
             .putExtra("userName", item?.name.toString())
-            .putExtra("isGroup", false)
+            .putExtra("isGroup", item?.isGroup)
 
         startActivity(intent)
         overridePendingTransition(0, 0)
@@ -398,7 +398,7 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
 
         // Setting the Adapter with the recyclerview
         rvChatRecyclerView?.adapter = chatListAdapter
-        rvChatRecyclerView?.adapter?.notifyDataSetChanged()
+
     }
 
 

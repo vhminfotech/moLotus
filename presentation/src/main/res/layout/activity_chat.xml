@@ -68,9 +68,22 @@
         android:textColor="@android:color/black"
         android:textColorHint="@android:color/black"
         app:layout_constraintBottom_toBottomOf="@id/messageBackground"
-        app:layout_constraintEnd_toStartOf="@id/imgSend"
+        app:layout_constraintEnd_toStartOf="@id/imgOpenGallery"
         app:layout_constraintStart_toStartOf="parent" />
 
+    <ImageView
+        android:id="@+id/imgOpenGallery"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_margin="10dp"
+        android:background="@drawable/circle"
+        android:backgroundTint="@color/tools_theme"
+        android:contentDescription="@string/compose_send_cd"
+        android:padding="10dp"
+        android:src="@drawable/ic_camera_alt_black_24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/imgSend"
+        app:tint="@color/white" />
 
     <ImageView
         android:id="@+id/imgSend"
@@ -106,14 +119,15 @@
         <LinearLayout
             android:id="@+id/llName"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_gravity="center"
             android:orientation="vertical">
 
             <com.sms.moLotus.common.widget.QkTextView
                 android:id="@+id/txtTitle"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="match_parent"
+                android:gravity="center"
                 android:paddingStart="10dp"
                 android:text="Settings"
                 android:textColor="@color/white"
@@ -135,22 +149,21 @@
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
-        android:animateLayoutChanges="true"
-        android:backgroundTint="@color/tools_theme"
-        android:focusable="true"
-        app:title="Delete Message"
-        android:focusableInTouchMode="true"
-        android:gravity="center_vertical"
-        app:contentInsetStartWithNavigation="0dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:titleTextColor="@color/white"
-        android:visibility="gone"
-        app:navigationIcon="@drawable/ic_baseline_arrow_back_24"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
+        android:animateLayoutChanges="true"
         android:background="@color/tools_theme"
+        android:backgroundTint="@color/tools_theme"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:gravity="center_vertical"
+        android:visibility="gone"
+        app:contentInsetStartWithNavigation="0dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-         />
+        app:navigationIcon="@drawable/ic_baseline_arrow_back_24"
+        app:title="Delete Message"
+        app:titleTextColor="@color/white" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

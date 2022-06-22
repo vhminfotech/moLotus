@@ -4,6 +4,10 @@
     package="com.sms.moLotus">
     <!-- Used for starting foreground service for backup/restore on Android P+ -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CALL_PHONE" /> <!-- Used for starting foreground service for backup/restore on Android P+ -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -50,15 +54,19 @@
         android:theme="@style/AppLaunchTheme"
         android:usesCleartextTraffic="true">
         <activity
-            android:name=".feature.chat.NewGroupActivity"
+            android:name=".feature.chat.ui.GroupDetailsActivity"
             android:exported="true"
             android:theme="@style/AppTheme1" />
         <activity
-            android:name=".feature.chat.ChatContactListActivity"
+            android:name=".feature.chat.ui.NewGroupActivity"
             android:exported="true"
             android:theme="@style/AppTheme1" />
         <activity
-            android:name=".feature.chat.ChatActivity"
+            android:name=".feature.chat.ui.ChatContactListActivity"
+            android:exported="true"
+            android:theme="@style/AppTheme1" />
+        <activity
+            android:name=".feature.chat.ui.ChatActivity"
             android:exported="true"
             android:theme="@style/AppTheme1" />
         <activity

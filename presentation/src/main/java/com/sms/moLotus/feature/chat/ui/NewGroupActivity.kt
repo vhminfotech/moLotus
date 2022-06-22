@@ -1,4 +1,4 @@
-package com.sms.moLotus.feature.chat
+package com.sms.moLotus.feature.chat.ui
 
 import android.content.Intent
 import android.os.Bundle
@@ -8,6 +8,7 @@ import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
 import com.sms.moLotus.extension.toast
 import com.sms.moLotus.feature.Constants
+import com.sms.moLotus.feature.chat.LogHelper
 import com.sms.moLotus.feature.chat.adapter.AddedContactsAdapter
 import kotlinx.android.synthetic.main.activity_new_group.*
 import kotlinx.android.synthetic.main.layout_header.*

@@ -274,6 +274,11 @@ dependencies {
         exclude group: 'org.json', module: 'json'
     }
 
+
+//    implementation 'com.fxn769:pix:1.5.6'
+
+    //implementation 'com.github.majidarabi:AndroidFilePicker:0.0.4'
+
 }
 
 /*if (getGradle().getStartParameter().getTaskRequests().toString().contains("WithAnalytics")) {

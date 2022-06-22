@@ -2,6 +2,7 @@ package com.sms.moLotus.feature.chat.adapter
 
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -32,8 +33,10 @@ class ChatAdapter(
     fun updateList(data: MutableList<ChatMessage>) {
         list.clear()
         list.addAll(data)
-        notifyItemInserted(list.size - 1)
-        notifyItemRangeInserted(list.size - 1, itemCount)
+        list.sortBy{ it.dateSent }
+        //notifyItemInserted(list.size)
+      //  notifyItemRangeInserted(list.size, itemCount)
+
         /*list?.sortByDescending { it.dateSent }
         notifyItemInserted(list.size - 1)
         notifyItemRangeInserted(list.size - 1, list.size)*/
@@ -132,10 +135,12 @@ class ChatAdapter(
         ) {
             val data = item?.get(adapterPosition)
             messageContent.text = data?.message
-            if (!data?.userName.isNullOrEmpty()){
+            Log.e("=========", "userName :: ${data?.userName}")
+
+            if (!data?.userName.isNullOrEmpty()) {
                 txtName.visibility = View.VISIBLE
                 txtName.text = data?.userName
-            }else{
+            } else {
                 txtName.visibility = View.GONE
             }
             constraintFriendMsg?.setOnClickListener {

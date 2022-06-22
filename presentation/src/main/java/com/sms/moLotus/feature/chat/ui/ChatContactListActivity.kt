@@ -1,4 +1,4 @@
-package com.sms.moLotus.feature.chat
+package com.sms.moLotus.feature.chat.ui
 
 import android.annotation.SuppressLint
 import android.content.ContentResolver
@@ -24,6 +24,7 @@ import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
 import com.sms.moLotus.extension.toast
 import com.sms.moLotus.feature.Constants
+import com.sms.moLotus.feature.chat.LogHelper
 import com.sms.moLotus.feature.chat.adapter.ChatContactListAdapter
 import com.sms.moLotus.feature.chat.listener.OnChatContactClickListener
 import com.sms.moLotus.feature.chat.model.Users
@@ -44,7 +45,6 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
     lateinit var viewModel: MainViewModel
     private val retrofitService = RetrofitService.getInstance()
     var userId: String = ""
-    val allContactList: ArrayList<String> = ArrayList()
     lateinit var chatViewModel: ChatViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -92,6 +92,8 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
 
     @SuppressLint("Range")
     private fun getContactList() {
+        val allContactList: ArrayList<String> = ArrayList()
+
         val cr: ContentResolver = contentResolver
         val cur = cr.query(
             ContactsContract.Contacts.CONTENT_URI,
@@ -132,14 +134,11 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
                         phoneNo.replace("\\s+", "")
                         phoneNo.replace("+", "")
                         phoneNo.replace(" ", "")
+
                         allContactList.add(
                             phoneNo.replace(" ", "").replace("+", "").replace("-", "").trim()
                         )
-                        LogHelper.e(
-                            "CHATCONTACT",
-                            "allContactList: ${allContactList.size}"
-                        )
-
+                        
                         contactList = allContactList.distinct().toList()
 
                     }
@@ -248,9 +247,9 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
         )
     }
 
-    private val receiverUserIdList = ArrayList<String>()
 
     override fun onChatContactClick(item: Users?) {
+        val receiverUserIdList = ArrayList<String>()
         receiverUserIdList.add(item?.userId.toString())
         val intent = Intent(this, ChatActivity::class.java)
             .putExtra("currentUserId", userId)
@@ -281,7 +280,7 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
     private fun showBottomSheet() {
         val selectedIdsList: ArrayList<String> = ArrayList()
         val selectedNameList: ArrayList<String> = ArrayList()
-        val dialog = BottomSheetDialog(this)
+        val dialog = BottomSheetDialog(this,R.style.BottomSheetDialog)
 
         // on below line we are inflating a layout file which we have created.
         val view = layoutInflater.inflate(R.layout.dialog_select_contacts, null)

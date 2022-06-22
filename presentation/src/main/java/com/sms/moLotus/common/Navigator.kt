@@ -23,7 +23,7 @@ import androidx.core.content.FileProvider
 import com.sms.moLotus.BuildConfig
 import com.sms.moLotus.feature.backup.BackupActivity
 import com.sms.moLotus.feature.blocking.BlockingActivity
-import com.sms.moLotus.feature.chat.ChatContactListActivity
+import com.sms.moLotus.feature.chat.ui.ChatContactListActivity
 import com.sms.moLotus.feature.compose.ComposeActivity
 import com.sms.moLotus.feature.conversationinfo.ConversationInfoActivity
 import com.sms.moLotus.feature.gallery.GalleryActivity

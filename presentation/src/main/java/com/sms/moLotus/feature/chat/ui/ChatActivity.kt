@@ -1,7 +1,9 @@
-package com.sms.moLotus.feature.chat
+package com.sms.moLotus.feature.chat.ui
 
+import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
+import android.content.Intent
 import android.net.ConnectivityManager
 import android.os.Build
 import android.os.Bundle
@@ -30,11 +32,11 @@ import com.sms.moLotus.common.QKApplication
 import com.sms.moLotus.db.ChatDatabase
 import com.sms.moLotus.extension.toast
 import com.sms.moLotus.feature.Constants
+import com.sms.moLotus.feature.chat.LogHelper
 import com.sms.moLotus.feature.chat.adapter.ChatAdapter
 import com.sms.moLotus.feature.chat.listener.OnMessageClickListener
 import com.sms.moLotus.feature.chat.model.ChatMessage
 import com.sms.moLotus.feature.retrofit.MainViewModel
-import com.sms.moLotus.feature.retrofit.RetrofitService
 import com.sms.moLotus.viewmodel.ChatViewModel
 import io.socket.client.Socket
 import io.socket.emitter.Emitter
@@ -44,28 +46,30 @@ import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
 import timber.log.Timber
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.collections.ArrayList
 
 @RequiresApi(Build.VERSION_CODES.M)
 class ChatActivity : AppCompatActivity(), OnMessageClickListener {
     lateinit var viewModel: MainViewModel
-    lateinit var chatViewModel: ChatViewModel
-    private val retrofitService = RetrofitService.getInstance()
+    private lateinit var chatViewModel: ChatViewModel
     private var chatAdapter: ChatAdapter? = null
     private var currentUserId: String = ""
     var userName: String = ""
     var groupName: String = ""
-    var recipientsIds: ArrayList<String>? = ArrayList()
+    private var recipientsIds: ArrayList<String>? = ArrayList()
     var threadId: String = ""
     private var getMessageList: MutableList<GetMessageListQuery.Message> = mutableListOf()
-    var getGroupMessageList: MutableList<GetGroupMessageListQuery.Message> = mutableListOf()
+    private var getGroupMessageList: MutableList<GetGroupMessageListQuery.Message> = mutableListOf()
     private val messageIdList: ArrayList<String> = ArrayList()
     var linearLayout: LinearLayout? = null
-    var pos = 0
-    var chatMessageList: ArrayList<ChatMessage>? = ArrayList()
+    private var pos = 0
+    private var chatMessageList: ArrayList<ChatMessage>? = ArrayList()
     private var mSocket: Socket? = null
     private var isConnected = true
-    var myUserId = ""
-    var flag: Boolean? = true
+    private var myUserId = ""
+    private var flag: Boolean? = true
     var isGroup: Boolean = false
     private val chatDatabase by lazy { ChatDatabase.getDatabase(this).getChatDao() }
     var delay: Long = 1000 // 1 seconds after user stops typing
@@ -108,10 +112,12 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
         isGroup = intent.getBooleanExtra("isGroup", false)
         userName = intent?.getStringExtra("userName").toString()
         groupName = intent?.getStringExtra("groupName").toString()
-        if (userName.isEmpty() || userName == "") {
-            txtTitle?.text = userName
-        } else {
+        LogHelper.e("NewGroupActivity", "userName:: $userName")
+
+        if (userName.isEmpty() || userName == "" || userName == "null") {
             txtTitle?.text = groupName
+        } else {
+            txtTitle?.text = userName
         }
 //        LogHelper.e("NewGroupActivity","receiverUserId:: $receiverUserId")
 
@@ -119,6 +125,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
 
 
         LogHelper.e("NewGroupActivity", "recipientsIds:: $recipientsIds")
+        LogHelper.e("NewGroupActivity", "isGroup:: $isGroup")
 
 
         imgBack?.setOnClickListener {
@@ -140,9 +147,6 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
 
         imgSend.setOnClickListener {
             //getMessage list empty then create thread else create message
-            Log.e("==================", "flag:: $flag")
-            Log.e("==================", "isGroup:: $isGroup :: groupName:: $groupName")
-
             if (flag == true) {
                 createThread(txtMessage.text.toString(), isGroup, groupName)
             } else {
@@ -175,13 +179,35 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
                     handler.postDelayed(input_finish_checker, delay)
                     LogHelper.e("=============", "afterTextChanged")
 
-                } else {
-
                 }
             }
 
         })
 
+
+        llName.setOnClickListener {
+            if (isGroup) {
+                val intent = Intent(this, GroupDetailsActivity::class.java)
+                startActivity(intent)
+                overridePendingTransition(0, 0)
+            }
+        }
+
+        imgOpenGallery.setOnClickListener {
+            //Pix.start(this, 100)
+        }
+
+    }
+
+    fun openGallery() {
+        val intent = Intent(Intent.ACTION_GET_CONTENT)
+            .addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            .setType("*/*")
+        startActivityForResult(
+            Intent.createChooser(intent, null),
+            100
+        )
     }
 
     private fun initRecyclerView(list: List<ChatMessage>) {
@@ -202,6 +228,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
         // addMessage(currentUserId, message, "")
         viewModel.createThread.observe(this, {
             LogHelper.e("======================", "createThread:: $it")
+            LogHelper.e("======================", "isGroup:: $isGroup")
             txtMessage.text = null
             if (!isGroup) {
                 getMessageList()
@@ -210,7 +237,6 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
             }
         })
         viewModel.errorMessage.observe(this, {
-            Log.e("=====", "errorMessage:: $it")
             val conMgr =
                 getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             val netInfo = conMgr.activeNetworkInfo
@@ -220,11 +246,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
                     findViewById(R.id.relMain),
                     "No Internet Connection. Please turn on your internet!",
                     Snackbar.LENGTH_INDEFINITE
-                )
-                    .setAction("Retry") {
-
-                    }
-                    .setActionTextColor(resources.getColor(android.R.color.holo_red_light))
+                ).setActionTextColor(resources.getColor(android.R.color.holo_red_light, theme))
                     .show()
             } else {
                 toast(it.toString(), Toast.LENGTH_SHORT)
@@ -254,7 +276,6 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
             txtMessage.text = null
         })
         viewModel.errorMessage.observe(this, {
-            Log.e("=====", "errorMessage:: $it")
             val conMgr = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             val netInfo = conMgr.activeNetworkInfo
             if (netInfo == null) {
@@ -267,7 +288,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
                     .setAction("Retry") {
 
                     }
-                    .setActionTextColor(resources.getColor(android.R.color.holo_red_light))
+                    .setActionTextColor(resources.getColor(android.R.color.holo_red_light, theme))
                     .show()
             } else {
                 toast(it.toString(), Toast.LENGTH_SHORT)
@@ -287,8 +308,6 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
             chatDatabase.getAllChat(
                 threadId
             ).observe(this@ChatActivity, { list ->
-                Log.e("======================", "chatMessageList:: $list")
-                Log.e("======================", "chatMessageList length:: ${chatMessageList?.size}")
                 chatMessageList = list as ArrayList<ChatMessage>?
                 initRecyclerView(list.reversed())
             })
@@ -299,16 +318,12 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
     private fun getMessageList() {
         viewModel.allMessages.observe(this, {
             LogHelper.e("======================", "getMessageList:: $it")
-            LogHelper.e(
-                "======================",
-                "getMessageList:: ${it.getMessageList?.messages?.size}"
-            )
 
             if (it.getMessageList?.messages?.isNotEmpty() == true) {
                 getMessageList =
                     it.getMessageList.messages as MutableList<GetMessageListQuery.Message>
                 var chatMessageModel: ChatMessage? = null
-                getMessageList.forEachIndexed { index, message ->
+                getMessageList.forEachIndexed { index, _ ->
                     chatMessageModel = ChatMessage(
                         myUserId,
                         getMessageList[index].id.toString(),
@@ -342,7 +357,6 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
             }
         })
         viewModel.errorMessage.observe(this, {
-            Log.e("=====", "errorMessage:: $it")
             val conMgr =
                 getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             val netInfo = conMgr.activeNetworkInfo
@@ -373,17 +387,13 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
 
     private fun getGroupMessageList() {
         viewModel.allGroupMessages.observe(this, {
-            LogHelper.e("======================", "getMessageList:: $it")
-            LogHelper.e(
-                "======================",
-                "getGroupMessageList:: ${it.getGroupMessageList?.messages?.size}"
-            )
+            LogHelper.e("======================", "getGroupMessageList:: $it")
 
             if (it.getGroupMessageList?.messages?.isNotEmpty() == true) {
                 getGroupMessageList =
                     it.getGroupMessageList.messages as MutableList<GetGroupMessageListQuery.Message>
                 var chatMessageModel: ChatMessage? = null
-                getGroupMessageList.forEachIndexed { index, message ->
+                getGroupMessageList.forEachIndexed { index, _ ->
                     chatMessageModel = ChatMessage(
                         myUserId,
                         getGroupMessageList[index].id.toString(),
@@ -399,16 +409,12 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
                     // chatViewModel.insertAllMessages(chatMessageList!!)
 
                 }
-                //Log.e("===================", "chatMessageList::: $$chatMessageList")
-
                 threadId = if (threadId.isEmpty() || threadId == "null") {
                     getGroupMessageList[0].threadId.toString()
                 } else {
                     threadId
                 }
-
                 txtMessage.text = null
-
                 LogHelper.e("==================", "thread id create message: $threadId")
                 Handler(Looper.getMainLooper()).postDelayed({
                     observeMessages(threadId)
@@ -431,7 +437,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
                     .setAction("Retry") {
 
                     }
-                    .setActionTextColor(resources.getColor(android.R.color.holo_red_light))
+                    .setActionTextColor(resources.getColor(android.R.color.holo_red_light, theme))
                     .show()
             } else {
                 toast(it.toString(), Toast.LENGTH_SHORT)
@@ -481,6 +487,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
         return true
     }
 
+    @SuppressLint("SetTextI18n")
     private fun showDialog(
         llOnClick: LinearLayout,
         messageIdList: ArrayList<String>,
@@ -515,7 +522,6 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
             }
         })
         viewModel.errorMessage.observe(this, {
-            Log.e("=====", "errorMessage:: $it")
             val conMgr =
                 getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             val netInfo = conMgr.activeNetworkInfo
@@ -529,7 +535,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
                     .setAction("Retry") {
 
                     }
-                    .setActionTextColor(resources.getColor(android.R.color.holo_red_light))
+                    .setActionTextColor(resources.getColor(android.R.color.holo_red_light, theme))
                     .show()
             } else {
                 toast(it.toString(), Toast.LENGTH_SHORT)
@@ -551,17 +557,14 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
 
     private val onConnect = Emitter.Listener {
         Log.i("====================", "connected")
-        // mSocket?.emit("addUser", myUserId)
         if (!isConnected) {
             mSocket?.emit("addUser", myUserId)
-
             isConnected = true
         }
 
     }
     private val onDisconnect = Emitter.Listener {
         runOnUiThread {
-            Log.i("====================", "disconnected")
             isConnected = false
             // mSocket?.emit("removeUser", myUserId)
 
@@ -569,8 +572,6 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
     }
     private val onConnectError = Emitter.Listener {
         runOnUiThread {
-            Log.e("====================", "Error connecting")
-
         }
     }
 
@@ -585,26 +586,22 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
             } else {
                 txtTyping?.visibility = View.GONE
             }
-
         }
     }
 
     private val getMessage = Emitter.Listener { args ->
         runOnUiThread(Runnable {
             val data = args[0] as JSONObject
-            Log.e("=============", "data:: $data")
-
             val senderId: String
             val text: String
             val currTime: String
-            val name: String
+//            val name: String
             try {
                 senderId = data.getString("senderId")
                 text = data.getString("text")
 //                name = data.getString("name")
                 currTime = data.getString("currTime")
             } catch (e: JSONException) {
-                Log.e("====================", e.message.toString())
                 return@Runnable
             }
             //removeTyping(username)
@@ -616,15 +613,15 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
     }
 
     private fun addMessage(senderId: String, message: String, currTime: String) {
-        Log.e("=============", "senderId:: $senderId")
-        Log.e("=============", "message:: $message")
+        val dateFormat =
+            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).format(Date())
         val iterator: MutableIterator<ChatMessage>? = chatMessageList?.iterator()
         var chatMessageModel: ChatMessage? = null
 
         while (iterator?.hasNext() == true) {
             val c: ChatMessage = iterator.next()
             val time = if (currTime.isEmpty()) {
-                c.dateSent
+                dateFormat
             } else {
                 currTime
             }
@@ -637,22 +634,12 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
                 time,
                 c.userName
             )
-
         }
-        Log.e("CHATMESSAGE", "chatMessageModel ::: $chatMessageModel")
 
         //chatAdapter?.updateList(chatMessageModel)
         chatMessageModel?.let { chatMessageList?.add(it) }
-
         chatMessageList?.let { chatAdapter?.updateList(it as MutableList<ChatMessage>) }
         rvMessageList?.scrollToPosition(chatMessageList?.size!!.toInt() - 1)
-
-        Log.e("CHATMESSAGE", "chatMessageList after : ${chatMessageList?.size}")
-    }
-
-    override fun onBackPressed() {
-        super.onBackPressed()
-
     }
 
 }
