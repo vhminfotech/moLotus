@@ -104,4 +104,29 @@
         <item name="switchTrackDisabled">@color/switchTrackDisabledLight</item>
         <item name="windowActionBar">false</item>
     </style>
+
+    <style name="AppTheme2" parent="Theme.MaterialComponents.Light.NoActionBar">
+         <item name="colorPrimary">@color/primary</item>
+         <item name="colorPrimaryDark">@color/primary_dark</item>
+         <item name="colorAccent">@color/accent</item>
+        <item name="android:statusBarColor">@color/white</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:divider">@color/separatorLight</item>
+        <item name="android:queryBackground">@color/bubbleLight</item>
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+        <item name="android:textColorTertiary">@color/text_tertiary</item>
+        <item name="android:windowBackground">@color/backgroundLight</item>
+        <item name="android:windowContentTransitions">true</item>
+        <item name="actionBarPopupTheme">@style/PopupTheme</item>
+        <item name="bubbleColor">@color/bubbleLight</item>
+        <!--<item name="colorPrimary">@color/backgroundLight</item>
+        <item name="colorPrimaryDark">@color/backgroundLight</item>-->
+        <item name="selectableItemBackground">@drawable/ripple</item>
+        <item name="switchThumbEnabled">@color/switchThumbEnabledLight</item>
+        <item name="switchThumbDisabled">@color/switchThumbDisabledLight</item>
+        <item name="switchTrackEnabled">@color/switchTrackEnabledLight</item>
+        <item name="switchTrackDisabled">@color/switchTrackDisabledLight</item>
+        <item name="windowActionBar">false</item>
+    </style>
 </resources>

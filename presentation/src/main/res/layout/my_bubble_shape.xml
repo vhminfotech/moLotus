@@ -9,23 +9,36 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/constraintMyMsg"
         android:layout_width="match_parent"
-
         android:layout_height="wrap_content"
+
         android:layout_gravity="end|center"
         android:layout_marginStart="50dp"
         android:layout_marginTop="5dp"
         android:layout_marginEnd="15dp"
         android:layout_marginBottom="5dp"
+
         android:orientation="vertical">
 
         <TextView
             android:id="@+id/message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
             android:background="@drawable/my_bubble_shape"
             android:padding="7dp"
             android:textColor="@color/black"
             android:textSize="15sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/imgThumbnail" />
+
+        <ImageView
+            android:id="@+id/imgThumbnail"
+            android:layout_width="220dp"
+            android:layout_height="220dp"
+            android:background="@drawable/my_bubble_shape"
+            android:padding="10dp"
+            android:src="@drawable/bg_chat"
+            android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>

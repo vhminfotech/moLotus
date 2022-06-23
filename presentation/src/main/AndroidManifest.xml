@@ -54,6 +54,10 @@
         android:theme="@style/AppLaunchTheme"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".feature.chat.ui.AttachmentPreviewActivity"
+            android:exported="true"
+            android:theme="@style/AppTheme1"/>
+        <activity
             android:name=".feature.chat.ui.GroupDetailsActivity"
             android:exported="true"
             android:theme="@style/AppTheme1" />
@@ -68,7 +72,7 @@
         <activity
             android:name=".feature.chat.ui.ChatActivity"
             android:exported="true"
-            android:theme="@style/AppTheme1" />
+            android:theme="@style/AppTheme2" />
         <activity
             android:name=".feature.settings.AppSettingsActivity"
             android:exported="true"

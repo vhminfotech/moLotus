@@ -68,8 +68,8 @@
         android:textColor="@android:color/black"
         android:textColorHint="@android:color/black"
         app:layout_constraintBottom_toBottomOf="@id/messageBackground"
-        app:layout_constraintEnd_toStartOf="@id/imgOpenGallery"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintEnd_toStartOf="@+id/imgSend"
+        app:layout_constraintStart_toEndOf="@+id/imgOpenGallery" />
 
     <ImageView
         android:id="@+id/imgOpenGallery"
@@ -80,9 +80,9 @@
         android:backgroundTint="@color/tools_theme"
         android:contentDescription="@string/compose_send_cd"
         android:padding="10dp"
-        android:src="@drawable/ic_camera_alt_black_24dp"
+        android:src="@drawable/ic_add_black_24dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/imgSend"
+        app:layout_constraintStart_toStartOf="parent"
         app:tint="@color/white" />
 
     <ImageView

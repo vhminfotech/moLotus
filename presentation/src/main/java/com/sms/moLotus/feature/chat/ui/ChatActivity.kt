@@ -20,9 +20,13 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.github.file_picker.FileType
+import com.github.file_picker.showFilePicker
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.snackbar.Snackbar
 import com.sms.moLotus.GetGroupMessageListQuery
 import com.sms.moLotus.GetMessageListQuery
@@ -40,8 +44,11 @@ import com.sms.moLotus.feature.retrofit.MainViewModel
 import com.sms.moLotus.viewmodel.ChatViewModel
 import io.socket.client.Socket
 import io.socket.emitter.Emitter
+import kotlinx.android.synthetic.main.activity_attachment_preview.*
 import kotlinx.android.synthetic.main.activity_chat.*
+import kotlinx.android.synthetic.main.activity_chat.imgSend
 import kotlinx.android.synthetic.main.dialog_delete_message.*
+import kotlinx.android.synthetic.main.layout_attachments.view.*
 import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
@@ -49,6 +56,7 @@ import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
+
 
 @RequiresApi(Build.VERSION_CODES.M)
 class ChatActivity : AppCompatActivity(), OnMessageClickListener {
@@ -194,9 +202,65 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
         }
 
         imgOpenGallery.setOnClickListener {
-            //Pix.start(this, 100)
+            showAttachmentOptions()
+
         }
 
+
+    }
+
+    private fun showAttachmentOptions() {
+
+        val dialog = BottomSheetDialog(this, R.style.BottomSheetDialog)
+
+        // on below line we are inflating a layout file which we have created.
+        val view = layoutInflater.inflate(R.layout.layout_attachments, null)
+
+
+        view.txtCamera.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        view.txtAddPhoto.setOnClickListener {
+            showFilePicker(FileType.IMAGE)
+            dialog.dismiss()
+        }
+
+        view.txtAddVideo.setOnClickListener {
+            showFilePicker(FileType.VIDEO)
+            dialog.dismiss()
+        }
+
+        view.txtAddDocuments.setOnClickListener {
+            dialog.dismiss()
+        }
+
+
+        dialog.setCancelable(true)
+
+        dialog.setContentView(view)
+
+        dialog.show()
+    }
+
+    private fun showFilePicker(fileType: FileType) {
+        showFilePicker(
+            gridSpanCount = 3,
+            fileType = fileType,
+            limitItemSelection = 1,
+            submitText = "Next",
+            accentColor = ContextCompat.getColor(this, R.color.tools_theme),
+            titleTextColor = ContextCompat.getColor(this, R.color.black),
+            submitTextColor = ContextCompat.getColor(this, R.color.white),
+        ) {
+            LogHelper.e("===============", "media : ${it[0].file}")
+
+            val intent = Intent(this, AttachmentPreviewActivity::class.java)
+                .putExtra("fileName", it[0].file.toString())
+                .putExtra("fileType", fileType.name)
+            startActivity(intent)
+            overridePendingTransition(0, 0)
+        }
     }
 
     fun openGallery() {
@@ -641,5 +705,6 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
         chatMessageList?.let { chatAdapter?.updateList(it as MutableList<ChatMessage>) }
         rvMessageList?.scrollToPosition(chatMessageList?.size!!.toInt() - 1)
     }
+
 
 }
