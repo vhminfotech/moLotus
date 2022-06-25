@@ -377,13 +377,16 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
     }
 
     override fun onItemClick(item: GetThreadListQuery.RecipientUser?) {
-         val receiverUserIdList = ArrayList<String>()
-        receiverUserIdList.add(item?.userId.toString())
+        /* val receiverUserIdList = ArrayList<String>()
+        receiverUserIdList.add(item?.userId.toString())*/
         val intent = Intent(this, ChatActivity::class.java)
             .putExtra("currentUserId", PreferenceHelper.getStringPreference(this, Constants.USERID))
-            .putStringArrayListExtra("receiverUserId", receiverUserIdList)
+            .putStringArrayListExtra("receiverUserId",
+                item?.recipientIds as java.util.ArrayList<String>?
+            )
             .putExtra("threadId", item?.threadId)
             .putExtra("userName", item?.name.toString())
+            .putExtra("groupName", item?.groupName.toString())
             .putExtra("isGroup", item?.isGroup)
 
         startActivity(intent)

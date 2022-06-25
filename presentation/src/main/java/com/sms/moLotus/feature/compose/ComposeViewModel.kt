@@ -716,7 +716,7 @@ class ComposeViewModel @Inject constructor(
                 // existing draft
                 //
                 // TODO: Show dialog warning user about overwriting draft
-                /*if (sharedText.isNotBlank()) {
+                /*if (sharedText.isNotBlagroupnk()) {
                     view.setDraft(sharedText)
                 } else {
                     view.setDraft(draft)

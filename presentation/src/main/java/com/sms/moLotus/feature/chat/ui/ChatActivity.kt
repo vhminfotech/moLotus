@@ -48,6 +48,9 @@ import kotlinx.android.synthetic.main.activity_attachment_preview.*
 import kotlinx.android.synthetic.main.activity_chat.*
 import kotlinx.android.synthetic.main.activity_chat.imgSend
 import kotlinx.android.synthetic.main.dialog_delete_message.*
+import kotlinx.android.synthetic.main.dialog_delete_message.btnCancel
+import kotlinx.android.synthetic.main.dialog_delete_message.txtDesc
+import kotlinx.android.synthetic.main.dialog_send_attachments.*
 import kotlinx.android.synthetic.main.layout_attachments.view.*
 import kotlinx.coroutines.launch
 import org.json.JSONException
@@ -77,6 +80,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
     private var mSocket: Socket? = null
     private var isConnected = true
     private var myUserId = ""
+    private var myUserName = ""
     private var flag: Boolean? = true
     var isGroup: Boolean = false
     private val chatDatabase by lazy { ChatDatabase.getDatabase(this).getChatDao() }
@@ -97,6 +101,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
         setSupportActionBar(toolbar)
         toolbar?.title = "Delete Message"
         myUserId = PreferenceHelper.getStringPreference(this, Constants.USERID).toString()
+        myUserName = PreferenceHelper.getStringPreference(this, Constants.USERNAME).toString()
         val app = application as QKApplication
         mSocket = app.socket
 
@@ -122,7 +127,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
         groupName = intent?.getStringExtra("groupName").toString()
         LogHelper.e("NewGroupActivity", "userName:: $userName")
 
-        if (userName.isEmpty() || userName == "" || userName == "null") {
+        if (isGroup || userName.isEmpty() || userName == "" || userName == "null") {
             txtTitle?.text = groupName
         } else {
             txtTitle?.text = userName
@@ -148,9 +153,9 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
         }
 
         if (!isGroup) {
-            getMessageList()
+            getMessageList(threadId)
         } else {
-            getGroupMessageList()
+            getGroupMessageList(threadId)
         }
 
         imgSend.setOnClickListener {
@@ -194,11 +199,11 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
 
 
         llName.setOnClickListener {
-            if (isGroup) {
-                val intent = Intent(this, GroupDetailsActivity::class.java)
-                startActivity(intent)
-                overridePendingTransition(0, 0)
-            }
+            /* if (isGroup) {
+                 val intent = Intent(this, GroupDetailsActivity::class.java)
+                 startActivity(intent)
+                 overridePendingTransition(0, 0)
+             }*/
         }
 
         imgOpenGallery.setOnClickListener {
@@ -232,6 +237,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
         }
 
         view.txtAddDocuments.setOnClickListener {
+            openFolder()
             dialog.dismiss()
         }
 
@@ -242,6 +248,44 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
 
         dialog.show()
     }
+
+    private fun openFolder() {
+        val intent = Intent()
+        intent.type = "*/*"
+        intent.action = Intent.ACTION_GET_CONTENT
+        startActivityForResult(
+            Intent.createChooser(intent, "Complete action using"),
+            100
+        )
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 100 && resultCode == RESULT_OK) {
+            val data = data?.data
+            Log.e("============", "data:::: $data")
+            showSendAttachmentDialog()
+
+        }
+    }
+
+    private fun showSendAttachmentDialog() {
+        val dialog = Dialog(this)
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        dialog.setCancelable(false)
+        dialog.setContentView(R.layout.dialog_send_attachments)
+
+        dialog.btnCancel.setOnClickListener {
+            dialog.dismiss()
+        }
+        dialog.btnSend.setOnClickListener {
+
+            dialog.dismiss()
+        }
+        dialog.show()
+
+    }
+
 
     private fun showFilePicker(fileType: FileType) {
         showFilePicker(
@@ -284,20 +328,23 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
     }
 
     private fun createThread(message: String, isGroup: Boolean, groupName: String) {
+
         mSocket?.emit(
             "sendMessage", currentUserId,
-            recipientsIds?.get(0).toString(),
-            message
+            recipientsIds,
+            message, myUserName
         )
-        // addMessage(currentUserId, message, "")
+
+
+        addMessage(currentUserId, message, "", "")
         viewModel.createThread.observe(this, {
-            LogHelper.e("======================", "createThread:: $it")
+            LogHelper.e("======================", "createThread:: ${it.createThread?.id}")
             LogHelper.e("======================", "isGroup:: $isGroup")
             txtMessage.text = null
             if (!isGroup) {
-                getMessageList()
+                getMessageList(it.createThread?.id.toString())
             } else {
-                getGroupMessageList()
+                getGroupMessageList(it.createThread?.id.toString())
             }
         })
         viewModel.errorMessage.observe(this, {
@@ -328,19 +375,20 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
     }
 
     private fun createMessage(threadId: String, message: String) {
+        Timber.e("recipientsIds:: " + recipientsIds)
         mSocket?.emit(
             "sendMessage", currentUserId,
-            recipientsIds?.get(0).toString(),
-            message
+            recipientsIds,
+            message, myUserName
         )
-        addMessage(currentUserId, message, "")
+        addMessage(currentUserId, message, "", "")
 
         viewModel.createMessage.observe(this, {
             Timber.e("createMessage:: $it")
             txtMessage.text = null
         })
         viewModel.errorMessage.observe(this, {
-            val conMgr = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val conMgr = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
             val netInfo = conMgr.activeNetworkInfo
             if (netInfo == null) {
                 //No internet
@@ -379,7 +427,9 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
         }
     }
 
-    private fun getMessageList() {
+    private fun getMessageList(threadId: String) {
+        Log.e("=====", "getMessageList threadId : $threadId")
+
         viewModel.allMessages.observe(this, {
             LogHelper.e("======================", "getMessageList:: $it")
 
@@ -405,7 +455,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
                 }
                 //Log.e("===================", "chatMessageList::: $$chatMessageList")
 
-                threadId = if (threadId.isEmpty() || threadId == "null") {
+                this.threadId = if (threadId.isEmpty() || threadId == "null") {
                     getMessageList[0].threadId.toString()
                 } else {
                     threadId
@@ -440,6 +490,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
                 toast(it.toString(), Toast.LENGTH_SHORT)
             }
         })
+
         viewModel.getAllMessages(
             threadId,
             recipientsIds?.get(0).toString(),
@@ -449,7 +500,8 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
         )
     }
 
-    private fun getGroupMessageList() {
+    private fun getGroupMessageList(threadId: String) {
+        Log.e("=====", "getGroupMessageList threadId : $threadId")
         viewModel.allGroupMessages.observe(this, {
             LogHelper.e("======================", "getGroupMessageList:: $it")
 
@@ -473,7 +525,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
                     // chatViewModel.insertAllMessages(chatMessageList!!)
 
                 }
-                threadId = if (threadId.isEmpty() || threadId == "null") {
+                this.threadId = if (threadId.isEmpty() || threadId == "null") {
                     getGroupMessageList[0].threadId.toString()
                 } else {
                     threadId
@@ -507,6 +559,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
                 toast(it.toString(), Toast.LENGTH_SHORT)
             }
         })
+
         viewModel.getAllGroupMessages(
             threadId,
             PreferenceHelper.getStringPreference(this, Constants.USERID).toString(),
@@ -545,14 +598,14 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
 
             R.id.delete -> {
                 toolbar?.visibility = View.GONE
-                linearLayout?.let { showDialog(it, messageIdList, pos) }
+                linearLayout?.let { showDeleteDialog(it, messageIdList, pos) }
             }
         }
         return true
     }
 
     @SuppressLint("SetTextI18n")
-    private fun showDialog(
+    private fun showDeleteDialog(
         llOnClick: LinearLayout,
         messageIdList: ArrayList<String>,
         adapterPosition: Int
@@ -659,11 +712,11 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
             val senderId: String
             val text: String
             val currTime: String
-//            val name: String
+            val name: String
             try {
                 senderId = data.getString("senderId")
                 text = data.getString("text")
-//                name = data.getString("name")
+                name = data.getString("name")
                 currTime = data.getString("currTime")
             } catch (e: JSONException) {
                 return@Runnable
@@ -671,12 +724,15 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
             //removeTyping(username)
             txtTyping?.text = ""
             txtTyping?.visibility = View.GONE
-
-            addMessage(senderId, text, currTime)
+            if (isGroup) {
+                addMessage(senderId, text, currTime, name)
+            } else {
+                addMessage(senderId, text, currTime, "")
+            }
         })
     }
 
-    private fun addMessage(senderId: String, message: String, currTime: String) {
+    private fun addMessage(senderId: String, message: String, currTime: String, userName: String) {
         val dateFormat =
             SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).format(Date())
         val iterator: MutableIterator<ChatMessage>? = chatMessageList?.iterator()
@@ -695,8 +751,8 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
                 senderId,
                 c.threadId,
                 message,
-                time,
-                c.userName
+                dateFormat,
+                userName
             )
         }
 

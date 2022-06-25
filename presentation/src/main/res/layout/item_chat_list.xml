@@ -13,12 +13,15 @@
     android:paddingEnd="16dp"
     android:paddingBottom="8dp">
 
-    <com.sms.moLotus.common.widget.GroupAvatarView
+    <ImageView
         android:id="@+id/avatars"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
+        android:adjustViewBounds="true"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+
         android:layout_gravity="top"
-        android:backgroundTint="@color/tools_theme"
+        android:scaleType="fitXY"
+        android:src="@drawable/ic_chat_user"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"

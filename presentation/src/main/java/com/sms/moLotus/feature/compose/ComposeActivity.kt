@@ -103,7 +103,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         var msgSent: Boolean = false
     }
 
-    private val progressDialog = CustomProgressDialog()
+    private var progressDialog : CustomProgressDialog ?= null
 
     private var audioRecorder: AudioRecorder? = null
 
@@ -199,6 +199,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.compose_activity)
+        progressDialog = CustomProgressDialog(this)
         showBackButton(true)
         viewModel.bindView(this)
         recordButton = record_button
@@ -1122,12 +1123,12 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                                 cursor.getLong(sizeIndex)
                             ).filter { it.isDigit() }.toInt()
                             if (fileSize > 1) {
-                                progressDialog.show(this@ComposeActivity)
+                                progressDialog?.show(this@ComposeActivity)
                                 GlobalScope.launch(Dispatchers.IO) {
                                     VideoCompressor.compress(this@ComposeActivity, data.data!!)
                                 }
                                 Handler(Looper.getMainLooper()).postDelayed({
-                                    progressDialog.dialog.dismiss()
+                                    progressDialog?.dialog?.dismiss()
 
                                     VideoCompressor.newUri?.let(attachmentSelectedIntent::onNext)
                                 }, 11000)
@@ -1165,7 +1166,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                                         ).filter { it.isDigit() }.toInt()
 
                                     if (fileSize!! > 1) {
-                                        progressDialog.show(this@ComposeActivity)
+                                        progressDialog?.show(this@ComposeActivity)
                                         GlobalScope.launch(Dispatchers.IO) {
                                             VideoCompressor.compress(
                                                 this@ComposeActivity,
@@ -1173,7 +1174,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                                             )
                                         }
                                         Handler(Looper.getMainLooper()).postDelayed({
-                                            progressDialog.dialog.dismiss()
+                                            progressDialog?.dialog?.dismiss()
                                             VideoCompressor.newUri?.let(attachmentSelectedIntent::onNext)
                                         }, 11000)
                                     } else {
@@ -1272,14 +1273,14 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                             cursor.getLong(sizeIndex)
                         ).filter { it.isDigit() }.toInt()
                         if (fileSize!! > 1) {
-                            progressDialog.show(this@ComposeActivity)
+                            progressDialog?.show(this@ComposeActivity)
 
                             GlobalScope.launch(Dispatchers.IO) {
                                 VideoCompressor.compress(this@ComposeActivity, data.data!!)
                             }
 
                             Handler(Looper.getMainLooper()).postDelayed({
-                                progressDialog.dialog.dismiss()
+                                progressDialog?.dialog?.dismiss()
                                 VideoCompressor.newUri?.let(attachmentSelectedIntent::onNext)
                             }, 12000)
 

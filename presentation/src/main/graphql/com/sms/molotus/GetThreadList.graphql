@@ -9,6 +9,8 @@ query GetThreadList($userId: ID!){
             messageDate
             threadId
             isGroup
+            groupName
+            recipientIds
         }
     }
 }

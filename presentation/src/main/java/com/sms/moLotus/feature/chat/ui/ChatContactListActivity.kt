@@ -22,6 +22,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.sms.moLotus.GetUserUsingAppQuery
 import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
+import com.sms.moLotus.customview.CustomProgressDialog
 import com.sms.moLotus.extension.toast
 import com.sms.moLotus.feature.Constants
 import com.sms.moLotus.feature.chat.LogHelper
@@ -46,11 +47,13 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
     private val retrofitService = RetrofitService.getInstance()
     var userId: String = ""
     lateinit var chatViewModel: ChatViewModel
+    private var customProgressDialog: CustomProgressDialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat_contact_list)
         userId = PreferenceHelper.getStringPreference(this, Constants.USERID).toString()
+        customProgressDialog = CustomProgressDialog(this)
         Log.e("==========", "userId :: $userId")
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
         chatViewModel = ViewModelProvider(this).get(ChatViewModel::class.java)
@@ -92,6 +95,10 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
 
     @SuppressLint("Range")
     private fun getContactList() {
+        runOnUiThread {
+            customProgressDialog?.show(this)
+        }
+
         val allContactList: ArrayList<String> = ArrayList()
 
         val cr: ContentResolver = contentResolver
@@ -138,7 +145,7 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
                         allContactList.add(
                             phoneNo.replace(" ", "").replace("+", "").replace("-", "").trim()
                         )
-                        
+
                         contactList = allContactList.distinct().toList()
 
                     }
@@ -174,8 +181,15 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
     }
 
     private fun observeUsers() {
+        usersList = ArrayList()
+
         lifecycleScope.launch {
             chatViewModel.getAllUsers(userId).observe(this@ChatContactListActivity, { list ->
+
+                runOnUiThread {
+                    customProgressDialog?.hide()
+                }
+                usersList.clear()
                 Log.e("======================", "chatMessageList:: $list")
                 usersList = list as ArrayList<Users>
                 if (list.isNotEmpty()) {
@@ -195,6 +209,10 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
 
         viewModel.userUsingApp.observe(this, {
             PreferenceHelper.setPreference(this, "isApiCalled", true)
+            runOnUiThread {
+                customProgressDialog?.hide()
+            }
+
             Log.e("=====", "response:: ${it.getUserUsingApp?.userData}")
             val list: ArrayList<GetUserUsingAppQuery.UserDatum> =
                 it.getUserUsingApp?.userData as ArrayList<GetUserUsingAppQuery.UserDatum>
@@ -222,6 +240,11 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
             }, 500)
         })
         viewModel.errorMessage.observe(this, {
+            runOnUiThread {
+                customProgressDialog?.hide()
+            }
+
+
             Log.e("=====", "errorMessage:: $it")
             val conMgr =
                 getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -280,7 +303,7 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
     private fun showBottomSheet() {
         val selectedIdsList: ArrayList<String> = ArrayList()
         val selectedNameList: ArrayList<String> = ArrayList()
-        val dialog = BottomSheetDialog(this,R.style.BottomSheetDialog)
+        val dialog = BottomSheetDialog(this, R.style.BottomSheetDialog)
 
         // on below line we are inflating a layout file which we have created.
         val view = layoutInflater.inflate(R.layout.dialog_select_contacts, null)

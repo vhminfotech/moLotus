@@ -13,13 +13,20 @@ import androidx.core.content.res.ResourcesCompat
 import com.sms.moLotus.R
 import kotlinx.android.synthetic.main.layout_custom_progress.view.*
 
-class CustomProgressDialog {
+class CustomProgressDialog(context: Context) {
 
-    lateinit var dialog: CustomDialog
+    var dialog: CustomDialog =CustomDialog(context)
+
+
 
     fun show(context: Context): Dialog {
         return show(context, null)
     }
+
+    fun hide() {
+        dialog.dismiss()
+    }
+
 
     fun show(context: Context, title: CharSequence?): Dialog {
         val inflater = (context as Activity).layoutInflater
@@ -32,12 +39,14 @@ class CustomProgressDialog {
         view.cp_cardview.setCardBackgroundColor(Color.parseColor("#70000000"))
 
         // Progress Bar Color
-        setColorFilter(view.cp_pbar.indeterminateDrawable, ResourcesCompat.getColor(context.resources, R.color.tools_theme, null))
+        setColorFilter(
+            view.cp_pbar.indeterminateDrawable,
+            ResourcesCompat.getColor(context.resources, R.color.tools_theme, null)
+        )
 
         // Text Color
         view.cp_title.setTextColor(Color.WHITE)
 
-        dialog = CustomDialog(context)
         dialog.setContentView(view)
         dialog.show()
         return dialog

@@ -59,6 +59,11 @@ class IntroActivity : AppCompatActivity() {
                 this, Constants.USERID,
                 userId
             )
+
+            PreferenceHelper.setStringPreference(
+                this, Constants.USERNAME,
+                it.registerUser?.userData?.name.toString()
+            )
             PreferenceHelper.setStringPreference(
                 this, Constants.TOKEN,
                 it.registerUser?.token.toString()
