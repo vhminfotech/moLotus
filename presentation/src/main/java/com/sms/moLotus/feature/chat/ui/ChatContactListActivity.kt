@@ -5,6 +5,7 @@ import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -12,6 +13,7 @@ import android.provider.ContactsContract
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -207,7 +209,7 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
     private fun getUserUsingAppList(contactList: List<String>) {
 
 
-        viewModel.userUsingApp.observe(this, {
+        viewModel.userUsingApp.observe(this) {
             PreferenceHelper.setPreference(this, "isApiCalled", true)
             runOnUiThread {
                 customProgressDialog?.hide()
@@ -238,7 +240,7 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
             Handler(Looper.getMainLooper()).postDelayed({
                 observeUsers()
             }, 500)
-        })
+        }
         viewModel.errorMessage.observe(this, {
             runOnUiThread {
                 customProgressDialog?.hide()
@@ -271,6 +273,7 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
     }
 
 
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun onChatContactClick(item: Users?) {
         val receiverUserIdList = ArrayList<String>()
         receiverUserIdList.add(item?.userId.toString())
