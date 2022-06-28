@@ -24,6 +24,10 @@ class MainViewModel constructor(/*private val repository: MainRepository*/) : Vi
     val chatList = MutableLiveData<GetThreadListQuery.Data>()
     val allMessages = MutableLiveData<GetMessageListQuery.Data>()
     val allGroupMessages = MutableLiveData<GetGroupMessageListQuery.Data>()
+    val getGroupDetails = MutableLiveData<GetGroupDetailsQuery.Data>()
+    val exitGroup = MutableLiveData<ExitGroupMutation.Data>()
+    val createAdmin = MutableLiveData<CreateUserAAdminOfGroupMutation.Data>()
+    val removeAdmin = MutableLiveData<DismissionAdminMutation.Data>()
     val sendMessage = MutableLiveData<MessageList>()
     private var client: ApolloClient? = null
     val registerUser = MutableLiveData<RegisterUserMutation.Data>()
@@ -143,7 +147,7 @@ class MainViewModel constructor(/*private val repository: MainRepository*/) : Vi
 
     }
 
-    fun getAllGroupMessages(threadId: String,  senderId: String, token: String) {
+    fun getAllGroupMessages(threadId: String, senderId: String, token: String) {
         client = ApolloClientService.setUpApolloClient("")
         val getAllGroupMessages = GetGroupMessageListQuery(threadId, senderId)
 
@@ -179,10 +183,11 @@ class MainViewModel constructor(/*private val repository: MainRepository*/) : Vi
         recipientsIds: ArrayList<String>,
         token: String,
         isGroup: Boolean,
-        groupName : String
+        groupName: String
     ) {
         client = ApolloClientService.setUpApolloClient(token)
-        val createThreadMutation = CreateThreadMutation(message, userId, recipientsIds, isGroup, groupName)
+        val createThreadMutation =
+            CreateThreadMutation(message, userId, recipientsIds, isGroup, groupName)
 
         GlobalScope.launch(Dispatchers.Main) {
             try {
@@ -237,6 +242,61 @@ class MainViewModel constructor(/*private val repository: MainRepository*/) : Vi
                 errorMessage.postValue(e.message)
             }
         }
+    }
 
+    fun getGroupDetails(groupId: String, token: String) {
+        client = ApolloClientService.setUpApolloClient("")
+        val getGroupDetailsQuery = GetGroupDetailsQuery(groupId)
+
+        GlobalScope.launch(Dispatchers.Main) {
+            try {
+                val response = client?.query(getGroupDetailsQuery)?.execute()
+                getGroupDetails.postValue(response?.data)
+            } catch (e: ApolloException) {
+                errorMessage.postValue(e.message)
+            }
+        }
+    }
+
+    fun exitGroup(groupId: String, myUserID: String) {
+        client = ApolloClientService.setUpApolloClient("")
+        val exitGroupMutation = ExitGroupMutation(groupId, myUserID)
+
+        GlobalScope.launch(Dispatchers.Main) {
+            try {
+                val response = client?.mutation(exitGroupMutation)?.execute()
+                exitGroup.postValue(response?.data)
+            } catch (e: ApolloException) {
+                errorMessage.postValue(e.message)
+            }
+        }
+    }
+
+    fun createAdmin(groupId: String, userId: String) {
+        client = ApolloClientService.setUpApolloClient("")
+        val createAdminMutation = CreateUserAAdminOfGroupMutation(groupId, userId)
+
+        GlobalScope.launch(Dispatchers.Main) {
+            try {
+                val response = client?.mutation(createAdminMutation)?.execute()
+                createAdmin.postValue(response?.data)
+            } catch (e: ApolloException) {
+                errorMessage.postValue(e.message)
+            }
+        }
+    }
+
+    fun removeAdmin(groupId: String, userId: String) {
+        client = ApolloClientService.setUpApolloClient("")
+        val removeAdminMutation = DismissionAdminMutation(groupId, userId)
+
+        GlobalScope.launch(Dispatchers.Main) {
+            try {
+                val response = client?.mutation(removeAdminMutation)?.execute()
+                removeAdmin.postValue(response?.data)
+            } catch (e: ApolloException) {
+                errorMessage.postValue(e.message)
+            }
+        }
     }
 }

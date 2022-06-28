@@ -1,0 +1,5 @@
+mutation CreateUserAAdminOfGroup($groupId: ID!, $userId:ID!){
+    createUserAAdminOfGroup(groupId: $groupId,userId:$userId){
+        message
+    }
+}

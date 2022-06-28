@@ -11,6 +11,7 @@ query GetThreadList($userId: ID!){
             isGroup
             groupName
             recipientIds
+            isNotParticipant
         }
     }
 }

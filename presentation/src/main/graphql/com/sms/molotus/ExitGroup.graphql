@@ -1,0 +1,5 @@
+mutation ExitGroup($groupId: ID!, $userId:ID!){
+    exitGroup(groupId: $groupId,userId:$userId){
+        message
+    }
+}

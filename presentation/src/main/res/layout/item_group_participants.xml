@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
+    android:id="@+id/llItem"
     android:layout_height="wrap_content"
     android:background="?attr/selectableItemBackground"
     android:orientation="horizontal">
@@ -33,6 +34,7 @@
             android:layout_marginStart="12dp"
             android:layout_marginEnd="16dp"
             android:text="Akanksha"
+            android:textColor="@color/black"
             android:textSize="12sp"
             app:layout_constraintBottom_toTopOf="@id/txtUserName"
             app:layout_constraintEnd_toEndOf="parent"
@@ -48,22 +50,25 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:text="9687417013"
-            android:visibility="gone"
+            android:textColor="@color/black"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="@id/txtUserName"
             app:layout_constraintStart_toStartOf="@id/txtUserName"
             app:layout_constraintTop_toBottomOf="@id/txtUserName" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <androidx.appcompat.widget.AppCompatCheckBox
-        android:id="@+id/checkbox"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_gravity="center"
-        android:layout_margin="5dp"
-        android:background="@drawable/checkbox_selector"
-        android:button="@color/white"
+    <com.sms.moLotus.common.widget.QkTextView
+        android:id="@+id/txtGroupAdmin"
+        android:layout_width="wrap_content"
+        android:visibility="gone"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="7dp"
+        android:layout_marginEnd="3dp"
+        android:background="@drawable/rounded_rectangle_outline_4dp"
+        android:backgroundTint="@color/black"
         android:checked="false"
-        android:padding="5dp"
-        android:visibility="gone" />
+        android:padding="2dp"
+        android:text="Group Admin"
+        android:textColor="@color/black"
+        android:textSize="12sp" />
 </LinearLayout>

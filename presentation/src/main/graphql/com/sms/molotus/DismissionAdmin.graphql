@@ -1,0 +1,5 @@
+mutation DismissionAdmin($groupId: ID!, $userId:ID!){
+    dismissionAdmin(groupId: $groupId,userId:$userId){
+        message
+    }
+}

@@ -44,9 +44,7 @@ import com.sms.moLotus.feature.retrofit.MainViewModel
 import com.sms.moLotus.viewmodel.ChatViewModel
 import io.socket.client.Socket
 import io.socket.emitter.Emitter
-import kotlinx.android.synthetic.main.activity_attachment_preview.*
 import kotlinx.android.synthetic.main.activity_chat.*
-import kotlinx.android.synthetic.main.activity_chat.imgSend
 import kotlinx.android.synthetic.main.dialog_delete_message.*
 import kotlinx.android.synthetic.main.dialog_delete_message.btnCancel
 import kotlinx.android.synthetic.main.dialog_delete_message.txtDesc
@@ -58,7 +56,6 @@ import org.json.JSONObject
 import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.collections.ArrayList
 
 
 @RequiresApi(Build.VERSION_CODES.M)
@@ -199,11 +196,12 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
 
 
         llName.setOnClickListener {
-            /* if (isGroup) {
-                 val intent = Intent(this, GroupDetailsActivity::class.java)
-                 startActivity(intent)
-                 overridePendingTransition(0, 0)
-             }*/
+            if (isGroup) {
+                val intent = Intent(this, GroupDetailsActivity::class.java)
+                    .putExtra("groupId", threadId.toString())
+                startActivity(intent)
+                overridePendingTransition(0, 0)
+            }
         }
 
         imgOpenGallery.setOnClickListener {
@@ -430,7 +428,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
     private fun getMessageList(threadId: String) {
         Log.e("=====", "getMessageList threadId : $threadId")
 
-        viewModel.allMessages.observe(this, {
+        viewModel.allMessages.observe(this) {
             LogHelper.e("======================", "getMessageList:: $it")
 
             if (it.getMessageList?.messages?.isNotEmpty() == true) {
@@ -469,8 +467,8 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
                 }, 500)
 
             }
-        })
-        viewModel.errorMessage.observe(this, {
+        }
+        viewModel.errorMessage.observe(this) {
             val conMgr =
                 getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             val netInfo = conMgr.activeNetworkInfo
@@ -489,7 +487,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
             } else {
                 toast(it.toString(), Toast.LENGTH_SHORT)
             }
-        })
+        }
 
         viewModel.getAllMessages(
             threadId,
@@ -632,12 +630,12 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
     }
 
     private fun deleteMessage(messageIdList: ArrayList<String>) {
-        viewModel.deleteMessage.observe(this, {
+        viewModel.deleteMessage.observe(this) {
             runOnUiThread {
                 chatViewModel.deleteMessage(messageIdList)
                 toast("Message Deleted!")
             }
-        })
+        }
         viewModel.errorMessage.observe(this, {
             val conMgr =
                 getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager

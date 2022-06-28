@@ -153,4 +153,8 @@
     <style name="bottomSheetStyleWrapper" parent="Widget.Design.BottomSheet.Modal">
         <item name="android:background">@drawable/background_bottom_sheet</item>
     </style>
+
+    <style name="menuStyle">
+        <item name="android:layoutDirection">rtl</item>
+    </style>
 </resources>

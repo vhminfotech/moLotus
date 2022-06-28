@@ -1,0 +1,12 @@
+query GetGroupDetails($groupId: ID!) {
+   getGroupDetails(groupId: $groupId) {
+     groupName
+     groupCreatedDate
+     participantsOfGroup {
+       id
+       mobile
+       name
+       isAdmin
+     }
+   }
+ }
