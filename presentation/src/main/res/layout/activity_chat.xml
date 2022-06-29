@@ -100,6 +100,21 @@
         app:tint="@color/white" />
 
 
+    <com.sms.moLotus.common.widget.QkTextView
+        android:id="@+id/txtNoLongerParticipant"
+        android:layout_width="match_parent"
+        android:gravity="center"
+        android:textSize="16sp"
+        android:padding="10dp"
+        android:background="@color/accent"
+
+        android:textColor="@color/white"
+        android:text="You are no longer participant of this group"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_height="wrap_content"/>
+
+
     <LinearLayout
         android:id="@+id/layoutHeader"
         android:layout_width="match_parent"

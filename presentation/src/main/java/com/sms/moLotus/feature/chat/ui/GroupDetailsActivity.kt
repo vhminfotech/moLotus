@@ -34,6 +34,7 @@ class GroupDetailsActivity : AppCompatActivity(), OnGroupItemClickListener {
     var groupId = ""
     val list: ArrayList<String> = ArrayList()
     var groupParticipantsAdapter: GroupParticipantsAdapter? = null
+    var isGroupAdmin = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,7 +60,16 @@ class GroupDetailsActivity : AppCompatActivity(), OnGroupItemClickListener {
             txtGroupName?.text = it.getGroupDetails?.groupName.toString()
             txtCreatedAt?.text =
                 " ~ created on " + getDate(it.getGroupDetails?.groupCreatedDate.toString())
-            initRecyclerView(it.getGroupDetails?.participantsOfGroup)
+            if (it.getGroupDetails?.isGroupAdmin?.contains(
+                    PreferenceHelper.getStringPreference(
+                        this,
+                        Constants.USERID
+                    )
+                ) == true
+            ) {
+                isGroupAdmin = true
+            }
+            initRecyclerView(it.getGroupDetails?.participantsOfGroup, isGroupAdmin)
         }
         viewModel.errorMessage.observe(this) {
             val conMgr =
@@ -135,11 +145,17 @@ class GroupDetailsActivity : AppCompatActivity(), OnGroupItemClickListener {
         return formatter.format(date).toString()
     }
 
-    private fun initRecyclerView(list: List<GetGroupDetailsQuery.ParticipantsOfGroup?>?) {
+    private fun initRecyclerView(
+        list: List<GetGroupDetailsQuery.ParticipantsOfGroup?>?,
+        isGroupAdmin: Boolean
+    ) {
         val layoutMgr = LinearLayoutManager(this)
         layoutMgr.stackFromEnd = true
         rvParticipants.layoutManager = layoutMgr
-        groupParticipantsAdapter = GroupParticipantsAdapter(this, list?.toMutableList(), this)
+        groupParticipantsAdapter = GroupParticipantsAdapter(
+            this,
+            list as ArrayList<GetGroupDetailsQuery.ParticipantsOfGroup?>?, this, isGroupAdmin
+        )
         rvParticipants.adapter = groupParticipantsAdapter
         rvParticipants.addItemDecoration(
             DividerItemDecoration(
@@ -150,12 +166,23 @@ class GroupDetailsActivity : AppCompatActivity(), OnGroupItemClickListener {
 
     }
 
-    override fun onGroupItemClick(id: String, txt: QkTextView, llItem: LinearLayout) {
-        showOptions(llItem, groupId, id, txt)
+    override fun onGroupItemClick(
+        id: String,
+        txt: QkTextView,
+        llItem: LinearLayout,
+        position: Int
+    ) {
+        showOptions(llItem, groupId, id, txt, position)
     }
 
 
-    private fun showOptions(view: View, groupId: String, userId: String, txt: QkTextView) {
+    private fun showOptions(
+        view: View,
+        groupId: String,
+        userId: String,
+        txt: QkTextView,
+        position: Int
+    ) {
         val popup = PopupMenu(this, view, Gravity.RIGHT)
         popup.inflate(R.menu.group_options)
         popup.setOnMenuItemClickListener { item: MenuItem? ->
@@ -170,23 +197,20 @@ class GroupDetailsActivity : AppCompatActivity(), OnGroupItemClickListener {
 
                 R.id.itemRemoveParticipant -> {
 
+                    removeParticipant(groupId, userId, position)
                 }
-
-
             }
             true
         }
-
         popup.show()
-
     }
 
-
     private fun createAdmin(groupId: String, userId: String, txt: QkTextView) {
+        txt.visibility = View.VISIBLE
+        LogHelper.e("======================", "createAdmin:groupId: $groupId")
+        LogHelper.e("======================", "createAdmin:userId: $userId")
         viewModel.createAdmin.observe(this) {
             LogHelper.e("======================", "createAdmin:: $it")
-//            toast(it.createUserAAdminOfGroup?.message.toString())
-            txt.visibility = View.VISIBLE
         }
         viewModel.errorMessage.observe(this) {
             val conMgr =
@@ -216,10 +240,11 @@ class GroupDetailsActivity : AppCompatActivity(), OnGroupItemClickListener {
     }
 
     private fun removeAdmin(groupId: String, userId: String, txt: QkTextView) {
+        txt.visibility = View.GONE
         viewModel.removeAdmin.observe(this) {
             LogHelper.e("======================", "createAdmin:: $it")
 //            toast(it.createUserAAdminOfGroup?.message.toString())
-            txt.visibility = View.GONE
+
         }
         viewModel.errorMessage.observe(this) {
             val conMgr =
@@ -244,6 +269,40 @@ class GroupDetailsActivity : AppCompatActivity(), OnGroupItemClickListener {
 
         viewModel.removeAdmin(
             groupId,
+            PreferenceHelper.getStringPreference(this, Constants.USERID).toString(),
+            userId
+        )
+    }
+
+    private fun removeParticipant(groupId: String, userId: String, position: Int) {
+        groupParticipantsAdapter?.removeParticipant(position)
+        viewModel.removeParticipant.observe(this) {
+            LogHelper.e("======================", "removeParticipant:: $it")
+        }
+        viewModel.errorMessage.observe(this) {
+            val conMgr =
+                getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val netInfo = conMgr.activeNetworkInfo
+            if (netInfo == null) {
+                //No internet
+                Snackbar.make(
+                    findViewById(R.id.relMain),
+                    "No Internet Connection. Please turn on your internet!",
+                    Snackbar.LENGTH_INDEFINITE
+                )
+                    .setAction("Retry") {
+
+                    }
+                    .setActionTextColor(resources.getColor(android.R.color.holo_red_light))
+                    .show()
+            } else {
+                toast(it.toString(), Toast.LENGTH_SHORT)
+            }
+        }
+
+        viewModel.removeParticipant(
+            groupId,
+            PreferenceHelper.getStringPreference(this, Constants.USERID).toString(),
             userId
         )
     }

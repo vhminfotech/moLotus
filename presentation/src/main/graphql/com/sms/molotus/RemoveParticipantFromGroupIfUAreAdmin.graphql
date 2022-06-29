@@ -1,0 +1,5 @@
+mutation RemoveParticipantFromGroupIfUAreAdmin($groupId: ID!, $userId:ID!, $userToBeRemoveFromGroupID:ID!){
+    removeParticipantFromGroupIfUAreAdmin(groupId: $groupId,userId:$userId,userToBeRemoveFromGroupID:$userToBeRemoveFromGroupID){
+        message
+    }
+}

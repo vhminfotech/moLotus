@@ -7,6 +7,7 @@ query GetGroupMessageList($threadId: ID!,$senderId: ID!){
             dateSent
             userName
             id
+            url
         }
     }
 }

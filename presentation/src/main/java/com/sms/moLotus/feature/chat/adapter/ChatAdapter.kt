@@ -6,11 +6,13 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
 import com.sms.moLotus.feature.Constants
@@ -91,14 +93,24 @@ class ChatAdapter(
         private val messageContent = view.findViewById<TextView>(R.id.message)
         private val constraintMyMsg = view.findViewById<ConstraintLayout>(R.id.constraintMyMsg)
         private val llOnClick = view.findViewById<LinearLayout>(R.id.llOnClick)
+        private val imgThumbnail = view.findViewById<ImageView>(R.id.imgThumbnail)
 
         override fun bind(
             item: List<ChatMessage?>?,
             listener: OnMessageClickListener,
             context: Context
         ) {
-            messageContent.text = item?.get(adapterPosition)?.message
-            val data = item?.get(adapterPosition)
+
+            val data = item?.get(bindingAdapterPosition)
+            Log.e("=========", "url :: ${data?.url}")
+            messageContent.text = data?.message
+            if (data?.url?.isNotEmpty() == false || data?.url != "null" || data.url != ""){
+                imgThumbnail?.visibility = View.VISIBLE
+                Glide.with(context).load(data?.url).into(imgThumbnail)
+            }else{
+                imgThumbnail?.visibility = View.GONE
+            }
+
             constraintMyMsg?.setOnClickListener {
                 llOnClick.setBackgroundColor(
                     context.resources.getColor(
@@ -127,6 +139,7 @@ class ChatAdapter(
             view.findViewById<ConstraintLayout>(R.id.constraintFriendMsg)
         private val llOnClick = view.findViewById<LinearLayout>(R.id.llOnClick)
         private val txtName = view.findViewById<TextView>(R.id.txtName)
+        private val imgThumbnail = view.findViewById<ImageView>(R.id.imgThumbnail)
 
         override fun bind(
             item: List<ChatMessage?>?,
@@ -136,7 +149,14 @@ class ChatAdapter(
             val data = item?.get(adapterPosition)
             messageContent.text = data?.message
             Log.e("=========", "userName :: ${data?.userName}")
-
+            Log.e("=========", "url :: ${data?.url}")
+            messageContent.text = data?.message
+            if (data?.url?.isNullOrEmpty() == false || data?.url != "null" || data.url != ""){
+                imgThumbnail?.visibility = View.VISIBLE
+                Glide.with(context).load(data?.url).into(imgThumbnail)
+            }else{
+                imgThumbnail?.visibility = View.GONE
+            }
             if (!data?.userName.isNullOrEmpty()) {
                 txtName.visibility = View.VISIBLE
                 txtName.text = data?.userName

@@ -103,6 +103,7 @@ configurations {
 apollo {
     packageName.set("com.sms.moLotus")
     generateKotlinModels.set(true)
+    mapScalarToUpload("Upload")
 }
 
 dependencies {

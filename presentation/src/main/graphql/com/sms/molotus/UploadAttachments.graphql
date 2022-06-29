@@ -1,0 +1,5 @@
+mutation UploadAttachments($files: Upload!){
+    uploadAttachments(files:$files){
+        uri
+    }
+}

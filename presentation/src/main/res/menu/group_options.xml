@@ -10,6 +10,6 @@
         android:title="Dismiss As Admin" />
     <item
         android:id="@+id/itemRemoveParticipant"
-        android:title="Remove" />
+        android:title="Remove Participant" />
 
 </menu>

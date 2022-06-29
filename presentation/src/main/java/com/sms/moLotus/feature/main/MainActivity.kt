@@ -324,7 +324,7 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
     }
 
     private fun getChatList() {
-        mainViewModel.chatList.observe(this, {
+        mainViewModel.chatList.observe(this) {
             Log.e("=====", "response:: $it")
 
             if (it.getThreadList?.recipientUser?.size == 0) {
@@ -335,8 +335,8 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
                 txtNoChat?.visibility = View.GONE
                 it.getThreadList?.let { it1 -> initRecyclerView(it1) }
             }
-        })
-        mainViewModel.errorMessage.observe(this, {
+        }
+        mainViewModel.errorMessage.observe(this) {
             Log.e("=====", "errorMessage:: $it")
             val conMgr =
                 getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -361,7 +361,7 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
                 txtNoChat?.visibility = View.VISIBLE
                 // requireActivity().toast(it.toString(), Toast.LENGTH_SHORT)
             }
-        })
+        }
         mainViewModel.getChatList(
             PreferenceHelper.getStringPreference(
                 this,
@@ -379,6 +379,13 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
     override fun onItemClick(item: GetThreadListQuery.RecipientUser?) {
         /* val receiverUserIdList = ArrayList<String>()
         receiverUserIdList.add(item?.userId.toString())*/
+        LogHelper.e("===========================","list isNotParticipant?:: ${item?.isNotParticipant}")
+
+        var isNotParticipant = false
+        if (item?.isNotParticipant?.contains(PreferenceHelper.getStringPreference(this, Constants.USERID)) == true){
+            isNotParticipant = true
+        }
+        LogHelper.e("===========================","isNotParticipant:: $isNotParticipant")
         val intent = Intent(this, ChatActivity::class.java)
             .putExtra("currentUserId", PreferenceHelper.getStringPreference(this, Constants.USERID))
             .putStringArrayListExtra("receiverUserId",
@@ -388,6 +395,7 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
             .putExtra("userName", item?.name.toString())
             .putExtra("groupName", item?.groupName.toString())
             .putExtra("isGroup", item?.isGroup)
+            .putExtra("isNotParticipant", isNotParticipant)
 
         startActivity(intent)
         overridePendingTransition(0, 0)
@@ -708,13 +716,13 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
     }
 
     private fun deleteThread(threadIdList: ArrayList<String>) {
-        mainViewModel.deleteThread.observe(this, {
+        mainViewModel.deleteThread.observe(this) {
             runOnUiThread {
                 toast("Chat Deleted!")
                 getChatList()
             }
-        })
-        mainViewModel.errorMessage.observe(this, {
+        }
+        mainViewModel.errorMessage.observe(this) {
             Log.e("=====", "errorMessage:: $it")
             val conMgr =
                 getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -734,7 +742,7 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
             } else {
                 toast(it.toString(), Toast.LENGTH_SHORT)
             }
-        })
+        }
         mainViewModel.deleteThread(currentUserId.toString(), threadIdList)
     }
 

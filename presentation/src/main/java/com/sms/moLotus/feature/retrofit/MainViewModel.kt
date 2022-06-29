@@ -3,6 +3,7 @@ package com.sms.moLotus.feature.retrofit
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.apollographql.apollo3.ApolloClient
+import com.apollographql.apollo3.api.Upload
 import com.apollographql.apollo3.exception.ApolloException
 import com.sms.moLotus.*
 import com.sms.moLotus.feature.Constants
@@ -28,6 +29,8 @@ class MainViewModel constructor(/*private val repository: MainRepository*/) : Vi
     val exitGroup = MutableLiveData<ExitGroupMutation.Data>()
     val createAdmin = MutableLiveData<CreateUserAAdminOfGroupMutation.Data>()
     val removeAdmin = MutableLiveData<DismissionAdminMutation.Data>()
+    val removeParticipant = MutableLiveData<RemoveParticipantFromGroupIfUAreAdminMutation.Data>()
+    val uploadAttachments = MutableLiveData<UploadAttachmentsMutation.Data>()
     val sendMessage = MutableLiveData<MessageList>()
     private var client: ApolloClient? = null
     val registerUser = MutableLiveData<RegisterUserMutation.Data>()
@@ -183,11 +186,12 @@ class MainViewModel constructor(/*private val repository: MainRepository*/) : Vi
         recipientsIds: ArrayList<String>,
         token: String,
         isGroup: Boolean,
-        groupName: String
+        groupName: String,
+        url: String
     ) {
         client = ApolloClientService.setUpApolloClient(token)
         val createThreadMutation =
-            CreateThreadMutation(message, userId, recipientsIds, isGroup, groupName)
+            CreateThreadMutation(message, userId, recipientsIds, isGroup, groupName, url)
 
         GlobalScope.launch(Dispatchers.Main) {
             try {
@@ -200,9 +204,9 @@ class MainViewModel constructor(/*private val repository: MainRepository*/) : Vi
 
     }
 
-    fun createMessage(message: String, threadId: String, senderId: String, token: String) {
+    fun createMessage(message: String, threadId: String, senderId: String, token: String, url: String,receiverId: String,) {
         client = ApolloClientService.setUpApolloClient(token)
-        val createMessageMutation = CreateMessageMutation(message, threadId, senderId)
+        val createMessageMutation = CreateMessageMutation(message, threadId, senderId,receiverId, url)
 
         GlobalScope.launch(Dispatchers.Main) {
             try {
@@ -286,14 +290,43 @@ class MainViewModel constructor(/*private val repository: MainRepository*/) : Vi
         }
     }
 
-    fun removeAdmin(groupId: String, userId: String) {
+    fun removeAdmin(groupId: String, userId: String, userToBeDismissID: String) {
         client = ApolloClientService.setUpApolloClient("")
-        val removeAdminMutation = DismissionAdminMutation(groupId, userId)
+        val removeAdminMutation = DismissionAdminMutation(groupId, userId, userToBeDismissID)
 
         GlobalScope.launch(Dispatchers.Main) {
             try {
                 val response = client?.mutation(removeAdminMutation)?.execute()
                 removeAdmin.postValue(response?.data)
+            } catch (e: ApolloException) {
+                errorMessage.postValue(e.message)
+            }
+        }
+    }
+
+    fun removeParticipant(groupId: String, userId: String, userToBeRemovedID: String) {
+        client = ApolloClientService.setUpApolloClient("")
+        val removeParticipantMutation =
+            RemoveParticipantFromGroupIfUAreAdminMutation(groupId, userId, userToBeRemovedID)
+
+        GlobalScope.launch(Dispatchers.Main) {
+            try {
+                val response = client?.mutation(removeParticipantMutation)?.execute()
+                removeParticipant.postValue(response?.data)
+            } catch (e: ApolloException) {
+                errorMessage.postValue(e.message)
+            }
+        }
+    }
+
+    fun uploadAttachments(upload: Upload) {
+        client = ApolloClientService.setUpApolloClient("")
+        val uploadAttachmentsMutation = UploadAttachmentsMutation(upload)
+
+        GlobalScope.launch(Dispatchers.Main) {
+            try {
+                val response = client?.mutation(uploadAttachmentsMutation)?.execute()
+                uploadAttachments.postValue(response?.data)
             } catch (e: ApolloException) {
                 errorMessage.postValue(e.message)
             }

@@ -1,5 +1,5 @@
-mutation DismissionAdmin($groupId: ID!, $userId:ID!){
-    dismissionAdmin(groupId: $groupId,userId:$userId){
+mutation DismissionAdmin($groupId: ID!, $userId:ID!, $userToBeDismissID: ID!){
+    dismissionAdmin(groupId: $groupId,userId:$userId,userToBeDismissID:$userToBeDismissID){
         message
     }
 }

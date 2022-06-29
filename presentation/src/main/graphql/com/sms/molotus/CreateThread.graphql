@@ -1,11 +1,12 @@
 mutation CreateThread($message: String!, $lastSenderId: ID!, $recipientsIds:[ID!]!,
-    $isGroup: Boolean!, $groupName: String!){
+    $isGroup: Boolean!, $groupName: String!, $url: String!){
     createThread(threadInput: {
         message:$message,
         lastSenderId:$lastSenderId,
         recipientsIds:$recipientsIds
         isGroup: $isGroup
         groupName: $groupName
+        url: $url
     }) {
         id
         lastSenderId

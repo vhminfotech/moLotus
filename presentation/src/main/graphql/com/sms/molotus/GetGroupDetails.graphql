@@ -8,5 +8,6 @@ query GetGroupDetails($groupId: ID!) {
        name
        isAdmin
      }
+     isGroupAdmin
    }
  }

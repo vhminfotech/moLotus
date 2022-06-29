@@ -13,8 +13,9 @@ import com.sms.moLotus.feature.chat.listener.OnGroupItemClickListener
 
 class GroupParticipantsAdapter(
     private val context: Context,
-    private val mList: List<GetGroupDetailsQuery.ParticipantsOfGroup?>?,
+    private val mList: ArrayList<GetGroupDetailsQuery.ParticipantsOfGroup?>?,
     private val listener: OnGroupItemClickListener,
+    private val isGroupAdmin: Boolean,
 ) :
     RecyclerView.Adapter<GroupParticipantsAdapter.ViewHolder>() {
 
@@ -24,6 +25,12 @@ class GroupParticipantsAdapter(
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_group_participants, parent, false)
         return ViewHolder(view)
+    }
+
+    fun removeParticipant(position: Int) {
+        mList?.removeAt(position)
+        notifyItemRemoved(position)
+        mList?.size?.let { notifyItemRangeChanged(position, it) }
     }
 
     // binds the list items to a view
@@ -37,13 +44,15 @@ class GroupParticipantsAdapter(
             holder.txtGroupAdmin.visibility = View.GONE
         }
 
-
         holder.llItem.setOnLongClickListener {
-            listener.onGroupItemClick(
-                mList?.get(position)?.id.toString(),
-                holder.txtGroupAdmin,
-                holder.llItem
-            )
+            if (isGroupAdmin) {
+                listener.onGroupItemClick(
+                    mList?.get(position)?.id.toString(),
+                    holder.txtGroupAdmin,
+                    holder.llItem,
+                    position
+                )
+            }
             return@setOnLongClickListener true
         }
 

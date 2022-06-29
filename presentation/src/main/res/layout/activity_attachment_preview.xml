@@ -62,11 +62,13 @@
         android:layout_width="0dp"
         android:layout_height="50dp"
         android:layout_margin="10dp"
+        android:layout_marginBottom="8dp"
         android:layout_weight="1"
         android:background="@drawable/circle"
         android:backgroundTint="#D3D3D3"
         android:gravity="center_vertical"
         android:hint="Add a caption..."
+        android:imeOptions="actionDone"
         android:inputType="textLongMessage|textCapSentences|textMultiLine"
         android:maxLines="6"
         android:minHeight="44dp"
@@ -78,6 +80,7 @@
         android:textColorHint="@android:color/black"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/imgSend"
+        app:layout_constraintHorizontal_bias="0.8"
         app:layout_constraintStart_toStartOf="parent" />
 
     <ImageView

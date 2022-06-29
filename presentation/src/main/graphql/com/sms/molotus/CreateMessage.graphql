@@ -1,9 +1,10 @@
-mutation CreateMessage($message: String!, $threadId: ID!, $senderId:ID!){
+mutation CreateMessage($message: String!, $threadId: ID!, $senderId:ID!,$receiverId:ID!, $url: String!){
     createMessage(messageInput: {
         threadId:$threadId
         senderId:$senderId
+        receiverId:$receiverId
         message:$message
-
+        url: $url
     }) {
         _id
         threadId
