@@ -1,7 +1,12 @@
 package com.sms.moLotus.feature.chat.adapter
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.media.ThumbnailUtils
+import android.os.AsyncTask
 import android.os.Build
+import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -13,12 +18,21 @@ import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
 import com.sms.moLotus.feature.Constants
+import com.sms.moLotus.feature.Utils
 import com.sms.moLotus.feature.chat.MessageViewHolder
 import com.sms.moLotus.feature.chat.listener.OnMessageClickListener
 import com.sms.moLotus.feature.chat.model.ChatMessage
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import java.io.IOException
+import java.io.InputStream
+import java.net.URL
+
 
 @RequiresApi(Build.VERSION_CODES.M)
 class ChatAdapter(
@@ -35,9 +49,9 @@ class ChatAdapter(
     fun updateList(data: MutableList<ChatMessage>) {
         list.clear()
         list.addAll(data)
-        list.sortBy{ it.dateSent }
+        list.sortBy { it.dateSent }
         //notifyItemInserted(list.size)
-      //  notifyItemRangeInserted(list.size, itemCount)
+        //  notifyItemRangeInserted(list.size, itemCount)
 
         /*list?.sortByDescending { it.dateSent }
         notifyItemInserted(list.size - 1)
@@ -103,12 +117,58 @@ class ChatAdapter(
 
             val data = item?.get(bindingAdapterPosition)
             Log.e("=========", "url :: ${data?.url}")
-            messageContent.text = data?.message
-            if (data?.url?.isNotEmpty() == false || data?.url != "null" || data.url != ""){
-                imgThumbnail?.visibility = View.VISIBLE
-                Glide.with(context).load(data?.url).into(imgThumbnail)
-            }else{
+            if (data?.message == "null" || data?.message == "" || data?.message?.isEmpty() == true) {
+                messageContent?.visibility = View.GONE
+            } else {
+                messageContent?.visibility = View.VISIBLE
+                messageContent.text = data?.message
+            }
+            if (data?.url == "null" || data?.url == "" || data?.url?.isEmpty() == true) {
                 imgThumbnail?.visibility = View.GONE
+            } else {
+                imgThumbnail?.visibility = View.VISIBLE
+                /*GlobalScope.launch(Dispatchers.IO){
+                    val bitmap = Utils.getBitmapFromURL(data?.url)
+                    Log.e("==============", "bitmap--" + bitmap)
+                }*/
+
+                if (data?.url?.endsWith(".mp4") == true || data?.url?.endsWith(".3gp") == true) {
+
+                    GlobalScope.launch(Dispatchers.IO) {
+                        val fileName = Utils.getBitmapFromURL(data.url)
+                        GlobalScope.launch(Dispatchers.Main) {
+                            if (fileName != null) {
+                                imgThumbnail.setImageBitmap(
+                                    ThumbnailUtils.createVideoThumbnail(
+                                        fileName,
+                                        MediaStore.Images.Thumbnails.MICRO_KIND
+                                    )
+                                )
+                            }
+                        }
+
+                    }
+
+                } else {
+                    Glide.with(context).asBitmap().load(data?.url)
+                        .diskCacheStrategy(DiskCacheStrategy.DATA).into(imgThumbnail)
+                }
+                // Glide.with(context).load(data?.url).into(imgThumbnail)
+                /*try {
+                    GlobalScope.launch(Dispatchers.IO) {
+                        val bitmap = Utils.getBitmapFromURL(data?.url)
+                        GlobalScope.launch(Dispatchers.Main) {
+                            if (bitmap != null) {
+                                imgThumbnail.setImageBitmap(bitmap)
+                            }
+                        }
+
+                    }
+
+                } catch (throwable: Throwable) {
+                    LogHelper.e("==============","throwable--"+throwable.message)
+                    throwable.printStackTrace()
+                }*/
             }
 
             constraintMyMsg?.setOnClickListener {
@@ -147,16 +207,41 @@ class ChatAdapter(
             context: Context
         ) {
             val data = item?.get(adapterPosition)
-            messageContent.text = data?.message
+            if (data?.message == "null" || data?.message == "" || data?.message?.isEmpty() == true) {
+                messageContent?.visibility = View.GONE
+            } else {
+                messageContent?.visibility = View.VISIBLE
+                messageContent.text = data?.message
+            }
+
             Log.e("=========", "userName :: ${data?.userName}")
             Log.e("=========", "url :: ${data?.url}")
             messageContent.text = data?.message
-            if (data?.url?.isNullOrEmpty() == false || data?.url != "null" || data.url != ""){
-                imgThumbnail?.visibility = View.VISIBLE
-                Glide.with(context).load(data?.url).into(imgThumbnail)
-            }else{
+            if (data?.url == "null" || data?.url == "" || data?.url?.isEmpty() == true) {
                 imgThumbnail?.visibility = View.GONE
+            } else {
+                imgThumbnail?.visibility = View.VISIBLE
+
+
+                Glide.with(context).asBitmap().load(data?.url)
+                    .diskCacheStrategy(DiskCacheStrategy.DATA).into(imgThumbnail)
+                /*try {
+                    GlobalScope.launch(Dispatchers.IO) {
+                        val bitmap = Utils.getBitmapFromURL(data?.url)
+                        GlobalScope.launch(Dispatchers.Main) {
+                            if (bitmap != null) {
+                                imgThumbnail.setImageBitmap(bitmap)
+                            }
+                        }
+                    }
+                } catch (throwable: Throwable) {
+                    LogHelper.e("==============","throwable--"+throwable.message)
+                    throwable.printStackTrace()
+                }*/
             }
+
+
+
             if (!data?.userName.isNullOrEmpty()) {
                 txtName.visibility = View.VISIBLE
                 txtName.text = data?.userName
@@ -182,5 +267,36 @@ class ChatAdapter(
                 return@setOnLongClickListener true
             }
         }
+    }
+
+
+    class GetImageFromUrl(img: ImageView) :
+        AsyncTask<String?, Void?, Bitmap?>() {
+        var bitmap: Bitmap? = null
+        var imageView: ImageView? = null
+        override fun doInBackground(vararg url: String?): Bitmap? {
+            val stringUrl = url[0]
+            bitmap = null
+            val inputStream: InputStream
+            try {
+                inputStream = URL(stringUrl).openStream()
+                bitmap = BitmapFactory.decodeStream(inputStream)
+            } catch (e: IOException) {
+                Log.e("=========", "error :: ${e.message}")
+                e.printStackTrace()
+            }
+            return bitmap
+        }
+
+        override fun onPostExecute(bitmap: Bitmap?) {
+            super.onPostExecute(bitmap)
+            Log.e("=========", "bitmap :: $bitmap")
+            imageView?.setImageBitmap(bitmap)
+        }
+
+        init {
+            imageView = img
+        }
+
     }
 }

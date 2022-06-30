@@ -37,7 +37,7 @@ class AttachmentPreviewActivity : AppCompatActivity() {
     private var groupName = ""
     private var currentUserId = ""
     private var flag: Boolean? = true
-    private var url : String = ""
+    private var url: String = ""
     private var isGroup: Boolean = false
 
 
@@ -61,19 +61,16 @@ class AttachmentPreviewActivity : AppCompatActivity() {
             "currentUserId:: $currentUserId == threadId:: $threadId == flag:: $flag == groupName:: $groupName == isGroup:: $isGroup == recipientsIds:: $recipientsIds"
         )
 
-
-        val upload = DefaultUpload.Builder().content(File(fileName))
-            .contentType("image/*")
-            .fileName(File(fileName).name).build()
-        uploadAttachment(upload)
-
+        var contentType = ""
 
         if (fileType.uppercase() == "IMAGE") {
+            contentType = "image/*"
             imageView.visibility = View.VISIBLE
             videoView.visibility = View.GONE
             imgPlay?.visibility = View.GONE
             Glide.with(this).load(fileName).into(imageView)
         } else {
+            contentType = "video/*"
             videoView.visibility = View.VISIBLE
             imageView.visibility = View.GONE
             videoView.setVideoURI(Uri.parse(fileName))
@@ -102,6 +99,15 @@ class AttachmentPreviewActivity : AppCompatActivity() {
             }
         }
 
+        val upload = DefaultUpload.Builder().content(File(fileName))
+            .contentType(contentType)
+            .fileName(File(fileName).name).build()
+        uploadAttachment(upload)
+
+        setListeners()
+    }
+
+    private fun setListeners() {
         imgClose?.setOnClickListener {
             onBackPressed()
         }
@@ -133,14 +139,12 @@ class AttachmentPreviewActivity : AppCompatActivity() {
                 }
             }
         }
-
     }
 
     private fun uploadAttachment(upload: Upload) {
         viewModel.uploadAttachments.observe(this) {
             LogHelper.e("======================", "uploadAttachments:: ${it.uploadAttachments}")
             url = it.uploadAttachments?.uri.toString()
-
         }
         viewModel.errorMessage.observe(this) {
             val conMgr =
@@ -167,7 +171,7 @@ class AttachmentPreviewActivity : AppCompatActivity() {
     }
 
 
-    fun createThread(message: String, isGroup: Boolean, groupName: String, url: String) {
+    private fun createThread(message: String, isGroup: Boolean, groupName: String, url: String) {
 
         viewModel.createThread.observe(this) {
             LogHelper.e("======================", "createThread:: ${it.createThread?.id}")
@@ -202,7 +206,7 @@ class AttachmentPreviewActivity : AppCompatActivity() {
 
     }
 
-    fun createMessage(threadId: String, message: String, receiverId: String, url: String) {
+    private fun createMessage(threadId: String, message: String, receiverId: String, url: String) {
         Timber.e("recipientsIds:: $recipientsIds")
         Timber.e("receiverId:: $receiverId")
 

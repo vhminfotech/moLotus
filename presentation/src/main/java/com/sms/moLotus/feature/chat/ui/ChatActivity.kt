@@ -143,10 +143,6 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
             txtMessage?.visibility = View.VISIBLE
             txtNoLongerParticipant?.visibility = View.GONE
         }
-//        LogHelper.e("NewGroupActivity","receiverUserId:: $receiverUserId")
-
-        //recipientsIds?.add(receiverUserId)
-
 
         LogHelper.e("NewGroupActivity", "recipientsIds:: $recipientsIds")
         LogHelper.e("NewGroupActivity", "isGroup:: $isGroup")
@@ -169,6 +165,12 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
             getGroupMessageList(threadId)
         }
 
+       setListeners()
+
+    }
+
+
+    private fun setListeners(){
         imgSend.setOnClickListener {
             //getMessage list empty then create thread else create message
             if (flag == true) {
@@ -197,8 +199,6 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
             }
         }
 
-
-
         txtMessage?.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
 
@@ -221,7 +221,6 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
 
         })
 
-
         llName.setOnClickListener {
             if (isGroup) {
                 val intent = Intent(this, GroupDetailsActivity::class.java)
@@ -235,9 +234,8 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
             showAttachmentOptions()
 
         }
-
-
     }
+
 
     private fun showAttachmentOptions() {
 

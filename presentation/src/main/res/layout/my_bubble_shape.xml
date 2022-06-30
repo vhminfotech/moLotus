@@ -34,10 +34,11 @@
         <ImageView
             android:id="@+id/imgThumbnail"
             android:layout_width="220dp"
-            android:layout_height="220dp"
+            android:layout_height="wrap_content"
             android:background="@drawable/my_bubble_shape"
+            android:minHeight="220dp"
             android:padding="10dp"
-            android:src="@drawable/bg_chat"
+            android:scaleType="fitXY"
             android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />

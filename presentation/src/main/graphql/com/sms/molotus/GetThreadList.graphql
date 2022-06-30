@@ -12,6 +12,7 @@ query GetThreadList($userId: ID!){
             groupName
             recipientIds
             isNotParticipant
+            url
         }
     }
 }

@@ -41,7 +41,7 @@ class IntroActivity : AppCompatActivity() {
     private var mSocket: Socket? = null
 
     private fun registerUser() {
-        viewModel.registerUser.observe(this, {
+        viewModel.registerUser.observe(this) {
             Log.e("=====", "response:: $it")
             /*requestOtp(
                 phone_number.text.toString(),
@@ -68,15 +68,15 @@ class IntroActivity : AppCompatActivity() {
                 this, Constants.TOKEN,
                 it.registerUser?.token.toString()
             )
-            mSocket?.emit("addUser",userId)
+            mSocket?.emit("addUser", userId)
             val intent = Intent(this, VerifyOtpActivity::class.java)
             intent.putExtra("PhoneNumber", phone_number.text.toString())
             startActivity(intent)
             finish()
 
-          //  mSocket?.on("getUsers", getUsers)
-        })
-        viewModel.errorMessage.observe(this, {
+            //  mSocket?.on("getUsers", getUsers)
+        }
+        viewModel.errorMessage.observe(this) {
             Log.e("=====", "errorMessage:: $it")
             btnLogin.isEnabled = true
             val conMgr = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -100,7 +100,7 @@ class IntroActivity : AppCompatActivity() {
             } else {
                 toast(it.toString(), Toast.LENGTH_SHORT)
             }
-        })
+        }
         viewModel.registerUser(
             etName.text.toString(),
             Constants.CARRIER_ID.toString(),

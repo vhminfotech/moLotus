@@ -18,10 +18,12 @@ import okhttp3.Request
 import timber.log.Timber
 import java.io.*
 import java.net.HttpURLConnection
+import java.net.URL
 import java.nio.channels.FileChannel
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
+
 
 object Utils {
 
@@ -73,8 +75,6 @@ object Utils {
             null
         }
     }
-
-
 
 
     fun getVideoContentUri1(file: File, context: Context): Uri? {
@@ -130,46 +130,46 @@ object Utils {
                 null
             }
         }
-       /* val filePath = imageFile.absolutePath
-        val cursor = context.contentResolver.query(
-            MediaStore.Video.Media.EXTERNAL_CONTENT_URI, arrayOf(MediaStore.Video.Media._ID),
-            MediaStore.Video.Media.DATA + "=? ", arrayOf(filePath), null
-        )
-        return if (cursor != null && cursor.moveToFirst()) {
-            val id = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns._ID))
-            cursor.close()
-            Uri.withAppendedPath(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, "" + id)
-        } else {
-            if (imageFile.exists()) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    val resolver = context.contentResolver
-                    val picCollection = MediaStore.Video.Media
-                        .getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
-                    val picDetail = ContentValues()
-                    picDetail.put(MediaStore.Video.Media.DISPLAY_NAME, imageFile.name)
-                    picDetail.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
-                    picDetail.put(
-                        MediaStore.Video.Media.RELATIVE_PATH,
-                        "Movies/" + UUID.randomUUID().toString() + ".mp4"
-                    )
-                    picDetail.put(MediaStore.Video.Media.IS_PENDING, 1)
-                    val finaluri = resolver.insert(picCollection, picDetail)
-                    picDetail.clear()
-                    picDetail.put(MediaStore.Video.Media.IS_PENDING, 0)
-                    resolver.update(picCollection, picDetail, null, null)
-                    finaluri
-                } else {
-                    val values = ContentValues()
-                    values.put(MediaStore.Video.Media.DATA, filePath)
-                    values.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
-                    context.contentResolver.insert(
-                        MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values
-                    )
-                }
-            } else {
-                null
-            }
-        }*/
+        /* val filePath = imageFile.absolutePath
+         val cursor = context.contentResolver.query(
+             MediaStore.Video.Media.EXTERNAL_CONTENT_URI, arrayOf(MediaStore.Video.Media._ID),
+             MediaStore.Video.Media.DATA + "=? ", arrayOf(filePath), null
+         )
+         return if (cursor != null && cursor.moveToFirst()) {
+             val id = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns._ID))
+             cursor.close()
+             Uri.withAppendedPath(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, "" + id)
+         } else {
+             if (imageFile.exists()) {
+                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                     val resolver = context.contentResolver
+                     val picCollection = MediaStore.Video.Media
+                         .getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+                     val picDetail = ContentValues()
+                     picDetail.put(MediaStore.Video.Media.DISPLAY_NAME, imageFile.name)
+                     picDetail.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
+                     picDetail.put(
+                         MediaStore.Video.Media.RELATIVE_PATH,
+                         "Movies/" + UUID.randomUUID().toString() + ".mp4"
+                     )
+                     picDetail.put(MediaStore.Video.Media.IS_PENDING, 1)
+                     val finaluri = resolver.insert(picCollection, picDetail)
+                     picDetail.clear()
+                     picDetail.put(MediaStore.Video.Media.IS_PENDING, 0)
+                     resolver.update(picCollection, picDetail, null, null)
+                     finaluri
+                 } else {
+                     val values = ContentValues()
+                     values.put(MediaStore.Video.Media.DATA, filePath)
+                     values.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
+                     context.contentResolver.insert(
+                         MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values
+                     )
+                 }
+             } else {
+                 null
+             }
+         }*/
     }
     /*fun getVideoContentUri(file: File, context: Context): Uri? {
         *//*val filePath = file.absolutePath
@@ -453,7 +453,7 @@ object Utils {
     fun copyFileOrDirectory(srcDir: String?, dstDir: String?) {
         try {
             val src = File(srcDir)
-            val dst = File(dstDir, src.nameWithoutExtension +".aac")
+            val dst = File(dstDir, src.nameWithoutExtension + ".aac")
             if (src.isDirectory) {
                 val files = src.list()
                 val filesLength = files.size
@@ -471,7 +471,7 @@ object Utils {
     }
 
     @Throws(IOException::class)
-    fun copyFile(sourceFile: File?, destFile: File) : File{
+    fun copyFile(sourceFile: File?, destFile: File): File {
         if (!destFile.parentFile.exists()) destFile.parentFile.mkdirs()
         if (!destFile.exists()) {
             destFile.createNewFile()
@@ -486,11 +486,11 @@ object Utils {
             source?.close()
             destination?.close()
         }
-       return destFile
+        return destFile
     }
 
     @Throws(IOException::class)
-    fun copyFileStream(dest: File, uri: Uri, context: Context) : File?{
+    fun copyFileStream(dest: File, uri: Uri, context: Context): File? {
         var `is`: InputStream? = null
         var os: OutputStream? = null
         try {
@@ -530,7 +530,8 @@ object Utils {
             val responseCode = response.code
             if (responseCode >= HttpURLConnection.HTTP_OK &&
                 responseCode < HttpURLConnection.HTTP_MULT_CHOICE &&
-                body != null) {
+                body != null
+            ) {
                 val length = body.contentLength()
                 body.byteStream().apply {
                     file.outputStream().use { fileOut ->
@@ -542,7 +543,8 @@ object Utils {
                             bytesCopied += bytes
                             bytes = read(buffer)
                             emitter.onNext(
-                                ((bytesCopied * 100)/length).toInt())
+                                ((bytesCopied * 100) / length).toInt()
+                            )
                         }
                     }
                     emitter.onComplete()
@@ -592,5 +594,52 @@ object Utils {
         return convTime
     }
 
+    fun getBitmapFromURL(src: String?): String? {
+        return try {
+            val url = URL(src)
 
+
+            val destination = (Environment.getExternalStorageDirectory().toString() + "/" +"test.mp4")
+            val input: InputStream = BufferedInputStream(url.openStream())
+            val output: OutputStream = FileOutputStream(destination)
+            val buffer = ByteArray(1024)
+            var bytes = 0
+            while (input.read(buffer).also { bytes = it } != -1) {
+                output.write(buffer, 0, bytes)
+            }
+            output.flush()
+            output.close()
+            input.close()
+
+
+            Log.d("tag", "bitmap::::${BitmapFactory.decodeFile(destination)}")
+            destination
+        } catch (e: IOException) {
+            e.printStackTrace()
+            Log.e("==============", "error--" + e.message)
+
+            null
+        }
+    }
+
+    @Throws(IOException::class)
+    fun downloadURL(url: URL, fileName: String): String? {
+        var destination: String? = null
+        try {
+            destination = (Environment.getExternalStorageDirectory().toString() + "/" +fileName)
+            val input: InputStream = BufferedInputStream(url.openStream())
+            val output: OutputStream = FileOutputStream(destination)
+            val buffer = ByteArray(1024)
+            var bytes = 0
+            while (input.read(buffer).also { bytes = it } != -1) {
+                output.write(buffer, 0, bytes)
+            }
+            output.flush()
+            output.close()
+            input.close()
+        } catch (e: java.lang.Exception) {
+            Log.e("DOWNLOAD URL", "downloading file failed due to $e")
+        }
+        return destination
+    }
 }
