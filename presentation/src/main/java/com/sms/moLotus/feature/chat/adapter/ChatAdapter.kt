@@ -3,10 +3,8 @@ package com.sms.moLotus.feature.chat.adapter
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.media.ThumbnailUtils
 import android.os.AsyncTask
 import android.os.Build
-import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -22,13 +20,9 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
 import com.sms.moLotus.feature.Constants
-import com.sms.moLotus.feature.Utils
 import com.sms.moLotus.feature.chat.MessageViewHolder
 import com.sms.moLotus.feature.chat.listener.OnMessageClickListener
 import com.sms.moLotus.feature.chat.model.ChatMessage
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import java.io.IOException
 import java.io.InputStream
 import java.net.URL
@@ -131,44 +125,31 @@ class ChatAdapter(
                     val bitmap = Utils.getBitmapFromURL(data?.url)
                     Log.e("==============", "bitmap--" + bitmap)
                 }*/
-
-                if (data?.url?.endsWith(".mp4") == true || data?.url?.endsWith(".3gp") == true) {
-
+                Glide.with(context).asBitmap().load(data?.url)
+                    .diskCacheStrategy(DiskCacheStrategy.DATA).into(imgThumbnail)
+                /*if (data?.url?.endsWith(".mp4") == true || data?.url?.endsWith(".3gp") == true) {
                     GlobalScope.launch(Dispatchers.IO) {
-                        val fileName = Utils.getBitmapFromURL(data.url)
-                        GlobalScope.launch(Dispatchers.Main) {
-                            if (fileName != null) {
+                       val  fileName = Utils.getBitmapFromURL(data.url, context).toString()
+                        Log.e("===========","fileName = $fileName")
+                        GlobalScope.launch(Dispatchers.Main){
+
+
                                 imgThumbnail.setImageBitmap(
                                     ThumbnailUtils.createVideoThumbnail(
                                         fileName,
                                         MediaStore.Images.Thumbnails.MICRO_KIND
                                     )
                                 )
-                            }
-                        }
 
+                        }
                     }
+
 
                 } else {
-                    Glide.with(context).asBitmap().load(data?.url)
-                        .diskCacheStrategy(DiskCacheStrategy.DATA).into(imgThumbnail)
-                }
-                // Glide.with(context).load(data?.url).into(imgThumbnail)
-                /*try {
-                    GlobalScope.launch(Dispatchers.IO) {
-                        val bitmap = Utils.getBitmapFromURL(data?.url)
-                        GlobalScope.launch(Dispatchers.Main) {
-                            if (bitmap != null) {
-                                imgThumbnail.setImageBitmap(bitmap)
-                            }
-                        }
 
-                    }
-
-                } catch (throwable: Throwable) {
-                    LogHelper.e("==============","throwable--"+throwable.message)
-                    throwable.printStackTrace()
                 }*/
+                // Glide.with(context).load(data?.url).into(imgThumbnail)
+
             }
 
             constraintMyMsg?.setOnClickListener {
@@ -221,22 +202,26 @@ class ChatAdapter(
                 imgThumbnail?.visibility = View.GONE
             } else {
                 imgThumbnail?.visibility = View.VISIBLE
-
-
                 Glide.with(context).asBitmap().load(data?.url)
                     .diskCacheStrategy(DiskCacheStrategy.DATA).into(imgThumbnail)
-                /*try {
+               /* if (data?.url?.endsWith(".mp4") == true || data?.url?.endsWith(".3gp") == true) {
                     GlobalScope.launch(Dispatchers.IO) {
-                        val bitmap = Utils.getBitmapFromURL(data?.url)
+                        val fileName = Utils.getBitmapFromURL(data.url, context).toString()
                         GlobalScope.launch(Dispatchers.Main) {
-                            if (bitmap != null) {
-                                imgThumbnail.setImageBitmap(bitmap)
-                            }
+                            Log.e("===========", "fileName = $fileName")
+
+                            imgThumbnail.setImageBitmap(
+                                ThumbnailUtils.createVideoThumbnail(
+                                    fileName,
+                                    MediaStore.Images.Thumbnails.MICRO_KIND
+                                )
+                            )
+
                         }
                     }
-                } catch (throwable: Throwable) {
-                    LogHelper.e("==============","throwable--"+throwable.message)
-                    throwable.printStackTrace()
+                } else {
+                    Glide.with(context).asBitmap().load(data?.url)
+                        .diskCacheStrategy(DiskCacheStrategy.DATA).into(imgThumbnail)
                 }*/
             }
 

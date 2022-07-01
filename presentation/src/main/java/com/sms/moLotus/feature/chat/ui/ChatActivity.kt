@@ -36,6 +36,7 @@ import com.sms.moLotus.common.QKApplication
 import com.sms.moLotus.db.ChatDatabase
 import com.sms.moLotus.extension.toast
 import com.sms.moLotus.feature.Constants
+import com.sms.moLotus.feature.Utils
 import com.sms.moLotus.feature.chat.LogHelper
 import com.sms.moLotus.feature.chat.adapter.ChatAdapter
 import com.sms.moLotus.feature.chat.listener.OnMessageClickListener
@@ -165,12 +166,12 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
             getGroupMessageList(threadId)
         }
 
-       setListeners()
+        setListeners()
 
     }
 
 
-    private fun setListeners(){
+    private fun setListeners() {
         imgSend.setOnClickListener {
             //getMessage list empty then create thread else create message
             if (flag == true) {
@@ -466,8 +467,28 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
             if (it.getMessageList?.messages?.isNotEmpty() == true) {
                 getMessageList =
                     it.getMessageList.messages as MutableList<GetMessageListQuery.Message>
+
+
                 var chatMessageModel: ChatMessage? = null
                 getMessageList.forEachIndexed { index, _ ->
+                    val fileName: String =
+                        if (getMessageList[index].url?.endsWith(".mp4") == true || getMessageList[index].url?.endsWith(
+                                ".3gp"
+                            ) == true
+                        ) {
+
+                            Utils.getBitmapFromURL(
+                                getMessageList[index].url,
+                                this@ChatActivity
+                            )
+                                .toString()
+
+                        } else {
+                            getMessageList[index].url.toString()
+                        }
+
+                    Log.d("tag", "fileName::::$fileName")
+
                     chatMessageModel = ChatMessage(
                         myUserId,
                         getMessageList[index].id.toString(),
@@ -476,7 +497,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
                         getMessageList[index].message.toString(),
                         getMessageList[index].dateSent.toString(),
                         "",
-                        getMessageList[index].url.toString()
+                        fileName
                     )
 
                     // chatMessageList?.add(chatMessageModel!!)

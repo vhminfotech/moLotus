@@ -13,12 +13,16 @@ import android.os.Environment
 import android.os.StrictMode
 import android.provider.MediaStore
 import android.util.Log
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import timber.log.Timber
 import java.io.*
 import java.net.HttpURLConnection
 import java.net.URL
+import java.net.URLEncoder
 import java.nio.channels.FileChannel
 import java.text.SimpleDateFormat
 import java.util.*
@@ -594,26 +598,52 @@ object Utils {
         return convTime
     }
 
-    fun getBitmapFromURL(src: String?): String? {
+    fun getBitmapFromURL(src: String?, context: Context): String? {
         return try {
-            val url = URL(src)
-
-
-            val destination = (Environment.getExternalStorageDirectory().toString() + "/" +"test.mp4")
-            val input: InputStream = BufferedInputStream(url.openStream())
-            val output: OutputStream = FileOutputStream(destination)
-            val buffer = ByteArray(1024)
-            var bytes = 0
-            while (input.read(buffer).also { bytes = it } != -1) {
-                output.write(buffer, 0, bytes)
+            val folderName = File(
+                Environment.getExternalStorageDirectory()
+                    .toString() + "/" + Constants.FOLDER_NAME
+            )
+            if (!folderName.exists()) {
+                folderName.mkdir()
             }
-            output.flush()
-            output.close()
-            input.close()
+            val sdf = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
+            val currentDateAndTime = sdf.format(Date())
+
+            val name = "$currentDateAndTime.jpg"
+
+            Log.d("tag", "name::::$name")
+
+            val destination = (folderName.absolutePath + "/" + name.trim())
+            GlobalScope.launch(Dispatchers.IO) {  // replaces doAsync
+
+                val newSrc = src?.replace(" ", "%20")
+
+                Log.d("tag", "src::::$newSrc")
+
+                val url = URL(src)
+//                val url = URL(URLEncoder.encode(src,"UTF-8").replace(" ", "%20"))//URLEncoder.encode(src, "UTF-8");//
+
+                Log.e("tag", "url::::$url")
+//              val fileName: String? = src?.substring(src.lastIndexOf('/') + 1)
+
+                val input: InputStream = BufferedInputStream(url.openStream())
+                val output: OutputStream = FileOutputStream(destination)
+                val buffer = ByteArray(4096)
+                var bytes = 0
+                while (input.read(buffer).also { bytes = it } != -1) {
+                    output.write(buffer, 0, bytes)
+                }
+                output.flush()
+                output.close()
+                input.close()
 
 
-            Log.d("tag", "bitmap::::${BitmapFactory.decodeFile(destination)}")
+            }
+            Log.d("tag", "destination::::$destination")
+
             destination
+
         } catch (e: IOException) {
             e.printStackTrace()
             Log.e("==============", "error--" + e.message)
@@ -626,7 +656,7 @@ object Utils {
     fun downloadURL(url: URL, fileName: String): String? {
         var destination: String? = null
         try {
-            destination = (Environment.getExternalStorageDirectory().toString() + "/" +fileName)
+            destination = (Environment.getExternalStorageDirectory().toString() + "/" + fileName)
             val input: InputStream = BufferedInputStream(url.openStream())
             val output: OutputStream = FileOutputStream(destination)
             val buffer = ByteArray(1024)
