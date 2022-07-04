@@ -152,6 +152,10 @@ class ChatAdapter(
 
             }
 
+            messageContent?.setOnClickListener {
+                listener.onAttachmentClick(data?.url)
+            }
+
             constraintMyMsg?.setOnClickListener {
                 llOnClick.setBackgroundColor(
                     context.resources.getColor(

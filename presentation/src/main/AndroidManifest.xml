@@ -54,16 +54,18 @@
         android:theme="@style/AppLaunchTheme"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".ViewPagerAdapterActivity"
+            android:exported="false"
+            android:theme="@style/AppTheme1"/>
+        <activity
             android:name=".feature.chat.ui.DemoActivity"
             android:exported="true"
-            android:theme="@style/AppTheme1">
-
-        </activity>
+            android:theme="@style/AppTheme1"></activity>
         <activity
             android:name=".feature.chat.ui.AttachmentPreviewActivity"
             android:exported="true"
-            android:windowSoftInputMode="adjustResize"
-            android:theme="@style/AppTheme1" />
+            android:theme="@style/AppTheme1"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".feature.chat.ui.GroupDetailsActivity"
             android:exported="true"

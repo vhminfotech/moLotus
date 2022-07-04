@@ -86,6 +86,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
     var delay: Long = 1000 // 1 seconds after user stops typing
     var last_text_edit: Long = 0
     var handler = Handler(Looper.getMainLooper())
+    var attachmentList = ArrayList<String>()
 
     private val input_finish_checker = Runnable {
         if (System.currentTimeMillis() > last_text_edit + delay - 500) {
@@ -487,7 +488,10 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
                             getMessageList[index].url.toString()
                         }
 
+
+                    attachmentList.add(getMessageList[index].url.toString())
                     Log.d("tag", "fileName::::$fileName")
+
 
                     chatMessageModel = ChatMessage(
                         myUserId,
@@ -573,6 +577,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
                         getGroupMessageList[index].url.toString(),
                     )
 
+                    attachmentList.add(getGroupMessageList[index].url.toString())
                     // chatMessageList?.add(chatMessageModel!!)
                     chatViewModel.insert(chatMessageModel!!)
                     // chatViewModel.insertAllMessages(chatMessageList!!)
@@ -628,6 +633,15 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
         LogHelper.e("MESSAGEIDLIST", "==== $messageIdList")
         linearLayout = llOnClick
         pos = adapterPosition
+    }
+
+    override fun onAttachmentClick(item: String?) {
+        Log.d("onAttachmentClick", "attachmentList::::$attachmentList")
+        Log.d("onAttachmentClick", "url::::$item")
+        val intent = Intent(this, ViewPagerAdapterActivity::class.java)
+            .putExtra("url", item)
+            .putStringArrayListExtra("attachmentList", attachmentList)
+        startActivity(intent)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
