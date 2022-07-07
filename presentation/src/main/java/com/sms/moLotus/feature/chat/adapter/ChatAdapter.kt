@@ -152,7 +152,7 @@ class ChatAdapter(
 
             }
 
-            messageContent?.setOnClickListener {
+            imgThumbnail?.setOnClickListener {
                 listener.onAttachmentClick(data?.url)
             }
 
@@ -244,6 +244,9 @@ class ChatAdapter(
                         context.theme
                     )
                 )
+            }
+            imgThumbnail?.setOnClickListener {
+                listener.onAttachmentClick(data?.url)
             }
             constraintFriendMsg?.setOnLongClickListener {
                 listener.onMessageClick(data, llOnClick, adapterPosition)

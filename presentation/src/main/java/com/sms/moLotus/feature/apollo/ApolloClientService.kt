@@ -14,10 +14,6 @@ object ApolloClientService {
         val logging = HttpLoggingInterceptor()
         logging.level = HttpLoggingInterceptor.Level.BODY
 
-
-
-
-
         val okHttpClient: OkHttpClient = OkHttpClient.Builder()
             .addInterceptor { chain ->
                 val original: Request = chain.request()

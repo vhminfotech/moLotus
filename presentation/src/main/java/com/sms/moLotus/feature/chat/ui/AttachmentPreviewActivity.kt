@@ -69,7 +69,7 @@ class AttachmentPreviewActivity : AppCompatActivity() {
             videoView.visibility = View.GONE
             imgPlay?.visibility = View.GONE
             Glide.with(this).load(fileName).into(imageView)
-        } else {
+        } else if(fileType.uppercase() == "VIDEO"){
             contentType = "video/*"
             videoView.visibility = View.VISIBLE
             imageView.visibility = View.GONE
@@ -97,6 +97,8 @@ class AttachmentPreviewActivity : AppCompatActivity() {
                 imgPlay?.visibility = View.VISIBLE
                 videoView?.pause()
             }
+        }else{
+            contentType = "*/*"
         }
 
         val upload = DefaultUpload.Builder().content(File(fileName))

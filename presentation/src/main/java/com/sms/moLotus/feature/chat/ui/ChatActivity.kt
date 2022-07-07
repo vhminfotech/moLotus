@@ -9,6 +9,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
@@ -248,6 +249,8 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
 
 
         view.txtCamera.setOnClickListener {
+            startActivityForResult(Intent(MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA), 101);
+
             dialog.dismiss()
         }
 
@@ -488,8 +491,9 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
                             getMessageList[index].url.toString()
                         }
 
-
-                    attachmentList.add(getMessageList[index].url.toString())
+                    if (!getMessageList[index].url.isNullOrEmpty()) {
+                        getMessageList[index].url?.let { it1 -> attachmentList.add(it1) }
+                    }
                     Log.d("tag", "fileName::::$fileName")
 
 
@@ -576,8 +580,10 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
                         getGroupMessageList[index].userName.toString(),
                         getGroupMessageList[index].url.toString(),
                     )
+                    if (!getGroupMessageList[index].url.isNullOrEmpty()) {
+                        getGroupMessageList[index].url?.let { it1 -> attachmentList.add(it1) }
+                    }
 
-                    attachmentList.add(getGroupMessageList[index].url.toString())
                     // chatMessageList?.add(chatMessageModel!!)
                     chatViewModel.insert(chatMessageModel!!)
                     // chatViewModel.insertAllMessages(chatMessageList!!)

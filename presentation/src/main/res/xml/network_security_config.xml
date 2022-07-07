@@ -5,6 +5,7 @@
 <!--        <domain includeSubdomains="true">http://192.168.1.27:3000</domain>-->
         <domain includeSubdomains="true">192.168.25.204</domain>
         <domain includeSubdomains="true">http://192.168.25.204:81/</domain>
+        <domain includeSubdomains="true">mchat.molotus.com</domain>
         <domain includeSubdomains="true">192.168.25.204:81</domain>
         <domain includeSubdomains="true">mgram-backend.vhminfotech.com</domain>
         <domain includeSubdomains="true">dev-mgram.vhminfotech.com</domain>

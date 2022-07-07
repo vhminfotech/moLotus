@@ -54,8 +54,8 @@
         android:theme="@style/AppLaunchTheme"
         android:usesCleartextTraffic="true">
         <activity
-            android:name=".ViewPagerAdapterActivity"
-            android:exported="false"
+            android:name=".feature.chat.ui.ViewPagerAdapterActivity"
+            android:exported="true"
             android:theme="@style/AppTheme1"/>
         <activity
             android:name=".feature.chat.ui.DemoActivity"
