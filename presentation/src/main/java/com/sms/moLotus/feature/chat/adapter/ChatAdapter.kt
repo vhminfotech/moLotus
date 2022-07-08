@@ -109,7 +109,7 @@ class ChatAdapter(
             context: Context
         ) {
 
-            val data = item?.get(bindingAdapterPosition)
+            val data = item?.get(adapterPosition)
             Log.e("=========", "url :: ${data?.url}")
             if (data?.message == "null" || data?.message == "" || data?.message?.isEmpty() == true) {
                 messageContent?.visibility = View.GONE

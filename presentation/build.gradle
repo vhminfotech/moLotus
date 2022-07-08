@@ -87,6 +87,10 @@ android {
         incremental true
         javaMaxHeapSize "4g" // 2g should be also OK
     }
+
+    buildFeatures {
+        dataBinding true
+    }
 }
 
 androidExtensions {
@@ -275,10 +279,24 @@ dependencies {
         exclude group: 'org.json', module: 'json'
     }
 
+    //image or video picker
+   // implementation 'com.github.majidarabi:AndroidFilePicker:0.0.4'
 
-//    implementation 'com.fxn769:pix:1.5.6'
 
-    implementation 'com.github.majidarabi:AndroidFilePicker:0.0.4'
+    implementation 'com.appexecutors.picker:picker:1.0.8'
+
+
+    //CameraX core library
+    /*implementation "androidx.camera:camera-core:$camerax_version"
+
+    // CameraX Camera2 extensions
+    implementation "androidx.camera:camera-camera2:$camerax_version"
+
+    // CameraX Lifecycle library
+    implementation "androidx.camera:camera-lifecycle:$camerax_version"
+
+    // CameraX View class
+    implementation "androidx.camera:camera-view:1.0.0-alpha08"*/
 
 }
 

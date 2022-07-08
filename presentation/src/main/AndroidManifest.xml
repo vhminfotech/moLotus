@@ -9,6 +9,8 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CALL_PHONE" /> <!-- Used for starting foreground service for backup/restore on Android P+ -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
@@ -54,13 +56,16 @@
         android:theme="@style/AppLaunchTheme"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".feature.chat.ui.CameraActivity"
+            android:exported="true" />
+        <activity
             android:name=".feature.chat.ui.ViewPagerAdapterActivity"
             android:exported="true"
-            android:theme="@style/AppTheme1"/>
+            android:theme="@style/AppTheme1" />
         <activity
             android:name=".feature.chat.ui.DemoActivity"
             android:exported="true"
-            android:theme="@style/AppTheme1"></activity>
+            android:theme="@style/AppTheme1" />
         <activity
             android:name=".feature.chat.ui.AttachmentPreviewActivity"
             android:exported="true"

@@ -103,26 +103,33 @@
     <com.sms.moLotus.common.widget.QkTextView
         android:id="@+id/txtNoLongerParticipant"
         android:layout_width="match_parent"
-        android:gravity="center"
-        android:textSize="16sp"
-        android:padding="10dp"
+        android:layout_height="wrap_content"
         android:background="@color/accent"
+        android:gravity="center"
+        android:padding="10dp"
 
-        android:textColor="@color/white"
         android:text="You are no longer participant of this group"
+        android:textColor="@color/white"
+        android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_height="wrap_content"/>
+        app:layout_constraintEnd_toEndOf="parent" />
 
+    <View
+        android:id="@+id/viewStatus"
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        android:background="@color/tools_theme"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout
         android:id="@+id/layoutHeader"
         android:layout_width="match_parent"
-        android:layout_height="?actionBarSize"
+        android:layout_height="60dp"
         android:background="@color/tools_theme"
         android:orientation="horizontal"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@+id/viewStatus">
 
         <ImageView
             android:id="@+id/imgBack"

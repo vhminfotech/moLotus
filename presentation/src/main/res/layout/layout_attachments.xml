@@ -21,7 +21,8 @@
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:layout_margin="2dp"
-        android:background="@color/grey_translucent" />
+        android:background="@color/grey_translucent"
+        android:visibility="gone" />
 
     <com.sms.moLotus.common.widget.QkTextView
         android:id="@+id/txtAddPhoto"
@@ -32,13 +33,15 @@
         android:padding="15dp"
         android:text="Photo Library"
         android:textColor="@color/black"
-        android:textSize="16sp" />
+        android:textSize="16sp"
+        android:visibility="gone" />
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:layout_margin="2dp"
-        android:background="@color/grey_translucent" />
+        android:background="@color/grey_translucent"
+        android:visibility="gone" />
 
     <com.sms.moLotus.common.widget.QkTextView
         android:id="@+id/txtAddVideo"
@@ -49,7 +52,8 @@
         android:padding="15dp"
         android:text="Video Library"
         android:textColor="@color/black"
-        android:textSize="16sp" />
+        android:textSize="16sp"
+        android:visibility="gone" />
 
     <View
         android:layout_width="match_parent"
@@ -84,6 +88,24 @@
         android:drawablePadding="10dp"
         android:padding="15dp"
         android:text="Documents"
+        android:textColor="@color/black"
+        android:textSize="16sp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_margin="2dp"
+        android:background="@color/grey_translucent" />
+
+    <com.sms.moLotus.common.widget.QkTextView
+        android:id="@+id/txtAddContacts"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:drawableStart="@drawable/ic_baseline_person_24"
+        android:drawableTint="@android:color/black"
+        android:drawablePadding="10dp"
+        android:padding="15dp"
+        android:text="Contact"
         android:textColor="@color/black"
         android:textSize="16sp" />
 </LinearLayout>

@@ -1,6 +1,7 @@
 package com.sms.moLotus.feature.chat.ui
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
@@ -9,7 +10,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
@@ -21,12 +21,13 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.github.file_picker.FileType
-import com.github.file_picker.showFilePicker
+import com.appexecutors.picker.Picker
+import com.appexecutors.picker.Picker.Companion.PICKED_MEDIA_LIST
+import com.appexecutors.picker.Picker.Companion.REQUEST_CODE_PICKER
+import com.appexecutors.picker.utils.PickerOptions
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.snackbar.Snackbar
 import com.sms.moLotus.GetGroupMessageListQuery
@@ -247,20 +248,31 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
         // on below line we are inflating a layout file which we have created.
         val view = layoutInflater.inflate(R.layout.layout_attachments, null)
 
+        val mPickerOptions =
+            PickerOptions.init().apply {
+                maxCount = 1                        //maximum number of images/videos to be picked
+                maxVideoDuration = 10               //maximum duration for video capture in seconds
+                allowFrontCamera = true             //allow front camera use
+                excludeVideos = false               //exclude or include video functionalities
+            }
 
         view.txtCamera.setOnClickListener {
-            startActivityForResult(Intent(MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA), 101);
+            Picker.PICKER_OPTIONS
+            Picker.startPicker(this, mPickerOptions)
+            // startActivityForResult(Intent(MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA), 101);
+           /* val intent =Intent(this, CameraActivity::class.java)
+            startActivity(intent)*/
 
             dialog.dismiss()
         }
 
         view.txtAddPhoto.setOnClickListener {
-            showFilePicker(FileType.IMAGE)
+           // showFilePicker(FileType.IMAGE)
             dialog.dismiss()
         }
 
         view.txtAddVideo.setOnClickListener {
-            showFilePicker(FileType.VIDEO)
+           // showFilePicker(FileType.VIDEO)
             dialog.dismiss()
         }
 
@@ -293,7 +305,26 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
             val data = data?.data
             Log.e("============", "data:::: $data")
             showSendAttachmentDialog()
+        }else if (resultCode == Activity.RESULT_OK && requestCode == REQUEST_CODE_PICKER){
+            val mImageList = data?.getStringArrayListExtra(PICKED_MEDIA_LIST) as ArrayList //List of selected/captured images/videos
 
+            Log.e("============", "onActivityResult: data= ${data.data}" )
+
+            mImageList.map {
+                Log.e("============", "onActivityResult: data= $it" )
+
+                val intent = Intent(this, AttachmentPreviewActivity::class.java)
+                    .putExtra("fileName", it.toString())
+                   // .putExtra("fileType", fileType.name)
+                    .putExtra("threadId", threadId)
+                    .putExtra("isGroup", isGroup)
+                    .putExtra("groupName", groupName)
+                    .putExtra("flag", flag)
+                    .putExtra("recipientsIds", recipientsIds)
+                    .putExtra("currentUserId", currentUserId)
+                startActivity(intent)
+                overridePendingTransition(0, 0)
+            }
         }
     }
 
@@ -315,7 +346,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
     }
 
 
-    private fun showFilePicker(fileType: FileType) {
+    /*private fun showFilePicker(fileType: FileType) {
         showFilePicker(
             gridSpanCount = 3,
             fileType = fileType,
@@ -339,7 +370,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
             startActivity(intent)
             overridePendingTransition(0, 0)
         }
-    }
+    }*/
 
     fun openGallery() {
         val intent = Intent(Intent.ACTION_GET_CONTENT)

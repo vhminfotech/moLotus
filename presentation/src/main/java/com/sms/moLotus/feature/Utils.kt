@@ -600,13 +600,10 @@ object Utils {
 
     fun getBitmapFromURL(src: String?, context: Context): String? {
         return try {
-            val folderName = File(
-                Environment.getExternalStorageDirectory()
-                    .toString() + "/" + Constants.FOLDER_NAME
-            )
-            if (!folderName.exists()) {
-                folderName.mkdir()
-            }
+            val dir = File(
+                Environment.getExternalStorageDirectory(),
+                Constants.FOLDER_NAME
+            ).apply { mkdirs() }
             val sdf = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
             val currentDateAndTime = sdf.format(Date())
 
@@ -614,7 +611,7 @@ object Utils {
 
             Log.d("tag", "name::::$name")
 
-            val destination = (folderName.absolutePath + "/" + name.trim())
+            val destination = (dir.absolutePath + "/" + name.trim())
             GlobalScope.launch(Dispatchers.IO) {  // replaces doAsync
 
                 val newSrc = src?.replace(" ", "%20")

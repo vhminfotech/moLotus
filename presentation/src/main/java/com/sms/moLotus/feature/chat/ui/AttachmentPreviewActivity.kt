@@ -20,6 +20,7 @@ import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
 import com.sms.moLotus.extension.toast
 import com.sms.moLotus.feature.Constants
+import com.sms.moLotus.feature.chat.FileUtils
 import com.sms.moLotus.feature.chat.LogHelper
 import com.sms.moLotus.feature.retrofit.MainViewModel
 import kotlinx.android.synthetic.main.activity_attachment_preview.*
@@ -33,6 +34,7 @@ class AttachmentPreviewActivity : AppCompatActivity() {
     private var recipientsIds: ArrayList<String>? = ArrayList()
     private var threadId: String = ""
     private var fileName = ""
+    private var filePath = ""
     private var fileType = ""
     private var groupName = ""
     private var currentUserId = ""
@@ -54,7 +56,14 @@ class AttachmentPreviewActivity : AppCompatActivity() {
         recipientsIds = intent?.getStringArrayListExtra("recipientsIds")
         currentUserId = intent?.getStringExtra("currentUserId").toString()
 
+        filePath = if (fileName.startsWith("content")){
+            FileUtils.getPath(this, Uri.parse(fileName)).toString()
+        }else {
+            fileName.replace("file://", "").replace("mgram%20Interaction", "mgram Interaction")
+        }
+
         LogHelper.e("=============", "Filename:: $fileName::::Filetype:: $fileType")
+        LogHelper.e("=============", "filePath:: $filePath")
         LogHelper.e("=============", "Filename:: ${File(fileName).name}")
         LogHelper.e(
             "=============",
@@ -63,17 +72,17 @@ class AttachmentPreviewActivity : AppCompatActivity() {
 
         var contentType = ""
 
-        if (fileType.uppercase() == "IMAGE") {
+        if(filePath.endsWith(".jpg") || filePath.endsWith(".png") || filePath.endsWith(".jpeg")){
             contentType = "image/*"
             imageView.visibility = View.VISIBLE
             videoView.visibility = View.GONE
             imgPlay?.visibility = View.GONE
-            Glide.with(this).load(fileName).into(imageView)
-        } else if(fileType.uppercase() == "VIDEO"){
+            Glide.with(this).load(filePath).into(imageView)
+        }else if(filePath.endsWith(".mp4") || filePath.endsWith(".3gp")){
             contentType = "video/*"
             videoView.visibility = View.VISIBLE
             imageView.visibility = View.GONE
-            videoView.setVideoURI(Uri.parse(fileName))
+            videoView.setVideoURI(Uri.parse(filePath))
             imgPlay?.visibility = View.VISIBLE
 
             if (videoView.isPlaying) {
@@ -101,9 +110,20 @@ class AttachmentPreviewActivity : AppCompatActivity() {
             contentType = "*/*"
         }
 
-        val upload = DefaultUpload.Builder().content(File(fileName))
+//       if (fileType.uppercase() == "IMAGE") {
+//
+//        } else if(fileType.uppercase() == "VIDEO"){
+//
+//        }else{
+//           contentType = "*/*"
+//        }
+
+
+
+
+        val upload = DefaultUpload.Builder().content(File(filePath))
             .contentType(contentType)
-            .fileName(File(fileName).name).build()
+            .fileName(File(filePath).name).build()
         uploadAttachment(upload)
 
         setListeners()
