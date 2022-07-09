@@ -6,10 +6,12 @@ import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.provider.ContactsContract
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
@@ -257,22 +259,22 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
             }
 
         view.txtCamera.setOnClickListener {
-            Picker.PICKER_OPTIONS
+
             Picker.startPicker(this, mPickerOptions)
             // startActivityForResult(Intent(MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA), 101);
-           /* val intent =Intent(this, CameraActivity::class.java)
-            startActivity(intent)*/
+            /* val intent =Intent(this, CameraActivity::class.java)
+             startActivity(intent)*/
 
             dialog.dismiss()
         }
 
         view.txtAddPhoto.setOnClickListener {
-           // showFilePicker(FileType.IMAGE)
+            // showFilePicker(FileType.IMAGE)
             dialog.dismiss()
         }
 
         view.txtAddVideo.setOnClickListener {
-           // showFilePicker(FileType.VIDEO)
+            // showFilePicker(FileType.VIDEO)
             dialog.dismiss()
         }
 
@@ -281,6 +283,15 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
             dialog.dismiss()
         }
 
+        view.txtAddContacts.setOnClickListener {
+            val intent = Intent(Intent.ACTION_PICK)
+                .setType(ContactsContract.CommonDataKinds.Phone.CONTENT_TYPE)
+
+            startActivityForResult(
+                Intent.createChooser(intent, null),
+                101
+            )
+        }
 
         dialog.setCancelable(true)
 
@@ -289,9 +300,10 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
         dialog.show()
     }
 
+
     private fun openFolder() {
         val intent = Intent()
-        intent.type = "*/*"
+        intent.type = "application/*"
         intent.action = Intent.ACTION_GET_CONTENT
         startActivityForResult(
             Intent.createChooser(intent, "Complete action using"),
@@ -302,20 +314,36 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == 100 && resultCode == RESULT_OK) {
-            val data = data?.data
-            Log.e("============", "data:::: $data")
-            showSendAttachmentDialog()
-        }else if (resultCode == Activity.RESULT_OK && requestCode == REQUEST_CODE_PICKER){
-            val mImageList = data?.getStringArrayListExtra(PICKED_MEDIA_LIST) as ArrayList //List of selected/captured images/videos
+            val document = data?.data
+            Log.e("============", "document:::: $document")
+//            showSendAttachmentDialog()
+            val intent = Intent(this, AttachmentPreviewActivity::class.java)
+                .putExtra("fileName", document?.toString())
+                // .putExtra("fileType", fileType.name)
+                .putExtra("threadId", threadId)
+                .putExtra("isGroup", isGroup)
+                .putExtra("groupName", groupName)
+                .putExtra("flag", flag)
+                .putExtra("recipientsIds", recipientsIds)
+                .putExtra("currentUserId", currentUserId)
+            startActivity(intent)
+            overridePendingTransition(0, 0)
+        } else if (requestCode == 101 && resultCode == RESULT_OK) {
+            val contact = data?.data
+            Log.e("============", "contact:::: $contact")
+            Log.e("============", "getVCard:::: ${getVCard(Uri.parse(contact.toString()))}")
+        } else if (resultCode == Activity.RESULT_OK && requestCode == REQUEST_CODE_PICKER) {
+            val mImageList =
+                data?.getStringArrayListExtra(PICKED_MEDIA_LIST) as ArrayList //List of selected/captured images/videos
 
-            Log.e("============", "onActivityResult: data= ${data.data}" )
+            Log.e("============", "onActivityResult: data= ${data.data}")
 
             mImageList.map {
-                Log.e("============", "onActivityResult: data= $it" )
+                Log.e("============", "onActivityResult: data= $it")
 
                 val intent = Intent(this, AttachmentPreviewActivity::class.java)
                     .putExtra("fileName", it.toString())
-                   // .putExtra("fileType", fileType.name)
+                    // .putExtra("fileType", fileType.name)
                     .putExtra("threadId", threadId)
                     .putExtra("isGroup", isGroup)
                     .putExtra("groupName", groupName)
@@ -326,6 +354,20 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
                 overridePendingTransition(0, 0)
             }
         }
+    }
+
+    private fun getVCard(contactData: Uri): String? {
+        val lookupKey =
+            contentResolver.query(contactData, null, null, null, null)?.use { cursor ->
+                cursor.moveToFirst()
+                cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.Contacts.LOOKUP_KEY))
+            }
+
+        val vCardUri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_VCARD_URI, lookupKey)
+        return contentResolver.openAssetFileDescriptor(vCardUri, "r")
+            ?.createInputStream()
+            ?.readBytes()
+            ?.let { bytes -> String(bytes) }
     }
 
     private fun showSendAttachmentDialog() {
@@ -681,6 +723,13 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
         startActivity(intent)
     }
 
+    override fun onDocumentClick(item: String?) {
+        Log.d("onAttachmentClick", "url::::$item")
+        val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(item))
+        browserIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+        startActivity(browserIntent)
+    }
+
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.chat_options, menu)
         return super.onCreateOptionsMenu(menu)
@@ -875,6 +924,4 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
         chatMessageList?.let { chatAdapter?.updateList(it as MutableList<ChatMessage>) }
         rvMessageList?.scrollToPosition(chatMessageList?.size!!.toInt() - 1)
     }
-
-
 }

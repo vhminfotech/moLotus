@@ -110,6 +110,7 @@
          <item name="colorPrimaryDark">@color/primary_dark</item>
          <item name="colorAccent">@color/accent</item>
         <item name="android:statusBarColor">@color/white</item>
+        <item name="android:windowLightStatusBar">true</item>
         <item name="android:divider">@color/separatorLight</item>
         <item name="android:queryBackground">@color/bubbleLight</item>
         <item name="android:textColorPrimary">@color/text_primary</item>
@@ -126,7 +127,7 @@
         <item name="switchThumbDisabled">@color/switchThumbDisabledLight</item>
         <item name="switchTrackEnabled">@color/switchTrackEnabledLight</item>
         <item name="switchTrackDisabled">@color/switchTrackDisabledLight</item>
-        <item name="android:windowTranslucentStatus">true</item>
+<!--        <item name="android:windowTranslucentStatus">true</item>-->
         <item name="windowActionBar">false</item>
     </style>
 </resources>

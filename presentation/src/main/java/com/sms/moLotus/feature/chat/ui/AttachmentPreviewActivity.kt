@@ -56,9 +56,9 @@ class AttachmentPreviewActivity : AppCompatActivity() {
         recipientsIds = intent?.getStringArrayListExtra("recipientsIds")
         currentUserId = intent?.getStringExtra("currentUserId").toString()
 
-        filePath = if (fileName.startsWith("content")){
+        filePath = if (fileName.startsWith("content")) {
             FileUtils.getPath(this, Uri.parse(fileName)).toString()
-        }else {
+        } else {
             fileName.replace("file://", "").replace("mgram%20Interaction", "mgram Interaction")
         }
 
@@ -72,19 +72,20 @@ class AttachmentPreviewActivity : AppCompatActivity() {
 
         var contentType = ""
 
-        if(filePath.endsWith(".jpg") || filePath.endsWith(".png") || filePath.endsWith(".jpeg")){
+        if (filePath.endsWith(".jpg") || filePath.endsWith(".png") || filePath.endsWith(".jpeg")) {
             contentType = "image/*"
             imageView.visibility = View.VISIBLE
             videoView.visibility = View.GONE
             imgPlay?.visibility = View.GONE
+            webView.visibility = View.GONE
             Glide.with(this).load(filePath).into(imageView)
-        }else if(filePath.endsWith(".mp4") || filePath.endsWith(".3gp")){
+        } else if (filePath.endsWith(".mp4") || filePath.endsWith(".3gp")) {
             contentType = "video/*"
             videoView.visibility = View.VISIBLE
             imageView.visibility = View.GONE
-            videoView.setVideoURI(Uri.parse(filePath))
             imgPlay?.visibility = View.VISIBLE
-
+            webView.visibility = View.GONE
+            videoView.setVideoURI(Uri.parse(filePath))
             if (videoView.isPlaying) {
                 imgPlay?.visibility = View.GONE
             } else {
@@ -106,8 +107,14 @@ class AttachmentPreviewActivity : AppCompatActivity() {
                 imgPlay?.visibility = View.VISIBLE
                 videoView?.pause()
             }
-        }else{
-            contentType = "*/*"
+        } else {
+            contentType = "application/*"
+            videoView.visibility = View.GONE
+            imgPlay?.visibility = View.GONE
+            imageView?.visibility = View.GONE
+            webView.visibility = View.VISIBLE
+
+
         }
 
 //       if (fileType.uppercase() == "IMAGE") {
@@ -119,12 +126,12 @@ class AttachmentPreviewActivity : AppCompatActivity() {
 //        }
 
 
-
-
         val upload = DefaultUpload.Builder().content(File(filePath))
             .contentType(contentType)
             .fileName(File(filePath).name).build()
         uploadAttachment(upload)
+
+
 
         setListeners()
     }
@@ -167,6 +174,13 @@ class AttachmentPreviewActivity : AppCompatActivity() {
         viewModel.uploadAttachments.observe(this) {
             LogHelper.e("======================", "uploadAttachments:: ${it.uploadAttachments}")
             url = it.uploadAttachments?.uri.toString()
+
+            //Handler(Looper.getMainLooper()).postDelayed({
+                webView.getSettings().setJavaScriptEnabled(true)
+                webView.loadUrl(url)
+            //},2000)
+
+//            webView.loadUrl("https://drive.google.com/file/d/1riVhAnIq-gft0ro8B9CNXUWd-iU-25lS/view")
         }
         viewModel.errorMessage.observe(this) {
             val conMgr =

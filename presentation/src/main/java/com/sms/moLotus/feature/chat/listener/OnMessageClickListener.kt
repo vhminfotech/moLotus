@@ -6,4 +6,5 @@ import com.sms.moLotus.feature.chat.model.ChatMessage
 interface OnMessageClickListener {
     fun onMessageClick(item: ChatMessage?, llOnClick: LinearLayout, adapterPosition: Int)
     fun onAttachmentClick(item: String?)
+    fun onDocumentClick(item: String?)
 }

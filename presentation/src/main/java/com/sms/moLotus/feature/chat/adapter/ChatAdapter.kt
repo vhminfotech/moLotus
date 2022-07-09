@@ -102,6 +102,8 @@ class ChatAdapter(
         private val constraintMyMsg = view.findViewById<ConstraintLayout>(R.id.constraintMyMsg)
         private val llOnClick = view.findViewById<LinearLayout>(R.id.llOnClick)
         private val imgThumbnail = view.findViewById<ImageView>(R.id.imgThumbnail)
+        private val llDoc = view.findViewById<LinearLayout>(R.id.llDoc)
+        private val txtDocName = view.findViewById<TextView>(R.id.txtDocName)
 
         override fun bind(
             item: List<ChatMessage?>?,
@@ -120,40 +122,33 @@ class ChatAdapter(
             if (data?.url == "null" || data?.url == "" || data?.url?.isEmpty() == true) {
                 imgThumbnail?.visibility = View.GONE
             } else {
-                imgThumbnail?.visibility = View.VISIBLE
-                /*GlobalScope.launch(Dispatchers.IO){
-                    val bitmap = Utils.getBitmapFromURL(data?.url)
-                    Log.e("==============", "bitmap--" + bitmap)
-                }*/
-                Glide.with(context).asBitmap().load(data?.url)
-                    .diskCacheStrategy(DiskCacheStrategy.DATA).into(imgThumbnail)
-                /*if (data?.url?.endsWith(".mp4") == true || data?.url?.endsWith(".3gp") == true) {
-                    GlobalScope.launch(Dispatchers.IO) {
-                       val  fileName = Utils.getBitmapFromURL(data.url, context).toString()
-                        Log.e("===========","fileName = $fileName")
-                        GlobalScope.launch(Dispatchers.Main){
-
-
-                                imgThumbnail.setImageBitmap(
-                                    ThumbnailUtils.createVideoThumbnail(
-                                        fileName,
-                                        MediaStore.Images.Thumbnails.MICRO_KIND
-                                    )
-                                )
-
-                        }
-                    }
-
-
+                if (data?.url?.endsWith(".mp4") == true || data?.url?.endsWith(".3gp") == true) {
+                    imgThumbnail?.visibility = View.VISIBLE
+                    llDoc?.visibility = View.GONE
+                    Glide.with(context).asBitmap().load(data.url)
+                        .diskCacheStrategy(DiskCacheStrategy.DATA).into(imgThumbnail)
+                } else if (data?.url?.endsWith(".jpg") == true || data?.url?.endsWith(".jpeg") == true || data?.url?.endsWith(
+                        ".png"
+                    ) == true
+                ) {
+                    imgThumbnail?.visibility = View.VISIBLE
+                    llDoc?.visibility = View.GONE
+                    Glide.with(context).asBitmap().load(data.url)
+                        .diskCacheStrategy(DiskCacheStrategy.DATA).into(imgThumbnail)
                 } else {
+                    imgThumbnail?.visibility = View.GONE
+                    llDoc?.visibility = View.VISIBLE
+                    val fileName: String? = data?.url?.substring(data.url.lastIndexOf('/') + 1)
+                    txtDocName.text = fileName.toString()
+                }
+            }
 
-                }*/
-                // Glide.with(context).load(data?.url).into(imgThumbnail)
-
+            llDoc.setOnClickListener {
+               listener.onDocumentClick(data?.url.toString())
             }
 
             imgThumbnail?.setOnClickListener {
-                listener.onAttachmentClick(data?.url)
+                listener.onAttachmentClick(data?.url.toString())
             }
 
             constraintMyMsg?.setOnClickListener {
@@ -185,6 +180,8 @@ class ChatAdapter(
         private val llOnClick = view.findViewById<LinearLayout>(R.id.llOnClick)
         private val txtName = view.findViewById<TextView>(R.id.txtName)
         private val imgThumbnail = view.findViewById<ImageView>(R.id.imgThumbnail)
+        private val llDoc = view.findViewById<LinearLayout>(R.id.llDoc)
+        private val txtDocName = view.findViewById<TextView>(R.id.txtDocName)
 
         override fun bind(
             item: List<ChatMessage?>?,
@@ -205,28 +202,26 @@ class ChatAdapter(
             if (data?.url == "null" || data?.url == "" || data?.url?.isEmpty() == true) {
                 imgThumbnail?.visibility = View.GONE
             } else {
-                imgThumbnail?.visibility = View.VISIBLE
-                Glide.with(context).asBitmap().load(data?.url)
-                    .diskCacheStrategy(DiskCacheStrategy.DATA).into(imgThumbnail)
-               /* if (data?.url?.endsWith(".mp4") == true || data?.url?.endsWith(".3gp") == true) {
-                    GlobalScope.launch(Dispatchers.IO) {
-                        val fileName = Utils.getBitmapFromURL(data.url, context).toString()
-                        GlobalScope.launch(Dispatchers.Main) {
-                            Log.e("===========", "fileName = $fileName")
 
-                            imgThumbnail.setImageBitmap(
-                                ThumbnailUtils.createVideoThumbnail(
-                                    fileName,
-                                    MediaStore.Images.Thumbnails.MICRO_KIND
-                                )
-                            )
-
-                        }
-                    }
-                } else {
-                    Glide.with(context).asBitmap().load(data?.url)
+                if (data?.url?.endsWith(".mp4") == true || data?.url?.endsWith(".3gp") == true) {
+                    imgThumbnail?.visibility = View.VISIBLE
+                    llDoc?.visibility = View.GONE
+                    Glide.with(context).asBitmap().load(data.url)
                         .diskCacheStrategy(DiskCacheStrategy.DATA).into(imgThumbnail)
-                }*/
+                } else if (data?.url?.endsWith(".jpg") == true || data?.url?.endsWith(".jpeg") == true || data?.url?.endsWith(
+                        ".png"
+                    ) == true
+                ) {
+                    imgThumbnail?.visibility = View.VISIBLE
+                    llDoc?.visibility = View.GONE
+                    Glide.with(context).asBitmap().load(data.url)
+                        .diskCacheStrategy(DiskCacheStrategy.DATA).into(imgThumbnail)
+                } else {
+                    imgThumbnail?.visibility = View.GONE
+                    llDoc?.visibility = View.VISIBLE
+                    val fileName: String? = data?.url?.substring(data.url.lastIndexOf('/') + 1)
+                    txtDocName.text = fileName.toString()
+                }
             }
 
 

@@ -118,6 +118,7 @@
         android:id="@+id/viewStatus"
         android:layout_width="match_parent"
         android:layout_height="20dp"
+        android:visibility="gone"
         android:background="@color/tools_theme"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
