@@ -16,7 +16,6 @@ import com.sms.moLotus.common.widget.QkTextView
 import com.sms.moLotus.feature.Utils
 import com.sms.moLotus.feature.chat.listener.OnChatClickListener
 import com.sms.moLotus.feature.chat.listener.OnItemClickListener
-import kotlinx.android.synthetic.main.conversation_list_item.*
 
 class ChatListAdapter(
     private val context: Context,
@@ -49,12 +48,27 @@ class ChatListAdapter(
             holder.txtUserName.text = chatList?.name
             holder.avatars.setImageDrawable(context.getDrawable(R.drawable.ic_chat_user))
         }
-        holder.txtLastMessage.text = chatList?.message
         holder.txtDate.text = Utils.covertTimeToText(chatList?.messageDate.toString())
 
         holder.constraintLayout.setOnClickListener {
             listener.onItemClick(chatList)
         }
+
+        if (chatList?.message?.isNotEmpty() == true) {
+            holder.txtLastMessage.text = chatList?.message
+        } else {
+            if (chatList?.url?.endsWith(".mp4") == true || chatList?.url?.endsWith(".3gp") == true) {
+                holder.txtLastMessage.text = "Video"
+            } else if (chatList?.url?.endsWith(".jpg") == true || chatList?.url?.endsWith(".jpeg") == true || chatList?.url?.endsWith(
+                    ".png"
+                ) == true
+            ) {
+                holder.txtLastMessage.text = "Image"
+            } else {
+                holder.txtLastMessage.text = chatList?.message
+            }
+        }
+
 
         holder.constraintLayout.setOnLongClickListener {
             onChatClickListener.onChatClick(chatList, holder.constraintLayout, position)

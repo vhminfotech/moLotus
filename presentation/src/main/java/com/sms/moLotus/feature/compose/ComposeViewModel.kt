@@ -15,6 +15,7 @@ import android.view.Window
 import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.core.content.getSystemService
 import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
@@ -48,10 +49,8 @@ import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
-import kotlinx.android.synthetic.main.compose_activity.*
 import kotlinx.android.synthetic.main.layout_send_paid_message.*
 import timber.log.Timber
-import java.util.*
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -238,6 +237,7 @@ class ComposeViewModel @Inject constructor(
         }.subscribe()
     }
 
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun bindView(view: ComposeView) {
         super.bindView(view)
 

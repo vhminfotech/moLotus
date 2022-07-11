@@ -11,10 +11,11 @@ import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.sms.moLotus.R
+import com.sms.moLotus.feature.chat.ui.ViewPagerAdapterActivity
 
 
 class ViewPagerRecyclerAdapter(
-    var context: Context
+    var context: Context, var activity: ViewPagerAdapterActivity
 ) :
     RecyclerView.Adapter<ViewPagerRecyclerAdapter.ViewHolder>() {
     var arrayList: ArrayList<String> = arrayListOf()
@@ -37,8 +38,8 @@ class ViewPagerRecyclerAdapter(
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 
-        if (arrayList?.get(position)?.endsWith(".mp4") == true || arrayList?.get(position)
-                ?.endsWith(".3gp") == true
+        if (arrayList?.get(position)?.endsWith(".mp4") || arrayList?.get(position)
+                ?.endsWith(".3gp")
         ) {
 
             if (holder.videoView.isPlaying) {
@@ -66,6 +67,11 @@ class ViewPagerRecyclerAdapter(
             Glide.with(context).load(arrayList?.get(position)).into(holder.imageView)
         }
 
+        holder.imgClose?.setOnClickListener {
+            activity.onBackPressed()
+        }
+
+
     }
 
     // return the number of the items in the list
@@ -79,7 +85,8 @@ class ViewPagerRecyclerAdapter(
             itemView.findViewById(R.id.imageView) as ImageView
         val imgPlay: ImageView =
             itemView.findViewById(R.id.imgPlay) as ImageView
-
+        val imgClose: ImageView =
+            itemView.findViewById(R.id.imgClose) as ImageView
         val videoView: VideoView =
             itemView.findViewById(R.id.videoView) as VideoView
     }

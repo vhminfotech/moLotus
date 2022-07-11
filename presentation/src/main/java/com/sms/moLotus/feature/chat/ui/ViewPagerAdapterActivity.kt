@@ -26,9 +26,8 @@ class ViewPagerAdapterActivity : AppCompatActivity() {
         Log.d("onAttachmentClick", "url::::$url")
 
 
-        val mViewPagerAdapter = ViewPagerRecyclerAdapter(this)
+        val mViewPagerAdapter = ViewPagerRecyclerAdapter(this, this)
 //        viewPager.adapter?.notifyDataSetChanged()
-
         viewPager.adapter = mViewPagerAdapter
         mViewPagerAdapter.setItem(attachmentList)
 
