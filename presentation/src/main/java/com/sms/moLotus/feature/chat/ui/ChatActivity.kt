@@ -5,6 +5,7 @@ import android.app.Activity
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
+import android.database.Cursor
 import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Build
@@ -291,6 +292,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
                 Intent.createChooser(intent, null),
                 101
             )
+            dialog.dismiss()
         }
 
         dialog.setCancelable(true)
@@ -332,6 +334,17 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
             val contact = data?.data
             Log.e("============", "contact:::: $contact")
             Log.e("============", "getVCard:::: ${getVCard(Uri.parse(contact.toString()))}")
+            Log.e(
+                "============",
+                "getDataFromContacts:::: ${getDataFromContacts(Uri.parse(contact.toString()))}"
+            )
+            val map = getDataFromContacts(Uri.parse(contact.toString()))
+            val name = map["name"]
+            val number = map["number"]
+            txtMessage?.setText("<name: $name>\n<number: $number>")
+
+
+
         } else if (resultCode == Activity.RESULT_OK && requestCode == REQUEST_CODE_PICKER) {
             val mImageList =
                 data?.getStringArrayListExtra(PICKED_MEDIA_LIST) as ArrayList //List of selected/captured images/videos
@@ -354,6 +367,36 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
                 overridePendingTransition(0, 0)
             }
         }
+    }
+
+    private fun getDataFromContacts(contactData: Uri): Map<String, String> {
+        val projection = arrayOf(
+            ContactsContract.CommonDataKinds.Phone.NUMBER,
+            ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME
+        )
+
+        val cursor: Cursor? = applicationContext.contentResolver.query(
+            contactData, projection,
+            null, null, null
+        )
+        cursor?.moveToFirst()
+
+        val numberColumnIndex: Int? =
+            cursor?.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
+        val number: String? = numberColumnIndex?.let { cursor.getString(it) }
+
+        val nameColumnIndex: Int? =
+            cursor?.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)
+        val name: String? = nameColumnIndex?.let { cursor.getString(it) }
+
+        val map = HashMap<String, String>()
+        map["name"] = name.toString()
+        map["number"] = number.toString()
+
+
+        cursor?.close()
+
+        return map
     }
 
     private fun getVCard(contactData: Uri): String? {

@@ -98,7 +98,7 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
     @SuppressLint("Range")
     private fun getContactList() {
         runOnUiThread {
-            customProgressDialog?.show(this)
+            customProgressDialog?.show(this,"Fetching Contacts. Please Wait...")
         }
 
         val allContactList: ArrayList<String> = ArrayList()
@@ -186,11 +186,9 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
         usersList = ArrayList()
 
         lifecycleScope.launch {
-            chatViewModel.getAllUsers(userId).observe(this@ChatContactListActivity, { list ->
+            chatViewModel.getAllUsers(userId).observe(this@ChatContactListActivity) { list ->
 
-                runOnUiThread {
-                    customProgressDialog?.hide()
-                }
+
                 usersList.clear()
                 Log.e("======================", "chatMessageList:: $list")
                 usersList = list as ArrayList<Users>
@@ -202,7 +200,7 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
                     txtNoData?.visibility = View.VISIBLE
                     rvContact?.visibility = View.GONE
                 }
-            })
+            }
         }
     }
 
@@ -211,9 +209,6 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
 
         viewModel.userUsingApp.observe(this) {
             PreferenceHelper.setPreference(this, "isApiCalled", true)
-            runOnUiThread {
-                customProgressDialog?.hide()
-            }
 
             Log.e("=====", "response:: ${it.getUserUsingApp?.userData}")
             val list: ArrayList<GetUserUsingAppQuery.UserDatum> =
@@ -240,8 +235,13 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
             Handler(Looper.getMainLooper()).postDelayed({
                 observeUsers()
             }, 500)
+
+            runOnUiThread {
+                customProgressDialog?.hide()
+            }
+
         }
-        viewModel.errorMessage.observe(this, {
+        viewModel.errorMessage.observe(this) {
             runOnUiThread {
                 customProgressDialog?.hide()
             }
@@ -266,7 +266,7 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
             } else {
                 toast(it.toString(), Toast.LENGTH_SHORT)
             }
-        })
+        }
         viewModel.getUserUsingAppList(
             userId, contactList
         )

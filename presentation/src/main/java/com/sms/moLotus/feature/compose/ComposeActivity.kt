@@ -1123,7 +1123,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                                 cursor.getLong(sizeIndex)
                             ).filter { it.isDigit() }.toInt()
                             if (fileSize > 1) {
-                                progressDialog?.show(this@ComposeActivity)
+                                progressDialog?.show(this@ComposeActivity,"Please Wait...")
                                 GlobalScope.launch(Dispatchers.IO) {
                                     VideoCompressor.compress(this@ComposeActivity, data.data!!)
                                 }
@@ -1166,7 +1166,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                                         ).filter { it.isDigit() }.toInt()
 
                                     if (fileSize!! > 1) {
-                                        progressDialog?.show(this@ComposeActivity)
+                                        progressDialog?.show(this@ComposeActivity,"Please Wait...")
                                         GlobalScope.launch(Dispatchers.IO) {
                                             VideoCompressor.compress(
                                                 this@ComposeActivity,
@@ -1273,7 +1273,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                             cursor.getLong(sizeIndex)
                         ).filter { it.isDigit() }.toInt()
                         if (fileSize!! > 1) {
-                            progressDialog?.show(this@ComposeActivity)
+                            progressDialog?.show(this@ComposeActivity,"Please Wait...")
 
                             GlobalScope.launch(Dispatchers.IO) {
                                 VideoCompressor.compress(this@ComposeActivity, data.data!!)

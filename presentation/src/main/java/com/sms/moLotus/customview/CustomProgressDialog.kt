@@ -19,8 +19,8 @@ class CustomProgressDialog(context: Context) {
 
 
 
-    fun show(context: Context): Dialog {
-        return show(context, null)
+    fun show(context: Context, title: String): Dialog {
+        return show1(context, title)
     }
 
     fun hide() {
@@ -28,7 +28,7 @@ class CustomProgressDialog(context: Context) {
     }
 
 
-    fun show(context: Context, title: CharSequence?): Dialog {
+    fun show1(context: Context, title: String?): Dialog {
         val inflater = (context as Activity).layoutInflater
         val view = inflater.inflate(R.layout.layout_custom_progress, null)
         if (title != null) {
