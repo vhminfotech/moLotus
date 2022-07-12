@@ -104,6 +104,8 @@ class ChatAdapter(
         private val imgThumbnail = view.findViewById<ImageView>(R.id.imgThumbnail)
         private val llDoc = view.findViewById<LinearLayout>(R.id.llDoc)
         private val txtDocName = view.findViewById<TextView>(R.id.txtDocName)
+        private val llContact = view.findViewById<LinearLayout>(R.id.llContact)
+        private val txtContactName = view.findViewById<TextView>(R.id.txtContactName)
 
         override fun bind(
             item: List<ChatMessage?>?,
@@ -125,18 +127,27 @@ class ChatAdapter(
                 if (data?.url?.endsWith(".mp4") == true || data?.url?.endsWith(".3gp") == true) {
                     imgThumbnail?.visibility = View.VISIBLE
                     llDoc?.visibility = View.GONE
+                    llContact?.visibility = View.GONE
                     Glide.with(context).asBitmap().load(data.url)
                         .diskCacheStrategy(DiskCacheStrategy.DATA).into(imgThumbnail)
                 } else if (data?.url?.endsWith(".jpg") == true || data?.url?.endsWith(".jpeg") == true || data?.url?.endsWith(
                         ".png"
                     ) == true
                 ) {
+                    llContact?.visibility = View.GONE
                     imgThumbnail?.visibility = View.VISIBLE
                     llDoc?.visibility = View.GONE
                     Glide.with(context).asBitmap().load(data.url)
                         .diskCacheStrategy(DiskCacheStrategy.DATA).into(imgThumbnail)
+                } else if (data?.url?.endsWith(".vcf") == true) {
+                    imgThumbnail?.visibility = View.GONE
+                    llDoc?.visibility = View.GONE
+                    llContact?.visibility = View.VISIBLE
+                    val fileName: String = data.url.substring(data.url.lastIndexOf('/') + 1)
+                    txtContactName.text = fileName.toString()
                 } else {
                     imgThumbnail?.visibility = View.GONE
+                    llContact?.visibility = View.GONE
                     llDoc?.visibility = View.VISIBLE
                     val fileName: String? = data?.url?.substring(data.url.lastIndexOf('/') + 1)
                     txtDocName.text = fileName.toString()
@@ -144,7 +155,11 @@ class ChatAdapter(
             }
 
             llDoc.setOnClickListener {
-               listener.onDocumentClick(data?.url.toString())
+                listener.onDocumentClick(data?.url.toString())
+            }
+
+            llContact.setOnClickListener {
+                listener.onDocumentClick(data?.url.toString())
             }
 
             imgThumbnail?.setOnClickListener {
@@ -182,6 +197,8 @@ class ChatAdapter(
         private val imgThumbnail = view.findViewById<ImageView>(R.id.imgThumbnail)
         private val llDoc = view.findViewById<LinearLayout>(R.id.llDoc)
         private val txtDocName = view.findViewById<TextView>(R.id.txtDocName)
+        private val llContact = view.findViewById<LinearLayout>(R.id.llContact)
+        private val txtContactName = view.findViewById<TextView>(R.id.txtContactName)
 
         override fun bind(
             item: List<ChatMessage?>?,
@@ -206,17 +223,26 @@ class ChatAdapter(
                 if (data?.url?.endsWith(".mp4") == true || data?.url?.endsWith(".3gp") == true) {
                     imgThumbnail?.visibility = View.VISIBLE
                     llDoc?.visibility = View.GONE
+                    llContact?.visibility = View.GONE
                     Glide.with(context).asBitmap().load(data.url)
                         .diskCacheStrategy(DiskCacheStrategy.DATA).into(imgThumbnail)
                 } else if (data?.url?.endsWith(".jpg") == true || data?.url?.endsWith(".jpeg") == true || data?.url?.endsWith(
                         ".png"
                     ) == true
                 ) {
+                    llContact?.visibility = View.GONE
                     imgThumbnail?.visibility = View.VISIBLE
                     llDoc?.visibility = View.GONE
                     Glide.with(context).asBitmap().load(data.url)
                         .diskCacheStrategy(DiskCacheStrategy.DATA).into(imgThumbnail)
-                } else {
+                }else if (data?.url?.endsWith(".vcf") == true) {
+                    imgThumbnail?.visibility = View.GONE
+                    llDoc?.visibility = View.GONE
+                    llContact?.visibility = View.VISIBLE
+                    val fileName: String = data.url.substring(data.url.lastIndexOf('/') + 1)
+                    txtContactName.text = fileName.toString()
+                } else  {
+                    llContact?.visibility = View.GONE
                     imgThumbnail?.visibility = View.GONE
                     llDoc?.visibility = View.VISIBLE
                     val fileName: String? = data?.url?.substring(data.url.lastIndexOf('/') + 1)

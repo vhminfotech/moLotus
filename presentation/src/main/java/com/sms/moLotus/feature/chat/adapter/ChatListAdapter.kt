@@ -2,7 +2,6 @@ package com.sms.moLotus.feature.chat.adapter
 
 import android.content.Context
 import android.os.Build
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -37,10 +36,7 @@ class ChatListAdapter(
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val chatList = mList.recipientUser?.get(position)
-        Log.e(
-            "================",
-            "isGroup :: ${chatList?.isGroup} == name :: ${chatList?.name} == groupName :: ${chatList?.groupName}"
-        )
+
         if (chatList?.isGroup == true || chatList?.name.isNullOrEmpty() || chatList?.name == "null") {
             holder.txtUserName.text = chatList?.groupName
             holder.avatars.setImageDrawable(context.getDrawable(R.drawable.ic_chat_group))
@@ -55,7 +51,7 @@ class ChatListAdapter(
         }
 
         if (chatList?.message?.isNotEmpty() == true) {
-            holder.txtLastMessage.text = chatList?.message
+            holder.txtLastMessage.text = chatList.message
         } else {
             if (chatList?.url?.endsWith(".mp4") == true || chatList?.url?.endsWith(".3gp") == true) {
                 holder.txtLastMessage.text = "Video"
@@ -64,8 +60,10 @@ class ChatListAdapter(
                 ) == true
             ) {
                 holder.txtLastMessage.text = "Image"
+            } else if (chatList?.url?.endsWith(".vcf") == true) {
+                holder.txtLastMessage.text = "Contact"
             } else {
-                holder.txtLastMessage.text = chatList?.message
+                holder.txtLastMessage.text = "Document"
             }
         }
 

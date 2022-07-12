@@ -22,7 +22,6 @@ import timber.log.Timber
 import java.io.*
 import java.net.HttpURLConnection
 import java.net.URL
-import java.net.URLEncoder
 import java.nio.channels.FileChannel
 import java.text.SimpleDateFormat
 import java.util.*
@@ -650,20 +649,25 @@ object Utils {
     }
 
     @Throws(IOException::class)
-    fun downloadURL(url: URL, fileName: String): String? {
+    fun downloadURL(url: URL): String? {
+        val dir = File(Environment.getExternalStorageDirectory(), "MGRAM/Media").apply { mkdirs() }
+        val fileName: String? = url.toString().substring(url.toString().lastIndexOf('/') + 1)
+
         var destination: String? = null
         try {
-            destination = (Environment.getExternalStorageDirectory().toString() + "/" + fileName)
-            val input: InputStream = BufferedInputStream(url.openStream())
-            val output: OutputStream = FileOutputStream(destination)
-            val buffer = ByteArray(1024)
-            var bytes = 0
-            while (input.read(buffer).also { bytes = it } != -1) {
-                output.write(buffer, 0, bytes)
+            destination = dir.absolutePath + fileName
+            GlobalScope.launch(Dispatchers.IO) {
+                val input: InputStream = BufferedInputStream(url.openStream())
+                val output: OutputStream = FileOutputStream(destination)
+                val buffer = ByteArray(4096)
+                var bytes = 0
+                while (input.read(buffer).also { bytes = it } != -1) {
+                    output.write(buffer, 0, bytes)
+                }
+                output.flush()
+                output.close()
+                input.close()
             }
-            output.flush()
-            output.close()
-            input.close()
         } catch (e: java.lang.Exception) {
             Log.e("DOWNLOAD URL", "downloading file failed due to $e")
         }

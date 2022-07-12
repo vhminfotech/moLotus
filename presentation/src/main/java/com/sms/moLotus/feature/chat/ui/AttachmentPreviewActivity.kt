@@ -206,7 +206,6 @@ class AttachmentPreviewActivity : AppCompatActivity() {
         viewModel.uploadAttachments(upload)
     }
 
-
     private fun createThread(message: String, isGroup: Boolean, groupName: String, url: String) {
 
         viewModel.createThread.observe(this) {

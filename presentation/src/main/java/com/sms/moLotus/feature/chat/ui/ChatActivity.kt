@@ -20,10 +20,12 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.Window
+import android.webkit.MimeTypeMap
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -38,6 +40,7 @@ import com.sms.moLotus.GetMessageListQuery
 import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
 import com.sms.moLotus.common.QKApplication
+import com.sms.moLotus.customview.CustomProgressDialog
 import com.sms.moLotus.db.ChatDatabase
 import com.sms.moLotus.extension.toast
 import com.sms.moLotus.feature.Constants
@@ -48,6 +51,7 @@ import com.sms.moLotus.feature.chat.listener.OnMessageClickListener
 import com.sms.moLotus.feature.chat.model.ChatMessage
 import com.sms.moLotus.feature.retrofit.MainViewModel
 import com.sms.moLotus.viewmodel.ChatViewModel
+import ezvcard.Ezvcard
 import io.socket.client.Socket
 import io.socket.emitter.Emitter
 import kotlinx.android.synthetic.main.activity_chat.*
@@ -60,6 +64,8 @@ import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
 import timber.log.Timber
+import java.io.File
+import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -92,7 +98,9 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
     var last_text_edit: Long = 0
     var handler = Handler(Looper.getMainLooper())
     var attachmentList = ArrayList<String>()
-
+    var attachmentUrl: String? = null
+    var shareText: String? = null
+    private var customProgressDialog: CustomProgressDialog? = null
     private val input_finish_checker = Runnable {
         if (System.currentTimeMillis() > last_text_edit + delay - 500) {
             //  mSocket?.emit("typing", false)
@@ -104,7 +112,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
         setSupportActionBar(toolbar)
-        toolbar?.title = "Delete Message"
+        customProgressDialog = CustomProgressDialog(this)
         myUserId = PreferenceHelper.getStringPreference(this, Constants.USERID).toString()
         myUserName = PreferenceHelper.getStringPreference(this, Constants.USERNAME).toString()
         val app = application as QKApplication
@@ -239,10 +247,8 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
 
         imgOpenGallery.setOnClickListener {
             showAttachmentOptions()
-
         }
     }
-
 
     private fun showAttachmentOptions() {
 
@@ -341,9 +347,20 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
             val map = getDataFromContacts(Uri.parse(contact.toString()))
             val name = map["name"]
             val number = map["number"]
-            txtMessage?.setText("<name: $name>\n<number: $number>")
+            //txtMessage?.setText("<name: $name>\n<number: $number>")
 
-
+            val intent = Intent(this, SendContactActivity::class.java)
+                .putExtra("name", name.toString())
+                .putExtra("number", number.toString())
+                .putExtra("vCard", getVCard(Uri.parse(contact.toString())))
+                .putExtra("threadId", threadId)
+                .putExtra("isGroup", isGroup)
+                .putExtra("groupName", groupName)
+                .putExtra("flag", flag)
+                .putExtra("recipientsIds", recipientsIds)
+                .putExtra("currentUserId", currentUserId)
+            startActivity(intent)
+            overridePendingTransition(0, 0)
 
         } else if (resultCode == Activity.RESULT_OK && requestCode == REQUEST_CODE_PICKER) {
             val mImageList =
@@ -356,7 +373,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
 
                 val intent = Intent(this, AttachmentPreviewActivity::class.java)
                     .putExtra("fileName", it.toString())
-                    // .putExtra("fileType", fileType.name)
+                    //.putExtra("fileType", fileType.name)
                     .putExtra("threadId", threadId)
                     .putExtra("isGroup", isGroup)
                     .putExtra("groupName", groupName)
@@ -750,6 +767,8 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
 
     override fun onMessageClick(item: ChatMessage?, llOnClick: LinearLayout, adapterPosition: Int) {
         LogHelper.e("onMessageClick", "===== itemclicked : $item")
+        attachmentUrl = item?.url
+        shareText = item?.message
         messageIdList.add(item?.id.toString())
         toolbar?.visibility = View.VISIBLE
         LogHelper.e("MESSAGEIDLIST", "==== $messageIdList")
@@ -758,8 +777,6 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
     }
 
     override fun onAttachmentClick(item: String?) {
-        Log.d("onAttachmentClick", "attachmentList::::$attachmentList")
-        Log.d("onAttachmentClick", "url::::$item")
         val intent = Intent(this, ViewPagerAdapterActivity::class.java)
             .putExtra("url", item)
             .putStringArrayListExtra("attachmentList", attachmentList)
@@ -768,9 +785,62 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
 
     override fun onDocumentClick(item: String?) {
         Log.d("onAttachmentClick", "url::::$item")
-        val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(item))
-        browserIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-        startActivity(browserIntent)
+
+        if (item.toString().endsWith(".vcf")) {
+            //  showContact(item.toString())
+            Log.d("onAttachmentClick", "uri::::${Uri.parse(item)}")
+            runOnUiThread {
+                customProgressDialog?.show(this, "")
+            }
+            val vcfFile = Utils.downloadURL(URL(item))
+
+            //addContact("9687417013")
+            Handler(Looper.getMainLooper()).postDelayed({
+                readVcf(vcfFile)
+            }, 3000)
+        } else {
+            val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(item))
+            browserIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            startActivity(browserIntent)
+        }
+
+    }
+
+    private fun readVcf(vcfFile: String?) {
+        try {
+            val file = File(vcfFile.toString())
+            //val vcards: List<VCard> = Ezvcard.parse(file).all()
+
+            val card = Ezvcard.parse(file).first()
+            runOnUiThread {
+                customProgressDialog?.hide()
+            }
+            addContact(card.formattedName.value, card.telephoneNumbers[0].text.toString())
+
+            for (tel in card.telephoneNumbers) {
+                Log.d("onAttachmentClick", tel.types.toString() + ": " + tel.text)
+            }
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun addContact(name: String, address: String) {
+        val intent = Intent(Intent.ACTION_INSERT)
+            .setType(ContactsContract.Contacts.CONTENT_TYPE)
+            .putExtra(ContactsContract.Intents.Insert.PHONE, address)
+            .putExtra(ContactsContract.Intents.Insert.NAME, name)
+
+        startActivityExternal(intent)
+    }
+
+    private fun startActivityExternal(intent: Intent) {
+        if (intent.resolveActivity(packageManager) != null) {
+            startActivity(intent)
+        } else {
+            startActivity(Intent.createChooser(intent, null))
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -795,6 +865,31 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
             R.id.delete -> {
                 toolbar?.visibility = View.GONE
                 linearLayout?.let { showDeleteDialog(it, messageIdList, pos) }
+            }
+
+            R.id.share -> {
+                toolbar?.visibility = View.GONE
+                linearLayout?.setBackgroundColor(
+                    resources.getColor(
+                        android.R.color.transparent,
+                        theme
+                    )
+                )
+                val file = Utils.downloadURL(URL(attachmentUrl))
+
+                Handler(Looper.getMainLooper()).postDelayed({
+                    if (attachmentUrl?.isNotEmpty() == true) {
+
+                        shareFile(shareText, File(file))
+                    } else {
+                        shareToOtherApps(shareText)
+                    }
+                }, 3000)
+
+            }
+
+            R.id.forward -> {
+
             }
         }
         return true
@@ -966,5 +1061,38 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
         chatMessageModel?.let { chatMessageList?.add(it) }
         chatMessageList?.let { chatAdapter?.updateList(it as MutableList<ChatMessage>) }
         rvMessageList?.scrollToPosition(chatMessageList?.size!!.toInt() - 1)
+    }
+
+
+    fun shareToOtherApps(body: String? = null) {
+        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            putExtra(Intent.EXTRA_TEXT, body)
+        }
+        startActivity(Intent.createChooser(shareIntent, "Share"))
+    }
+
+    fun shareFile(body: String?, file: File) {
+        val data = FileProvider.getUriForFile(
+            this, packageName + ".fileprovider", file
+        )
+//        val type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(file.name.split(".").last())
+        /* val intent = Intent(Intent.ACTION_SEND)
+             .setType(type)
+             .putExtra(Intent.EXTRA_STREAM, data)
+             .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)*/
+        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+            type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(file.name.split(".").last())
+            flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+            flags = Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            putExtra(Intent.EXTRA_TEXT, body)
+            putExtra(Intent.EXTRA_STREAM, data)
+        }
+        startActivity(Intent.createChooser(shareIntent, "Share"))
+        //startActivityExternal(intent)
     }
 }

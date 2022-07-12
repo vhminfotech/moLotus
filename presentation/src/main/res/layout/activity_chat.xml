@@ -134,9 +134,9 @@
 
         <ImageView
             android:id="@+id/imgBack"
-            android:layout_width="40dp"
+            android:layout_width="50dp"
             android:layout_height="match_parent"
-            android:padding="7dp"
+            android:padding="12dp"
             android:src="@drawable/ic_baseline_arrow_back_24" />
 
         <LinearLayout
@@ -186,7 +186,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:navigationIcon="@drawable/ic_baseline_arrow_back_24"
-        app:title="Delete Message"
+        app:title="  "
         app:titleTextColor="@color/white" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
