@@ -4,7 +4,6 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -16,16 +15,14 @@ import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
 import com.sms.moLotus.extension.toast
 import com.sms.moLotus.feature.Constants
-import com.sms.moLotus.feature.chat.LogHelper
 import com.sms.moLotus.feature.retrofit.MainViewModel
 import kotlinx.android.synthetic.main.activity_send_contact.*
-import timber.log.Timber
 
 @RequiresApi(Build.VERSION_CODES.M)
 class SendContactActivity : AppCompatActivity() {
     var name: String? = ""
     var number: String? = ""
-    var vCard: String? = ""
+    private var vCard: String? = ""
     var url: String? = ""
     lateinit var viewModel: MainViewModel
     private var recipientsIds: ArrayList<String>? = ArrayList()
@@ -49,31 +46,23 @@ class SendContactActivity : AppCompatActivity() {
         groupName = intent?.getStringExtra("groupName").toString()
         recipientsIds = intent?.getStringArrayListExtra("recipientsIds")
         currentUserId = intent?.getStringExtra("currentUserId").toString()
-
         txtUserName?.text = name.toString()
         txtPhoneNo?.text = number.toString()
-
         val upload = DefaultUpload.Builder().content(vCard.toString())
             .contentType("text/x-vcard")
             .fileName("$name.vcf").build()
         uploadAttachment(upload)
-
         setListeners()
     }
 
     private fun setListeners(){
         imgSend?.setOnClickListener {
-            Log.e("=====", "url== $url")
             if (flag == true) {
                 createThread("", isGroup, groupName, url.toString())
             } else {
                 if ((threadId.isEmpty() || threadId == "null")) {
-                    Log.e("=====", "createThread")
                     createThread("", isGroup, groupName, url.toString())
                 } else {
-                    Log.e("=====", "createMessage : $threadId")
-                    Log.e("=====", "isGroup : $isGroup")
-                    Log.e("=====", "recipientsid : ${recipientsIds?.get(0).toString()}")
                     if (isGroup) {
                         createMessage(threadId, "", "", url.toString())
                     } else {
@@ -95,7 +84,6 @@ class SendContactActivity : AppCompatActivity() {
 
     private fun uploadAttachment(upload: Upload) {
         viewModel.uploadAttachments.observe(this) {
-            LogHelper.e("======================", "uploadAttachments:: ${it.uploadAttachments}")
             url = it.uploadAttachments?.uri.toString()
         }
         viewModel.errorMessage.observe(this) {
@@ -128,8 +116,6 @@ class SendContactActivity : AppCompatActivity() {
             message, ChatActivity.myUserName, url
         )
         viewModel.createThread.observe(this) {
-            LogHelper.e("======================", "createThread:: ${it.createThread?.id}")
-            LogHelper.e("======================", "isGroup:: $isGroup")
             finish()
         }
         viewModel.errorMessage.observe(this) {
@@ -155,20 +141,15 @@ class SendContactActivity : AppCompatActivity() {
                 isGroup, groupName, url
             )
         }
-
-
     }
 
     private fun createMessage(threadId: String, message: String, receiverId: String, url: String) {
-        Timber.e("recipientsIds:: $recipientsIds")
-        Timber.e("receiverId:: $receiverId")
         ChatActivity.mSocket?.emit(
             "sendMessage", currentUserId,
             recipientsIds,
             message, ChatActivity.myUserName, url
         )
         viewModel.createMessage.observe(this) {
-            Timber.e("createMessage:: $it")
             finish()
         }
         viewModel.errorMessage.observe(this) {

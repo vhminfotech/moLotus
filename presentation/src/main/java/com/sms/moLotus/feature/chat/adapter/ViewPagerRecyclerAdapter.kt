@@ -13,13 +13,11 @@ import com.bumptech.glide.Glide
 import com.sms.moLotus.R
 import com.sms.moLotus.feature.chat.ui.ViewPagerAdapterActivity
 
-
 class ViewPagerRecyclerAdapter(
     var context: Context, var activity: ViewPagerAdapterActivity
 ) :
     RecyclerView.Adapter<ViewPagerRecyclerAdapter.ViewHolder>() {
     var arrayList: ArrayList<String> = arrayListOf()
-
 
     fun setItem(list: ArrayList<String>) {
         this.arrayList = list
@@ -37,11 +35,7 @@ class ViewPagerRecyclerAdapter(
     // binds the list items to a view
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-
-        if (arrayList?.get(position)?.endsWith(".mp4") || arrayList?.get(position)
-                ?.endsWith(".3gp")
-        ) {
-
+        if (arrayList[position].endsWith(".mp4") || arrayList[position].endsWith(".3gp")) {
             if (holder.videoView.isPlaying) {
                 holder.imgPlay.visibility = View.GONE
             } else {
@@ -52,11 +46,9 @@ class ViewPagerRecyclerAdapter(
                 holder.imgPlay.visibility = View.VISIBLE
             }
 
-
             holder.imgPlay.setOnClickListener {
                 holder.videoView.start()
                 holder.imgPlay.visibility = View.GONE
-
             }
 
             holder.videoView.setOnClickListener {
@@ -64,19 +56,17 @@ class ViewPagerRecyclerAdapter(
                 holder.videoView.pause()
             }
         } else {
-            Glide.with(context).load(arrayList?.get(position)).into(holder.imageView)
+            Glide.with(context).load(arrayList[position]).into(holder.imageView)
         }
 
-        holder.imgClose?.setOnClickListener {
+        holder.imgClose.setOnClickListener {
             activity.onBackPressed()
         }
-
-
     }
 
     // return the number of the items in the list
     override fun getItemCount(): Int {
-        return arrayList?.size ?: 0
+        return arrayList.size
     }
 
     // Holds the views for adding it to image and text

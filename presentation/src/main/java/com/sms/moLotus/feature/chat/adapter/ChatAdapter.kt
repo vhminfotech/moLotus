@@ -1,11 +1,7 @@
 package com.sms.moLotus.feature.chat.adapter
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.os.AsyncTask
 import android.os.Build
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,9 +19,6 @@ import com.sms.moLotus.feature.Constants
 import com.sms.moLotus.feature.chat.MessageViewHolder
 import com.sms.moLotus.feature.chat.listener.OnMessageClickListener
 import com.sms.moLotus.feature.chat.model.ChatMessage
-import java.io.IOException
-import java.io.InputStream
-import java.net.URL
 
 
 @RequiresApi(Build.VERSION_CODES.M)
@@ -44,12 +37,6 @@ class ChatAdapter(
         list.clear()
         list.addAll(data)
         list.sortBy { it.dateSent }
-        //notifyItemInserted(list.size)
-        //  notifyItemRangeInserted(list.size, itemCount)
-
-        /*list?.sortByDescending { it.dateSent }
-        notifyItemInserted(list.size - 1)
-        notifyItemRangeInserted(list.size - 1, list.size)*/
     }
 
     fun deleteMessage(position: Int) {
@@ -84,6 +71,7 @@ class ChatAdapter(
     }
 
     override fun getItemCount(): Int = list.size
+
     override fun getItemViewType(position: Int): Int {
         return if (list[position].senderId == PreferenceHelper.getStringPreference(
                 getContext,
@@ -114,7 +102,6 @@ class ChatAdapter(
         ) {
 
             val data = item?.get(adapterPosition)
-            Log.e("=========", "url :: ${data?.url}")
             if (data?.message == "null" || data?.message == "" || data?.message?.isEmpty() == true) {
                 messageContent?.visibility = View.GONE
             } else {
@@ -144,7 +131,7 @@ class ChatAdapter(
                     llDoc?.visibility = View.GONE
                     llContact?.visibility = View.VISIBLE
                     val fileName: String = data.url.substring(data.url.lastIndexOf('/') + 1)
-                    txtContactName.text = fileName.toString()
+                    txtContactName.text = fileName
                 } else {
                     imgThumbnail?.visibility = View.GONE
                     llContact?.visibility = View.GONE
@@ -212,8 +199,6 @@ class ChatAdapter(
                 messageContent.text = data?.message
             }
 
-            Log.e("=========", "userName :: ${data?.userName}")
-            Log.e("=========", "url :: ${data?.url}")
             messageContent.text = data?.message
             if (data?.url == "null" || data?.url == "" || data?.url?.isEmpty() == true) {
                 imgThumbnail?.visibility = View.GONE
@@ -239,7 +224,7 @@ class ChatAdapter(
                     llDoc?.visibility = View.GONE
                     llContact?.visibility = View.VISIBLE
                     val fileName: String = data.url.substring(data.url.lastIndexOf('/') + 1)
-                    txtContactName.text = fileName.toString()
+                    txtContactName.text = fileName
                 } else  {
                     llContact?.visibility = View.GONE
                     imgThumbnail?.visibility = View.GONE
@@ -248,8 +233,6 @@ class ChatAdapter(
                     txtDocName.text = fileName.toString()
                 }
             }
-
-
 
             if (!data?.userName.isNullOrEmpty()) {
                 txtName.visibility = View.VISIBLE
@@ -287,36 +270,5 @@ class ChatAdapter(
                 return@setOnLongClickListener true
             }
         }
-    }
-
-
-    class GetImageFromUrl(img: ImageView) :
-        AsyncTask<String?, Void?, Bitmap?>() {
-        var bitmap: Bitmap? = null
-        var imageView: ImageView? = null
-        override fun doInBackground(vararg url: String?): Bitmap? {
-            val stringUrl = url[0]
-            bitmap = null
-            val inputStream: InputStream
-            try {
-                inputStream = URL(stringUrl).openStream()
-                bitmap = BitmapFactory.decodeStream(inputStream)
-            } catch (e: IOException) {
-                Log.e("=========", "error :: ${e.message}")
-                e.printStackTrace()
-            }
-            return bitmap
-        }
-
-        override fun onPostExecute(bitmap: Bitmap?) {
-            super.onPostExecute(bitmap)
-            Log.e("=========", "bitmap :: $bitmap")
-            imageView?.setImageBitmap(bitmap)
-        }
-
-        init {
-            imageView = img
-        }
-
     }
 }

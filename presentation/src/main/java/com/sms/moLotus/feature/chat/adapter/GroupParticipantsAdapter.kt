@@ -39,11 +39,9 @@ class GroupParticipantsAdapter(
         holder.txtPhoneNo.text = mList?.get(position)?.mobile.toString()
         if (mList?.get(position)?.isAdmin == true) {
             holder.txtGroupAdmin.visibility = View.VISIBLE
-
         } else {
             holder.txtGroupAdmin.visibility = View.GONE
         }
-
         holder.llItem.setOnLongClickListener {
             if (isGroupAdmin) {
                 listener.onGroupItemClick(
@@ -55,7 +53,6 @@ class GroupParticipantsAdapter(
             }
             return@setOnLongClickListener true
         }
-
     }
 
     // return the number of the items in the list

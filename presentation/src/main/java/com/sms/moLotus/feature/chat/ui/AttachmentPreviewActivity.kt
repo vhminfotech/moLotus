@@ -20,10 +20,8 @@ import com.sms.moLotus.R
 import com.sms.moLotus.extension.toast
 import com.sms.moLotus.feature.Constants
 import com.sms.moLotus.feature.chat.FileUtils
-import com.sms.moLotus.feature.chat.LogHelper
 import com.sms.moLotus.feature.retrofit.MainViewModel
 import kotlinx.android.synthetic.main.activity_attachment_preview.*
-import timber.log.Timber
 import java.io.File
 
 @RequiresApi(Build.VERSION_CODES.M)
@@ -40,7 +38,6 @@ class AttachmentPreviewActivity : AppCompatActivity() {
     private var flag: Boolean? = true
     private var url: String = ""
     private var isGroup: Boolean = false
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,14 +57,6 @@ class AttachmentPreviewActivity : AppCompatActivity() {
         } else {
             fileName.replace("file://", "").replace("mgram%20Interaction", "mgram Interaction")
         }
-
-        LogHelper.e("=============", "Filename:: $fileName::::Filetype:: $fileType")
-        LogHelper.e("=============", "filePath:: $filePath")
-        LogHelper.e("=============", "Filename:: ${File(fileName).name}")
-        LogHelper.e(
-            "=============",
-            "currentUserId:: $currentUserId == threadId:: $threadId == flag:: $flag == groupName:: $groupName == isGroup:: $isGroup == recipientsIds:: $recipientsIds"
-        )
 
         var contentType = ""
 
@@ -153,12 +142,9 @@ class AttachmentPreviewActivity : AppCompatActivity() {
 
     private fun uploadAttachment(upload: Upload) {
         viewModel.uploadAttachments.observe(this) {
-            LogHelper.e("======================", "uploadAttachments:: ${it.uploadAttachments}")
             url = it.uploadAttachments?.uri.toString()
-            //Handler(Looper.getMainLooper()).postDelayed({
-            webView.getSettings().setJavaScriptEnabled(true)
+            webView.settings.javaScriptEnabled = true
             webView.loadUrl(url)
-            //},2000)
 
 //            webView.loadUrl("https://drive.google.com/file/d/1riVhAnIq-gft0ro8B9CNXUWd-iU-25lS/view")
         }
@@ -229,7 +215,6 @@ class AttachmentPreviewActivity : AppCompatActivity() {
         )
 
         viewModel.createMessage.observe(this) {
-            Timber.e("createMessage:: $it")
             txtAddCaption.text = null
             onBackPressed()
         }

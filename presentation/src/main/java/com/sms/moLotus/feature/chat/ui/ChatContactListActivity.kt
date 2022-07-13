@@ -10,7 +10,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.ContactsContract
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -32,7 +31,6 @@ import com.sms.moLotus.feature.chat.adapter.ChatContactListAdapter
 import com.sms.moLotus.feature.chat.listener.OnChatContactClickListener
 import com.sms.moLotus.feature.chat.model.Users
 import com.sms.moLotus.feature.retrofit.MainViewModel
-import com.sms.moLotus.feature.retrofit.RetrofitService
 import com.sms.moLotus.viewmodel.ChatViewModel
 import kotlinx.android.synthetic.main.activity_chat_contact_list.*
 import kotlinx.android.synthetic.main.dialog_select_contacts.view.*
@@ -43,10 +41,9 @@ import kotlinx.coroutines.launch
 
 class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener {
 
-    var contactList: List<String> = ArrayList<String>()
+    var contactList: List<String> = ArrayList()
     var usersList: ArrayList<Users> = ArrayList()
     lateinit var viewModel: MainViewModel
-    private val retrofitService = RetrofitService.getInstance()
     var userId: String = ""
     lateinit var chatViewModel: ChatViewModel
     private var customProgressDialog: CustomProgressDialog? = null
@@ -56,7 +53,6 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
         setContentView(R.layout.activity_chat_contact_list)
         userId = PreferenceHelper.getStringPreference(this, Constants.USERID).toString()
         customProgressDialog = CustomProgressDialog(this)
-        Log.e("==========", "userId :: $userId")
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
         chatViewModel = ViewModelProvider(this).get(ChatViewModel::class.java)
         txtTitle.text = "Chat Contacts List"
@@ -74,8 +70,6 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
             }, 4000)
         }
 
-
-        Log.e("============", "selectedUsersList:: ${selectedUsersList.size}")
         Handler(Looper.getMainLooper()).postDelayed({
             observeUsers()
         }, 500)
@@ -88,7 +82,6 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
                 getUserUsingAppList(contactList.sorted())
             }, 4000)
         }
-
 
         txtCreateGroup?.setOnClickListener {
             showBottomSheet()
@@ -109,16 +102,16 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
             null, null, null, null
         )
 
-        if (cur?.count ?: 0 > 0) {
+        if ((cur?.count ?: 0) > 0) {
             while (cur != null && cur.moveToNext()) {
                 val id = cur.getString(
                     cur.getColumnIndex(ContactsContract.Contacts._ID)
                 )
-                val name = cur.getString(
+                /*val name = cur.getString(
                     cur.getColumnIndex(
                         ContactsContract.Contacts.DISPLAY_NAME
                     )
-                )
+                )*/
                 if (cur.getInt(
                         cur.getColumnIndex(
                             ContactsContract.Contacts.HAS_PHONE_NUMBER
@@ -156,14 +149,10 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
             }
         }
         cur?.close()
-
-
         LogHelper.e(
             "CHATCONTACT",
             "contactList: $contactList == ${contactList.size}"
         )
-
-
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -172,25 +161,19 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
         recyclerView: RecyclerView,
         isBottomSheet: Boolean
     ) {
-        recyclerView?.layoutManager = LinearLayoutManager(this)
-
+        recyclerView.layoutManager = LinearLayoutManager(this)
         // This will pass the ArrayList to our Adapter
         val adapter = ChatContactListAdapter(this, contactList, this, isBottomSheet)
-
         // Setting the Adapter with the recyclerview
-        recyclerView?.adapter = adapter
-        recyclerView?.adapter?.notifyDataSetChanged()
+        recyclerView.adapter = adapter
+        recyclerView.adapter?.notifyDataSetChanged()
     }
 
     private fun observeUsers() {
         usersList = ArrayList()
-
         lifecycleScope.launch {
             chatViewModel.getAllUsers(userId).observe(this@ChatContactListActivity) { list ->
-
-
                 usersList.clear()
-                Log.e("======================", "chatMessageList:: $list")
                 usersList = list as ArrayList<Users>
                 if (list.isNotEmpty()) {
                     txtNoData?.visibility = View.GONE
@@ -205,12 +188,8 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
     }
 
     private fun getUserUsingAppList(contactList: List<String>) {
-
-
         viewModel.userUsingApp.observe(this) {
             PreferenceHelper.setPreference(this, "isApiCalled", true)
-
-            Log.e("=====", "response:: ${it.getUserUsingApp?.userData}")
             val list: ArrayList<GetUserUsingAppQuery.UserDatum> =
                 it.getUserUsingApp?.userData as ArrayList<GetUserUsingAppQuery.UserDatum>
 
@@ -226,8 +205,6 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
                     list[index].operator.toString(),
                     list[index].threadId.toString(),
                 )
-
-                Log.e("=====", "userData:: $userData")
                 chatViewModel.deleteUsersTable()
                 chatViewModel.insertAllUsers(userData!!)
             }
@@ -239,15 +216,11 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
             runOnUiThread {
                 customProgressDialog?.hide()
             }
-
         }
         viewModel.errorMessage.observe(this) {
             runOnUiThread {
                 customProgressDialog?.hide()
             }
-
-
-            Log.e("=====", "errorMessage:: $it")
             val conMgr =
                 getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             val netInfo = conMgr.activeNetworkInfo
@@ -299,7 +272,6 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
         } else {
             selectedUsersList.add(item)
         }
-        Log.e("=========", "selectedUsersList::: $selectedUsersList")
     }
 
 
@@ -310,19 +282,13 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
 
         // on below line we are inflating a layout file which we have created.
         val view = layoutInflater.inflate(R.layout.dialog_select_contacts, null)
-
         initRecyclerView(usersList, view.rvSelectContacts, true)
-
         view.txtNext.setOnClickListener {
-            Log.e("=========", "selectedUsersList::: $selectedUsersList")
-
             if (selectedUsersList.size >= 1) {
                 selectedUsersList.forEachIndexed { index, _ ->
                     selectedIdsList.add(selectedUsersList[index]?.userId.toString())
                     selectedNameList.add(selectedUsersList[index]?.name.toString())
                 }
-                Log.e("=========", "selectedIdsList::: $selectedIdsList")
-                Log.e("=========", "selectedNameList::: $selectedNameList")
                 val intent = Intent(this, NewGroupActivity::class.java)
                     .putStringArrayListExtra("selectedIdsList", selectedIdsList)
                     .putStringArrayListExtra("selectedNameList", selectedNameList)
@@ -336,9 +302,7 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
             }
         }
         dialog.setCancelable(true)
-
         dialog.setContentView(view)
-
         dialog.show()
     }
 

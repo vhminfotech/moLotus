@@ -20,7 +20,6 @@ import com.sms.moLotus.R
 import com.sms.moLotus.common.widget.QkTextView
 import com.sms.moLotus.extension.toast
 import com.sms.moLotus.feature.Constants
-import com.sms.moLotus.feature.chat.LogHelper
 import com.sms.moLotus.feature.chat.adapter.GroupParticipantsAdapter
 import com.sms.moLotus.feature.chat.listener.OnGroupItemClickListener
 import com.sms.moLotus.feature.retrofit.MainViewModel
@@ -33,8 +32,8 @@ class GroupDetailsActivity : AppCompatActivity(), OnGroupItemClickListener {
     lateinit var viewModel: MainViewModel
     var groupId = ""
     val list: ArrayList<String> = ArrayList()
-    var groupParticipantsAdapter: GroupParticipantsAdapter? = null
-    var isGroupAdmin = false
+    private var groupParticipantsAdapter: GroupParticipantsAdapter? = null
+    private var isGroupAdmin = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,7 +55,6 @@ class GroupDetailsActivity : AppCompatActivity(), OnGroupItemClickListener {
     private fun getGroupDetails(groupId: String) {
 
         viewModel.getGroupDetails.observe(this) {
-            LogHelper.e("======================", "getGroupDetails:: $it")
             txtGroupName?.text = it.getGroupDetails?.groupName.toString()
             txtCreatedAt?.text =
                 " ~ created on " + getDate(it.getGroupDetails?.groupCreatedDate.toString())
@@ -102,7 +100,6 @@ class GroupDetailsActivity : AppCompatActivity(), OnGroupItemClickListener {
 
     private fun exitGroup(groupId: String) {
         viewModel.exitGroup.observe(this) {
-            LogHelper.e("======================", "exitGroup:: $it")
             Snackbar.make(
                 llGroupDetails,
                 it.exitGroup?.message.toString(),
@@ -137,10 +134,10 @@ class GroupDetailsActivity : AppCompatActivity(), OnGroupItemClickListener {
     }
 
 
-    private fun getDate(createdAt: String): String? {
+    private fun getDate(createdAt: String): String {
         val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
         dateFormat.timeZone = TimeZone.getTimeZone("UTC")
-        val date: Date = dateFormat.parse(createdAt)
+        val date: Date? = dateFormat.parse(createdAt)
         val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.US)
         return formatter.format(date).toString()
     }
@@ -175,7 +172,6 @@ class GroupDetailsActivity : AppCompatActivity(), OnGroupItemClickListener {
         showOptions(llItem, groupId, id, txt, position)
     }
 
-
     private fun showOptions(
         view: View,
         groupId: String,
@@ -183,7 +179,7 @@ class GroupDetailsActivity : AppCompatActivity(), OnGroupItemClickListener {
         txt: QkTextView,
         position: Int
     ) {
-        val popup = PopupMenu(this, view, Gravity.RIGHT)
+        val popup = PopupMenu(this, view, Gravity.END)
         popup.inflate(R.menu.group_options)
         popup.setOnMenuItemClickListener { item: MenuItem? ->
             when (item?.itemId) {
@@ -207,10 +203,7 @@ class GroupDetailsActivity : AppCompatActivity(), OnGroupItemClickListener {
 
     private fun createAdmin(groupId: String, userId: String, txt: QkTextView) {
         txt.visibility = View.VISIBLE
-        LogHelper.e("======================", "createAdmin:groupId: $groupId")
-        LogHelper.e("======================", "createAdmin:userId: $userId")
         viewModel.createAdmin.observe(this) {
-            LogHelper.e("======================", "createAdmin:: $it")
         }
         viewModel.errorMessage.observe(this) {
             val conMgr =
@@ -232,7 +225,6 @@ class GroupDetailsActivity : AppCompatActivity(), OnGroupItemClickListener {
                 toast(it.toString(), Toast.LENGTH_SHORT)
             }
         }
-
         viewModel.createAdmin(
             groupId,
             userId
@@ -242,9 +234,6 @@ class GroupDetailsActivity : AppCompatActivity(), OnGroupItemClickListener {
     private fun removeAdmin(groupId: String, userId: String, txt: QkTextView) {
         txt.visibility = View.GONE
         viewModel.removeAdmin.observe(this) {
-            LogHelper.e("======================", "createAdmin:: $it")
-//            toast(it.createUserAAdminOfGroup?.message.toString())
-
         }
         viewModel.errorMessage.observe(this) {
             val conMgr =
@@ -277,7 +266,6 @@ class GroupDetailsActivity : AppCompatActivity(), OnGroupItemClickListener {
     private fun removeParticipant(groupId: String, userId: String, position: Int) {
         groupParticipantsAdapter?.removeParticipant(position)
         viewModel.removeParticipant.observe(this) {
-            LogHelper.e("======================", "removeParticipant:: $it")
         }
         viewModel.errorMessage.observe(this) {
             val conMgr =
