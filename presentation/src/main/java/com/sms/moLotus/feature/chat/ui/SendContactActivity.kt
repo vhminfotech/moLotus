@@ -122,7 +122,11 @@ class SendContactActivity : AppCompatActivity() {
     }
 
     private fun createThread(message: String, isGroup: Boolean, groupName: String, url: String) {
-
+        ChatActivity.mSocket?.emit(
+            "sendMessage", currentUserId,
+            recipientsIds,
+            message, ChatActivity.myUserName, url
+        )
         viewModel.createThread.observe(this) {
             LogHelper.e("======================", "createThread:: ${it.createThread?.id}")
             LogHelper.e("======================", "isGroup:: $isGroup")
@@ -158,7 +162,11 @@ class SendContactActivity : AppCompatActivity() {
     private fun createMessage(threadId: String, message: String, receiverId: String, url: String) {
         Timber.e("recipientsIds:: $recipientsIds")
         Timber.e("receiverId:: $receiverId")
-
+        ChatActivity.mSocket?.emit(
+            "sendMessage", currentUserId,
+            recipientsIds,
+            message, ChatActivity.myUserName, url
+        )
         viewModel.createMessage.observe(this) {
             Timber.e("createMessage:: $it")
             finish()

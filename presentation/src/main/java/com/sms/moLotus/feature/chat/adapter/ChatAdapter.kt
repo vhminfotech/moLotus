@@ -190,8 +190,7 @@ class ChatAdapter(
     class FriendMessageViewHolder(val view: View) :
         MessageViewHolder<ChatMessage>(view) {
         private val messageContent = view.findViewById<TextView>(R.id.message)
-        private val constraintFriendMsg =
-            view.findViewById<ConstraintLayout>(R.id.constraintFriendMsg)
+        private val constraintFriendMsg = view.findViewById<ConstraintLayout>(R.id.constraintFriendMsg)
         private val llOnClick = view.findViewById<LinearLayout>(R.id.llOnClick)
         private val txtName = view.findViewById<TextView>(R.id.txtName)
         private val imgThumbnail = view.findViewById<ImageView>(R.id.imgThumbnail)
@@ -266,8 +265,16 @@ class ChatAdapter(
                     )
                 )
             }
+            llDoc.setOnClickListener {
+                listener.onDocumentClick(data?.url.toString())
+            }
+
+            llContact.setOnClickListener {
+                listener.onDocumentClick(data?.url.toString())
+            }
+
             imgThumbnail?.setOnClickListener {
-                listener.onAttachmentClick(data?.url)
+                listener.onAttachmentClick(data?.url.toString())
             }
             constraintFriendMsg?.setOnLongClickListener {
                 listener.onMessageClick(data, llOnClick, adapterPosition)

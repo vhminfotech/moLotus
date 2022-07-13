@@ -75,21 +75,24 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
     lateinit var viewModel: MainViewModel
     private lateinit var chatViewModel: ChatViewModel
     private var chatAdapter: ChatAdapter? = null
-    private var currentUserId: String = ""
-    var userName: String = ""
-    var groupName: String = ""
+    private var currentUserId: String? = ""
+    var userName: String? = ""
+    var groupName: String? = ""
     private var recipientsIds: ArrayList<String>? = ArrayList()
-    var threadId: String = ""
+    var threadId: String? = ""
     private var getMessageList: MutableList<GetMessageListQuery.Message> = mutableListOf()
     private var getGroupMessageList: MutableList<GetGroupMessageListQuery.Message> = mutableListOf()
     private val messageIdList: ArrayList<String> = ArrayList()
     var linearLayout: LinearLayout? = null
     private var pos = 0
     private var chatMessageList: ArrayList<ChatMessage>? = ArrayList()
-    private var mSocket: Socket? = null
+    companion object{
+        var mSocket: Socket? = null
+        var myUserName: String? = ""
+
+    }
     private var isConnected = true
-    private var myUserId = ""
-    private var myUserName = ""
+    private var myUserId: String? = ""
     private var flag: Boolean? = true
     var isGroup: Boolean = false
     var isNotParticipant: Boolean = false
@@ -108,13 +111,11 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_chat)
-        setSupportActionBar(toolbar)
+    override fun onResume() {
+        super.onResume()
         customProgressDialog = CustomProgressDialog(this)
-        myUserId = PreferenceHelper.getStringPreference(this, Constants.USERID).toString()
-        myUserName = PreferenceHelper.getStringPreference(this, Constants.USERNAME).toString()
+        myUserId = PreferenceHelper.getStringPreference(this, Constants.USERID)
+        myUserName = PreferenceHelper.getStringPreference(this, Constants.USERNAME)
         val app = application as QKApplication
         mSocket = app.socket
 
@@ -130,18 +131,22 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
         // mSocket?.off("typing")?.on("typing", typing)
         mSocket?.connect()
 
-        currentUserId = intent?.getStringExtra("currentUserId").toString()
+        currentUserId = intent?.getStringExtra("currentUserId")
         //receiverUserId = intent?.getStringExtra("receiverUserId").toString()
         recipientsIds = intent?.getStringArrayListExtra("receiverUserId")
-        threadId = intent?.getStringExtra("threadId").toString()
+        threadId = intent?.getStringExtra("threadId")
         flag = intent?.getBooleanExtra("flag", false)
         isGroup = intent.getBooleanExtra("isGroup", false)
         isNotParticipant = intent.getBooleanExtra("isNotParticipant", false)
-        userName = intent?.getStringExtra("userName").toString()
-        groupName = intent?.getStringExtra("groupName").toString()
+        userName = intent.getStringExtra("userName")
+        groupName = intent.getStringExtra("groupName")
+        viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
         LogHelper.e("NewGroupActivity", "userName:: $userName")
-
-        if (isGroup || userName.isEmpty() || userName == "" || userName == "null") {
+        LogHelper.e("NewGroupActivity", "recipientsIds:: $recipientsIds")
+        LogHelper.e("NewGroupActivity", "isGroup:: $isGroup")
+        LogHelper.e("NewGroupActivity", "threadId:: $threadId")
+        chatViewModel = ViewModelProvider(this).get(ChatViewModel::class.java)
+        if (isGroup || userName?.isEmpty() == true || userName == "" || userName == "null") {
             txtTitle?.text = groupName
         } else {
             txtTitle?.text = userName
@@ -159,56 +164,73 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
             txtNoLongerParticipant?.visibility = View.GONE
         }
 
-        LogHelper.e("NewGroupActivity", "recipientsIds:: $recipientsIds")
-        LogHelper.e("NewGroupActivity", "isGroup:: $isGroup")
-
-
-        imgBack?.setOnClickListener {
-            onBackPressed()
-        }
-        viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
-
-        chatViewModel = ViewModelProvider(this).get(ChatViewModel::class.java)
-
         runOnUiThread {
             //chatViewModel.deleteTable()
         }
 
         if (!isGroup) {
-            getMessageList(threadId)
+            getMessageList(threadId.toString())
         } else {
-            getGroupMessageList(threadId)
+            getGroupMessageList(threadId.toString())
         }
 
         setListeners()
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_chat)
+        setSupportActionBar(toolbar)
+
 
     }
 
 
     private fun setListeners() {
+        imgBack?.setOnClickListener {
+            onBackPressed()
+        }
+
         imgSend.setOnClickListener {
+            Log.e("=====", "imgSend clicked")
+
             //getMessage list empty then create thread else create message
             if (flag == true) {
-                createThread(txtMessage.text.toString(), isGroup, groupName, "")
+                createThread(txtMessage.text.toString(), isGroup, groupName.toString(), "")
             } else {
-                if ((threadId.isEmpty() || threadId == "null")) {
+                Log.e("=====", "imgSend clicked else")
+
+                if ((threadId?.isEmpty() == true || threadId == "null")) {
                     Log.e("=====", "createThread")
-                    createThread(txtMessage.text.toString(), isGroup, groupName, "")
+
+                    createThread(
+                        txtMessage.text.toString(), isGroup,
+                        groupName.toString(), ""
+                    )
+
                 } else {
                     Log.e("=====", "createMessage : $threadId")
                     Log.e("=====", "isGroup : $isGroup")
                     Log.e("=====", "recipientsid : ${recipientsIds?.get(0).toString()}")
 
                     if (isGroup) {
-                        createMessage(threadId, txtMessage.text.toString(), "", "")
+
+                        createMessage(
+                            threadId.toString(),
+                            txtMessage.text.toString(),
+                            "",
+                            ""
+                        )
+
                     } else {
 
                         createMessage(
-                            threadId,
+                            threadId.toString(),
                             txtMessage.text.toString(),
                             recipientsIds?.get(0).toString(),
                             ""
                         )
+
                     }
                 }
             }
@@ -448,31 +470,31 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
     }
 
 
-    /*private fun showFilePicker(fileType: FileType) {
-        showFilePicker(
-            gridSpanCount = 3,
-            fileType = fileType,
-            limitItemSelection = 1,
-            submitText = "Next",
-            accentColor = ContextCompat.getColor(this, R.color.tools_theme),
-            titleTextColor = ContextCompat.getColor(this, R.color.black),
-            submitTextColor = ContextCompat.getColor(this, R.color.white),
-        ) {
-            LogHelper.e("===============", "media : ${it[0].file}")
+/*private fun showFilePicker(fileType: FileType) {
+    showFilePicker(
+        gridSpanCount = 3,
+        fileType = fileType,
+        limitItemSelection = 1,
+        submitText = "Next",
+        accentColor = ContextCompat.getColor(this, R.color.tools_theme),
+        titleTextColor = ContextCompat.getColor(this, R.color.black),
+        submitTextColor = ContextCompat.getColor(this, R.color.white),
+    ) {
+        LogHelper.e("===============", "media : ${it[0].file}")
 
-            val intent = Intent(this, AttachmentPreviewActivity::class.java)
-                .putExtra("fileName", it[0].file.toString())
-                .putExtra("fileType", fileType.name)
-                .putExtra("threadId", threadId)
-                .putExtra("isGroup", isGroup)
-                .putExtra("groupName", groupName)
-                .putExtra("flag", flag)
-                .putExtra("recipientsIds", recipientsIds)
-                .putExtra("currentUserId", currentUserId)
-            startActivity(intent)
-            overridePendingTransition(0, 0)
-        }
-    }*/
+        val intent = Intent(this, AttachmentPreviewActivity::class.java)
+            .putExtra("fileName", it[0].file.toString())
+            .putExtra("fileType", fileType.name)
+            .putExtra("threadId", threadId)
+            .putExtra("isGroup", isGroup)
+            .putExtra("groupName", groupName)
+            .putExtra("flag", flag)
+            .putExtra("recipientsIds", recipientsIds)
+            .putExtra("currentUserId", currentUserId)
+        startActivity(intent)
+        overridePendingTransition(0, 0)
+    }
+}*/
 
     fun openGallery() {
         val intent = Intent(Intent.ACTION_GET_CONTENT)
@@ -503,7 +525,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
         )
 
 
-        addMessage(currentUserId, message, "", "", url)
+        addMessage(currentUserId.toString(), message, "", "", url)
         viewModel.createThread.observe(this) {
             LogHelper.e("======================", "createThread:: ${it.createThread?.id}")
             LogHelper.e("======================", "isGroup:: $isGroup")
@@ -530,15 +552,12 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
                 toast(it.toString(), Toast.LENGTH_SHORT)
             }
         }
-        recipientsIds?.let {
-            viewModel.createThread(
-                message, currentUserId,
-                it, PreferenceHelper.getStringPreference(this, Constants.TOKEN).toString(),
-                isGroup, groupName, url
-            )
-        }
 
-
+        viewModel.createThread(
+            message, currentUserId.toString(),
+            recipientsIds, PreferenceHelper.getStringPreference(this, Constants.TOKEN).toString(),
+            isGroup, groupName, url
+        )
     }
 
     fun createMessage(threadId: String, message: String, receiverId: String, url: String) {
@@ -549,7 +568,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
             recipientsIds,
             message, myUserName, url
         )
-        addMessage(currentUserId, message, "", "", url)
+        addMessage(currentUserId.toString(), message, "", "", url)
 
         viewModel.createMessage.observe(this) {
             Timber.e("createMessage:: $it")
@@ -625,13 +644,13 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
                         }
 
                     if (!getMessageList[index].url.isNullOrEmpty()) {
-                        getMessageList[index].url?.let { it1 -> attachmentList.add(it1) }
+                        attachmentList.add(getMessageList[index].url.toString())
                     }
                     Log.d("tag", "fileName::::$fileName")
 
 
                     chatMessageModel = ChatMessage(
-                        myUserId,
+                        myUserId.toString(),
                         getMessageList[index].id.toString(),
                         getMessageList[index].senderId.toString(),
                         getMessageList[index].threadId.toString(),
@@ -704,7 +723,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
                 var chatMessageModel: ChatMessage? = null
                 getGroupMessageList.forEachIndexed { index, _ ->
                     chatMessageModel = ChatMessage(
-                        myUserId,
+                        myUserId.toString(),
                         getGroupMessageList[index].id.toString(),
                         getGroupMessageList[index].senderId.toString(),
                         getGroupMessageList[index].threadId.toString(),
@@ -714,7 +733,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
                         getGroupMessageList[index].url.toString(),
                     )
                     if (!getGroupMessageList[index].url.isNullOrEmpty()) {
-                        getGroupMessageList[index].url?.let { it1 -> attachmentList.add(it1) }
+                        attachmentList.add(getGroupMessageList[index].url.toString())
                     }
 
                     // chatMessageList?.add(chatMessageModel!!)
@@ -879,8 +898,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
 
                 Handler(Looper.getMainLooper()).postDelayed({
                     if (attachmentUrl?.isNotEmpty() == true) {
-
-                        shareFile(shareText, File(file))
+                        shareFile(shareText, File(file.toString()))
                     } else {
                         shareToOtherApps(shareText)
                     }
@@ -949,7 +967,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
                 toast(it.toString(), Toast.LENGTH_SHORT)
             }
         }
-        viewModel.deleteMessage(threadId, myUserId, messageIdList)
+        viewModel.deleteMessage(threadId.toString(), myUserId.toString(), messageIdList)
     }
 
 
@@ -1046,7 +1064,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
                 currTime
             }
             chatMessageModel = ChatMessage(
-                myUserId,
+                myUserId.toString(),
                 c.id,
                 senderId,
                 c.threadId,

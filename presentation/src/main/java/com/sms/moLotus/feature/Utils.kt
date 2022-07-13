@@ -655,7 +655,7 @@ object Utils {
 
         var destination: String? = null
         try {
-            destination = dir.absolutePath + fileName
+            destination = dir.absolutePath + "/" + fileName
             GlobalScope.launch(Dispatchers.IO) {
                 val input: InputStream = BufferedInputStream(url.openStream())
                 val output: OutputStream = FileOutputStream(destination)

@@ -5,7 +5,6 @@ import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -96,7 +95,6 @@ class AttachmentPreviewActivity : AppCompatActivity() {
                 imgPlay?.visibility = View.VISIBLE
             }
 
-
             imgPlay?.setOnClickListener {
                 videoView?.start()
                 imgPlay?.visibility = View.GONE
@@ -117,21 +115,10 @@ class AttachmentPreviewActivity : AppCompatActivity() {
 
         }
 
-//       if (fileType.uppercase() == "IMAGE") {
-//
-//        } else if(fileType.uppercase() == "VIDEO"){
-//
-//        }else{
-//           contentType = "*/*"
-//        }
-
-
         val upload = DefaultUpload.Builder().content(File(filePath))
             .contentType(contentType)
             .fileName(File(filePath).name).build()
         uploadAttachment(upload)
-
-
 
         setListeners()
     }
@@ -143,18 +130,12 @@ class AttachmentPreviewActivity : AppCompatActivity() {
 
         imgSend.setOnClickListener {
             //getMessage list empty then create thread else create message
-            Log.e("=====", "url== $url")
             if (flag == true) {
                 createThread(txtAddCaption.text.toString(), isGroup, groupName, url)
             } else {
                 if ((threadId.isEmpty() || threadId == "null")) {
-                    Log.e("=====", "createThread")
                     createThread(txtAddCaption.text.toString(), isGroup, groupName, url)
                 } else {
-                    Log.e("=====", "createMessage : $threadId")
-                    Log.e("=====", "isGroup : $isGroup")
-                    Log.e("=====", "recipientsid : ${recipientsIds?.get(0).toString()}")
-
                     if (isGroup) {
                         createMessage(threadId, txtAddCaption.text.toString(), "", url)
                     } else {
@@ -174,10 +155,9 @@ class AttachmentPreviewActivity : AppCompatActivity() {
         viewModel.uploadAttachments.observe(this) {
             LogHelper.e("======================", "uploadAttachments:: ${it.uploadAttachments}")
             url = it.uploadAttachments?.uri.toString()
-
             //Handler(Looper.getMainLooper()).postDelayed({
-                webView.getSettings().setJavaScriptEnabled(true)
-                webView.loadUrl(url)
+            webView.getSettings().setJavaScriptEnabled(true)
+            webView.loadUrl(url)
             //},2000)
 
 //            webView.loadUrl("https://drive.google.com/file/d/1riVhAnIq-gft0ro8B9CNXUWd-iU-25lS/view")
@@ -202,15 +182,17 @@ class AttachmentPreviewActivity : AppCompatActivity() {
                 toast(it.toString(), Toast.LENGTH_SHORT)
             }
         }
-
         viewModel.uploadAttachments(upload)
     }
 
     private fun createThread(message: String, isGroup: Boolean, groupName: String, url: String) {
+        ChatActivity.mSocket?.emit(
+            "sendMessage", currentUserId,
+            recipientsIds,
+            message, ChatActivity.myUserName, url
+        )
 
         viewModel.createThread.observe(this) {
-            LogHelper.e("======================", "createThread:: ${it.createThread?.id}")
-            LogHelper.e("======================", "isGroup:: $isGroup")
             txtAddCaption.text = null
             onBackPressed()
         }
@@ -237,13 +219,14 @@ class AttachmentPreviewActivity : AppCompatActivity() {
                 isGroup, groupName, url
             )
         }
-
-
     }
 
     private fun createMessage(threadId: String, message: String, receiverId: String, url: String) {
-        Timber.e("recipientsIds:: $recipientsIds")
-        Timber.e("receiverId:: $receiverId")
+        ChatActivity.mSocket?.emit(
+            "sendMessage", currentUserId,
+            recipientsIds,
+            message, ChatActivity.myUserName, url
+        )
 
         viewModel.createMessage.observe(this) {
             Timber.e("createMessage:: $it")

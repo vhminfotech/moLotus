@@ -183,7 +183,7 @@ class MainViewModel constructor(/*private val repository: MainRepository*/) : Vi
     fun createThread(
         message: String,
         userId: String,
-        recipientsIds: ArrayList<String>,
+        recipientsIds: ArrayList<String>?,
         token: String,
         isGroup: Boolean,
         groupName: String,
@@ -191,7 +191,7 @@ class MainViewModel constructor(/*private val repository: MainRepository*/) : Vi
     ) {
         client = ApolloClientService.setUpApolloClient(token)
         val createThreadMutation =
-            CreateThreadMutation(message, userId, recipientsIds, isGroup, groupName, url)
+            CreateThreadMutation(message, userId, recipientsIds!!, isGroup, groupName, url)
 
         GlobalScope.launch(Dispatchers.Main) {
             try {
