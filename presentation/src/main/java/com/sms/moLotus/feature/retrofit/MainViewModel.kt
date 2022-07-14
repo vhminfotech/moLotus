@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import com.apollographql.apollo3.ApolloClient
 import com.apollographql.apollo3.api.Upload
 import com.apollographql.apollo3.exception.ApolloException
+import com.google.android.exoplayer2.util.Log
 import com.sms.moLotus.*
 import com.sms.moLotus.feature.Constants
 import com.sms.moLotus.feature.apollo.ApolloClientService
@@ -36,6 +37,7 @@ class MainViewModel constructor(/*private val repository: MainRepository*/) : Vi
     val registerUser = MutableLiveData<RegisterUserMutation.Data>()
     val createThread = MutableLiveData<CreateThreadMutation.Data>()
     val createMessage = MutableLiveData<CreateMessageMutation.Data>()
+    val forwardMessage = MutableLiveData<ForwardMessageMutation.Data>()
     val deleteMessage = MutableLiveData<DeleteMessagesMutation.Data>()
     val deleteThread = MutableLiveData<DeleteThreadMutation.Data>()
     val errorMessage = MutableLiveData<String>()
@@ -123,12 +125,16 @@ class MainViewModel constructor(/*private val repository: MainRepository*/) : Vi
     fun getChatList(userId: String, token: String) {
         client = ApolloClientService.setUpApolloClient("")
         val getChatList = GetThreadListQuery(userId)
+        Log.e("========================", "getChatList = $getChatList")
 
         GlobalScope.launch(Dispatchers.Main) {
             try {
                 val response = client?.query(getChatList)?.execute()
+                Log.e("========================", "response = $response")
                 chatList.postValue(response?.data)
-            } catch (e: ApolloException) {
+            } catch (e: Exception) {
+                Log.e("========================", "error = ${e.message}")
+
                 errorMessage.postValue(e.message)
             }
         }
@@ -204,14 +210,43 @@ class MainViewModel constructor(/*private val repository: MainRepository*/) : Vi
 
     }
 
-    fun createMessage(message: String, threadId: String, senderId: String, token: String, url: String,receiverId: String,) {
+    fun createMessage(
+        message: String,
+        threadId: String,
+        senderId: String,
+        token: String,
+        url: String,
+        receiverId: String,
+    ) {
         client = ApolloClientService.setUpApolloClient(token)
-        val createMessageMutation = CreateMessageMutation(message, threadId, senderId,receiverId, url)
+        val createMessageMutation =
+            CreateMessageMutation(message, threadId, senderId, receiverId, url)
 
         GlobalScope.launch(Dispatchers.Main) {
             try {
                 val response = client?.mutation(createMessageMutation)?.execute()
                 createMessage.postValue(response?.data)
+            } catch (e: ApolloException) {
+                errorMessage.postValue(e.message)
+            }
+        }
+    }
+
+    fun forwardMessage(
+        message: String,
+        threadId: String,
+        senderId: String,
+        receiverId: String,
+        url: String
+    ) {
+        client = ApolloClientService.setUpApolloClient("")
+        val forwardMessageMutation =
+            ForwardMessageMutation(message, threadId, senderId, receiverId, url)
+
+        GlobalScope.launch(Dispatchers.Main) {
+            try {
+                val response = client?.mutation(forwardMessageMutation)?.execute()
+                forwardMessage.postValue(response?.data)
             } catch (e: ApolloException) {
                 errorMessage.postValue(e.message)
             }

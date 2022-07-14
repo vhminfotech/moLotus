@@ -49,6 +49,7 @@ buildscript {
         classpath 'com.google.gms:google-services:4.3.10'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "io.realm:realm-gradle-plugin:$realm_version"
+
 //        classpath "com.apollographql.apollo:apollo-gradle-plugin:2.4.6"
 //        classpath " com.apollographql.apollo3:apollo-gradle-plugin:3.3.0"
 

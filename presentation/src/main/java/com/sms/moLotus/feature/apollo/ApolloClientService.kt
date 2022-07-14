@@ -26,7 +26,7 @@ object ApolloClientService {
             }
             .build()
 
-        Log.e("ApolloClientService", "Constants.BASE_GRAPHQL_URL :: ${Constants.BASE_GRAPHQL_URL}")
+        Log.e("ApolloClientService", "BASE_GRAPHQL_URL :: ${Constants.BASE_GRAPHQL_URL}")
 
 
         return ApolloClient.Builder()

@@ -154,6 +154,7 @@ class ChatAdapter(
             }
 
             constraintMyMsg?.setOnClickListener {
+                listener.onMessageDeselect()
                 llOnClick.setBackgroundColor(
                     context.resources.getColor(
                         android.R.color.transparent,
@@ -241,6 +242,7 @@ class ChatAdapter(
                 txtName.visibility = View.GONE
             }
             constraintFriendMsg?.setOnClickListener {
+                listener.onMessageDeselect()
                 llOnClick.setBackgroundColor(
                     context.resources.getColor(
                         android.R.color.transparent,

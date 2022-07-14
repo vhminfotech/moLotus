@@ -44,9 +44,13 @@ import com.sms.moLotus.db.ChatDatabase
 import com.sms.moLotus.extension.toast
 import com.sms.moLotus.feature.Constants
 import com.sms.moLotus.feature.Utils
+import com.sms.moLotus.feature.chat.LogHelper
 import com.sms.moLotus.feature.chat.adapter.ChatAdapter
+import com.sms.moLotus.feature.chat.adapter.ChatContactListAdapter
+import com.sms.moLotus.feature.chat.listener.OnChatContactClickListener
 import com.sms.moLotus.feature.chat.listener.OnMessageClickListener
 import com.sms.moLotus.feature.chat.model.ChatMessage
+import com.sms.moLotus.feature.chat.model.Users
 import com.sms.moLotus.feature.retrofit.MainViewModel
 import com.sms.moLotus.viewmodel.ChatViewModel
 import ezvcard.Ezvcard
@@ -54,6 +58,7 @@ import io.socket.client.Socket
 import io.socket.emitter.Emitter
 import kotlinx.android.synthetic.main.activity_chat.*
 import kotlinx.android.synthetic.main.dialog_delete_message.*
+import kotlinx.android.synthetic.main.dialog_select_contacts.view.*
 import kotlinx.android.synthetic.main.layout_attachments.view.*
 import kotlinx.coroutines.launch
 import org.json.JSONException
@@ -64,7 +69,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 @RequiresApi(Build.VERSION_CODES.M)
-class ChatActivity : AppCompatActivity(), OnMessageClickListener {
+class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactClickListener {
     lateinit var viewModel: MainViewModel
     private lateinit var chatViewModel: ChatViewModel
     private var chatAdapter: ChatAdapter? = null
@@ -79,24 +84,30 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
     var linearLayout: LinearLayout? = null
     private var pos = 0
     private var chatMessageList: ArrayList<ChatMessage>? = ArrayList()
-    companion object{
+    var usersList: ArrayList<Users> = ArrayList()
+
+    companion object {
         var mSocket: Socket? = null
         var myUserName: String? = ""
 
     }
+
     private var isConnected = true
     private var myUserId: String? = ""
     private var flag: Boolean? = true
     var isGroup: Boolean = false
     private var isNotParticipant: Boolean = false
     private val chatDatabase by lazy { ChatDatabase.getDatabase(this).getChatDao() }
+
     //var delay: Long = 1000 // 1 seconds after user stops typing
     var last_text_edit: Long = 0
+
     //var handler = Handler(Looper.getMainLooper())
     private var attachmentList = ArrayList<String>()
     private var attachmentUrl: String? = null
     private var shareText: String? = null
     private var customProgressDialog: CustomProgressDialog? = null
+    var selectedUsersList: ArrayList<Users?> = ArrayList()
     /*private val input_finish_checker = Runnable {
         if (System.currentTimeMillis() > last_text_edit + delay - 500) {
             //  mSocket?.emit("typing", false)
@@ -157,12 +168,17 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
         runOnUiThread {
             //chatViewModel.deleteTable()
         }
+        LogHelper.e("CHATACTIVITY", "=== Onresume")
 
+        LogHelper.e("CHATACTIVITY", "===threadId:: $threadId")
+        LogHelper.e("CHATACTIVITY", "===isGroup:: $isGroup")
         if (!isGroup) {
             getMessageList(threadId.toString())
         } else {
             getGroupMessageList(threadId.toString())
         }
+
+        observeUsers()
 
         setListeners()
     }
@@ -171,6 +187,8 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
         setSupportActionBar(toolbar)
+        LogHelper.e("CHATACTIVITY", "=== onCreate threadId:: $threadId")
+        LogHelper.e("CHATACTIVITY", "=== onCreate isGroup:: $isGroup")
     }
 
 
@@ -540,8 +558,10 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
 
     private fun getMessageList(threadId: String) {
         viewModel.allMessages.observe(this) {
+            LogHelper.e("CHATACTIVITY","list :: ${it.getMessageList}")
             if (it.getMessageList?.messages?.isNotEmpty() == true) {
-                getMessageList = it.getMessageList.messages as MutableList<GetMessageListQuery.Message>
+                getMessageList =
+                    it.getMessageList.messages as MutableList<GetMessageListQuery.Message>
                 var chatMessageModel: ChatMessage? = null
                 getMessageList.forEachIndexed { index, _ ->
                     val fileName: String =
@@ -631,7 +651,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
                     if (!getGroupMessageList[index].url.isNullOrEmpty()) {
                         attachmentList.add(getGroupMessageList[index].url.toString())
                     }
-                     chatViewModel.insert(chatMessageModel!!)
+                    chatViewModel.insert(chatMessageModel!!)
                 }
                 this.threadId = if (threadId.isEmpty() || threadId == "null") {
                     getGroupMessageList[0].threadId.toString()
@@ -704,6 +724,10 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
             startActivity(browserIntent)
         }
 
+    }
+
+    override fun onMessageDeselect() {
+        toolbar?.visibility = View.GONE
     }
 
     private fun readVcf(vcfFile: String?) {
@@ -781,7 +805,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
             }
 
             R.id.forward -> {
-
+                showContactBottomSheet()
             }
         }
         return true
@@ -969,5 +993,124 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener {
             putExtra(Intent.EXTRA_STREAM, data)
         }
         startActivity(Intent.createChooser(shareIntent, "Share"))
+    }
+
+    private fun observeUsers() {
+        lifecycleScope.launch {
+            chatViewModel.getAllUsers(myUserId.toString()).observe(this@ChatActivity) { list ->
+                usersList.clear()
+                usersList = list as ArrayList<Users>
+            }
+        }
+    }
+
+    private fun showContactBottomSheet() {
+        val dialog = BottomSheetDialog(this, R.style.BottomSheetDialog)
+
+        // on below line we are inflating a layout file which we have created.
+        val view = layoutInflater.inflate(R.layout.dialog_select_contacts, null)
+        view.txtTitle.text = "Contacts"
+        view.txtNext.text = "Forward"
+
+        view.rvSelectContacts.layoutManager = LinearLayoutManager(this)
+        // This will pass the ArrayList to our Adapter
+        val adapter = ChatContactListAdapter(this, usersList, this, true)
+        // Setting the Adapter with the recyclerview
+        view.rvSelectContacts.adapter = adapter
+        view.rvSelectContacts.adapter?.notifyDataSetChanged()
+
+
+        view.txtNext.setOnClickListener {
+            if (selectedUsersList.size == 1) {
+                forwardMessage(
+                    selectedUsersList[0]?.threadId.toString(),
+                    shareText.toString(),
+                    selectedUsersList[0]?.userId.toString(),
+                    attachmentUrl.toString(),
+                    selectedUsersList[0]?.name.toString()
+                )
+                dialog.dismiss()
+            } else if (selectedUsersList.size > 1) {
+                toast("Cannot select more than 1 participant!")
+            } else {
+                toast("Please select a participant!")
+            }
+        }
+        dialog.setCancelable(true)
+        dialog.setContentView(view)
+        dialog.show()
+    }
+
+    private fun forwardMessage(
+        threadId: String,
+        message: String,
+        receiverId: String,
+        url: String,
+        name: String
+    ) {
+        val list = ArrayList<String>()
+        list.add(receiverId)
+
+        mSocket?.emit(
+            "sendMessage", currentUserId,
+            list,
+            message, myUserName, url
+        )
+
+        addMessage(currentUserId.toString(), message, "", "", url)
+
+        viewModel.forwardMessage.observe(this) {
+            LogHelper.e("CHATACTIVITY", "==== ${it?.forwardMessage?.threadId}")
+            val intent = Intent(this, ChatActivity::class.java)
+                .putExtra("currentUserId", PreferenceHelper.getStringPreference(this, Constants.USERID))
+                .putExtra("threadId", it?.forwardMessage?.threadId)
+                .putExtra("userName", name)
+                .putStringArrayListExtra("receiverUserId",
+                    list as ArrayList<String>?
+                )
+            startActivity(intent)
+            overridePendingTransition(0, 0)
+            finish()
+        }
+        viewModel.errorMessage.observe(this) {
+            val conMgr = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+            val netInfo = conMgr.activeNetworkInfo
+            if (netInfo == null) {
+                //No internet
+                Snackbar.make(
+                    findViewById(R.id.relMain),
+                    "No Internet Connection. Please turn on your internet!",
+                    Snackbar.LENGTH_INDEFINITE
+                )
+                    .setAction("Retry") {
+
+                    }
+                    .setActionTextColor(resources.getColor(android.R.color.holo_red_light, theme))
+                    .show()
+            } else {
+                toast(it.toString(), Toast.LENGTH_SHORT)
+            }
+        }
+
+        viewModel.forwardMessage(
+            message,
+            threadId,
+            PreferenceHelper.getStringPreference(this, Constants.USERID).toString(),
+            receiverId,
+            url,
+        )
+    }
+
+    override fun onChatContactClick(item: Users?) {
+    }
+
+    override fun onCheckClick(item: Users?, itemUser: Users?) {
+        if (item == null) {
+            if (selectedUsersList.contains(itemUser)) {
+                selectedUsersList.remove(itemUser)
+            }
+        } else {
+            selectedUsersList.add(item)
+        }
     }
 }

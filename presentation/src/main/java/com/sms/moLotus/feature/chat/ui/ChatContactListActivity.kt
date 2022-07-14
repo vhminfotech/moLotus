@@ -45,7 +45,7 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
     var usersList: ArrayList<Users> = ArrayList()
     lateinit var viewModel: MainViewModel
     var userId: String = ""
-    lateinit var chatViewModel: ChatViewModel
+    private lateinit var chatViewModel: ChatViewModel
     private var customProgressDialog: CustomProgressDialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -282,6 +282,8 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
 
         // on below line we are inflating a layout file which we have created.
         val view = layoutInflater.inflate(R.layout.dialog_select_contacts, null)
+        view.txtTitle.text = "New Group"
+        view.txtNext.text = "Next"
         initRecyclerView(usersList, view.rvSelectContacts, true)
         view.txtNext.setOnClickListener {
             if (selectedUsersList.size >= 1) {

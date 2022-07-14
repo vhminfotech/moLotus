@@ -1,0 +1,20 @@
+mutation ForwardMessage(
+    $message: String!,
+    $threadId: ID!,
+    $senderId:ID!,
+    $receiverId:ID!,
+    $url: String!){
+    forwardMessage(messageInput:{
+        threadId:$threadId
+        senderId:$senderId
+        message:$message
+        url:$url
+        receiverId:$receiverId
+    }){
+        isForwarded
+        message
+        threadId
+        senderId
+        _id
+    }
+}
