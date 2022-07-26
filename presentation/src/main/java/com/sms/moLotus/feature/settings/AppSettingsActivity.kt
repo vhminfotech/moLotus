@@ -29,10 +29,9 @@ import com.sms.moLotus.extension.checkSelfPermissionCompat
 import com.sms.moLotus.extension.requestPermissionsCompat
 import com.sms.moLotus.extension.shouldShowRequestPermissionRationaleCompat
 import com.sms.moLotus.extension.toast
+import com.sms.moLotus.feature.chat.LogHelper
 import com.sms.moLotus.feature.intro.APNDetailsActivity
-import com.sms.moLotus.feature.retrofit.MainRepository
 import com.sms.moLotus.feature.retrofit.MainViewModel
-import com.sms.moLotus.feature.retrofit.MyViewModelFactory
 import com.sms.moLotus.feature.retrofit.RetrofitService
 import com.sms.moLotus.feature.settings.autodownloadapk.UpdateApp
 import kotlinx.android.synthetic.main.activity_app_settings.*
@@ -218,13 +217,14 @@ class AppSettingsActivity : AppCompatActivity() {
     }
 
     private fun getVersionCodeFromApi() {
-        viewModel.versionCode.observe(this, {
+        viewModel.versionCode.observe(this) {
+            LogHelper.e("===========","${it.appConfigRes}")
             val jArray = JSONArray(Gson().toJson(it.appConfigRes))
             this.versionCode = Integer.parseInt(jArray.getJSONObject(0)["configValue"].toString())
             this.apkUrl = jArray.getJSONObject(2)["configValue"].toString()
-        })
-        viewModel.errorMessage.observe(this, {
-            //Log.e("=====", "errorMessage:: $it")
+        }
+        viewModel.errorMessage.observe(this) {
+            Log.e("=====", "errorMessage:: $it")
             Snackbar.make(
                 findViewById(R.id.mainLayout),
                 "No Internet Connection. Please turn on your internet!",
@@ -235,7 +235,7 @@ class AppSettingsActivity : AppCompatActivity() {
                 }
                 .setActionTextColor(resources.getColor(android.R.color.holo_red_light))
                 .show()
-        })
+        }
         viewModel.getVersionCode()
     }
 

@@ -33,7 +33,6 @@ import com.sms.moLotus.GetThreadListQuery
 import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
 import com.sms.moLotus.common.Navigator
-import com.sms.moLotus.common.QKApplication
 import com.sms.moLotus.common.base.QkThemedActivity
 import com.sms.moLotus.common.util.extensions.*
 import com.sms.moLotus.extension.toast
@@ -562,7 +561,7 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
     override fun onResume() {
         super.onResume()
         activityResumedIntent.onNext(true)
-        val app = application as QKApplication
+      /*  val app = application as QKApplication
         mSocket = app.socket
         currentUserId = PreferenceHelper.getStringPreference(this, Constants.USERID).toString()
         mSocket?.on(Socket.EVENT_CONNECT) {
@@ -575,7 +574,7 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
         mSocket?.connect()
         if (tabAppears) {
             getChatList()
-        }
+        }*/
     }
 
     override fun onPause() {
