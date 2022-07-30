@@ -15,6 +15,7 @@ import com.sms.moLotus.R
 import com.sms.moLotus.extension.toast
 import com.sms.moLotus.feature.authentication.MySMSBroadcastReceiver.OTPReceiveListener
 import com.sms.moLotus.feature.intro.APNDetailsActivity
+import com.sms.moLotus.feature.main.MainActivity
 import com.sms.moLotus.feature.networkcall.ApiHelper
 import kotlinx.android.synthetic.main.activity_verify_otp.*
 
@@ -72,9 +73,23 @@ class VerifyOtpActivity : AppCompatActivity() {
                 PreferenceHelper.setPreference(this, "UserLoggedIn", true)
                 PreferenceHelper.setPreference(this, "INTRO", true)
                 PreferenceHelper.setStringPreference(this, "PhoneNumber", phoneNo.toString())
-                val intent = Intent(this, APNDetailsActivity::class.java)
+
+                val settings = getSharedPreferences("appInfo", 0)
+                val editor = settings.edit()
+                editor.putBoolean("first_time", false)
+                editor.commit()
+
+                PreferenceHelper.setPreference(this, "APNSETTINGS", true)
+                PreferenceHelper.setPreference(this, "Notification", true)
+                val intent = Intent(this, MainActivity::class.java);
                 intent.putExtra("PhoneNumber", phoneNo)
                 startActivity(intent)
+                finish()
+
+
+                /*val intent = Intent(this, APNDetailsActivity::class.java)
+                intent.putExtra("PhoneNumber", phoneNo)
+                startActivity(intent)*/
             } else {
                 Toast.makeText(
                     this,

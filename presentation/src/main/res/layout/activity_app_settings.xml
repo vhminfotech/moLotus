@@ -14,6 +14,7 @@
 
     <com.sms.moLotus.common.widget.QkTextView
         android:id="@+id/txtAPN"
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/layoutHeader"
@@ -30,6 +31,7 @@
         android:id="@+id/view1"
         android:layout_width="match_parent"
         android:layout_height="0.25dp"
+        android:visibility="gone"
         android:layout_below="@+id/txtAPN"
         android:background="@android:color/darker_gray" />
 
@@ -136,6 +138,7 @@
             android:layout_gravity="center_vertical"
             android:layout_weight="1"
             android:checked="true"
+            android:enabled="false"
             android:thumb="@drawable/bg_thumb"
             app:track="@drawable/bg_switch_states" />
     </LinearLayout>
@@ -172,6 +175,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:layout_weight="1"
+            android:enabled="false"
             android:checked="true"
             android:thumb="@drawable/bg_thumb"
             app:track="@drawable/bg_switch_states"  />
@@ -179,6 +183,7 @@
 
     <View
         android:id="@+id/view5"
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="0.25dp"
         android:layout_below="@+id/llReadReport"
@@ -188,6 +193,7 @@
         android:id="@+id/llSendPaidMessages"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:visibility="gone"
         android:layout_below="@+id/view5"
         android:orientation="horizontal"
         android:paddingStart="30dp"
@@ -217,6 +223,7 @@
 
     <View
         android:id="@+id/view6"
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="0.25dp"
         android:layout_below="@+id/llSendPaidMessages"
@@ -224,6 +231,7 @@
 
     <LinearLayout
         android:id="@+id/llSignature"
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/view6"
@@ -250,7 +258,7 @@
             android:layout_weight="1"
             android:checked="false"
             android:thumb="@drawable/bg_thumb"
-            app:track="@drawable/bg_switch_states"  />
+            app:track="@drawable/bg_switch_states" />
     </LinearLayout>
 
     <View
@@ -263,6 +271,7 @@
     <LinearLayout
         android:id="@+id/llSignatureText"
         android:layout_width="match_parent"
+        android:visibility="gone"
         android:layout_height="wrap_content"
         android:layout_below="@+id/view7"
         android:orientation="horizontal"
@@ -291,6 +300,7 @@
 
     <View
         android:id="@+id/view8"
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="0.25dp"
         android:layout_below="@+id/llSignatureText"
