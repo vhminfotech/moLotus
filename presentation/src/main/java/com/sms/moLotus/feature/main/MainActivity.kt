@@ -172,8 +172,12 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
+
         super.onCreate(savedInstanceState)
+
         setContentView(R.layout.main_activity)
+        viewModel.bindView(this)
+
         toolbarVisible = toolbar
         mainViewModel =
             ViewModelProvider(this/*, MyViewModelFactory(MainRepository(retrofitService))*/).get(
@@ -270,7 +274,6 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
             startActivity(intent)
         }
 
-        viewModel.bindView(this)
         onNewIntentIntent.onNext(intent)
 
         (snackbar as? ViewStub)?.setOnInflateListener { _, _ ->
