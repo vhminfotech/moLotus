@@ -99,22 +99,41 @@
     <LinearLayout
         android:id="@+id/llTab"
         android:layout_width="match_parent"
-        android:visibility="gone"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:weightSum="2"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/toolbar1">
 
-        <com.google.android.material.tabs.TabLayout
+        <!--<com.google.android.material.tabs.TabLayout
             android:id="@+id/tabLayout"
             android:layout_width="match_parent"
 
             android:layout_height="wrap_content"
-            android:background="@color/primary"
             app:tabIndicatorColor="@color/primary_dark"
-            app:tabTextColor="@android:color/background_light" />
+            app:tabTextColor="@android:color/background_light" />-->
 
+        <TextView
+            android:id="@+id/txtMessages"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:background="@color/message_tab"
+            android:gravity="center"
+            android:text="Messages"
+            android:textColor="@android:color/white"
+            android:textAllCaps="true" />
+
+        <TextView
+            android:id="@+id/txtChats"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@color/chat_tab"
+            android:gravity="center"
+            android:text="Chats"
+            android:textColor="@android:color/white"
+
+            android:textAllCaps="true" />
 
         <!--<androidx.viewpager.widget.ViewPager
             android:id="@+id/viewPager"
@@ -174,11 +193,12 @@
         android:background="@drawable/circle_ripple"
         android:contentDescription="@string/main_fab_cd"
         android:padding="16dp"
-        android:visibility="gone"
         android:src="@drawable/ic_add_black_24dp"
+        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@id/bottom"
         app:layout_constraintEnd_toEndOf="parent"
         app:tint="@color/white" />
+
     <ImageView
         android:id="@+id/createChat"
         android:layout_width="56dp"
@@ -187,11 +207,12 @@
         android:background="@drawable/circle_ripple"
         android:contentDescription="@string/main_fab_cd"
         android:padding="16dp"
-        android:visibility="gone"
         android:src="@drawable/ic_add_black_24dp"
+        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@id/bottom"
         app:layout_constraintEnd_toEndOf="parent"
         app:tint="@color/white" />
+
     <View
         android:layout_width="0dp"
         android:layout_height="8dp"

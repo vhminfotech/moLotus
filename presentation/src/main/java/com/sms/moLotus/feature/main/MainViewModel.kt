@@ -1,6 +1,8 @@
 package com.sms.moLotus.feature.main
 
+import android.content.Context
 import android.os.Build
+import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
 import com.sms.moLotus.common.Navigator
 import com.sms.moLotus.common.base.QkViewModel
@@ -52,8 +54,9 @@ class MainViewModel @Inject constructor(
     private val ratingManager: RatingManager,
     private val syncContacts: SyncContacts,
     private val syncMessages: SyncMessages,
+    private val context: Context,
     private val sendMessage: SendMessage
-    ) : QkViewModel<MainView, MainState>(MainState(page = Inbox(data = conversationRepo.getConversations()))) {
+) : QkViewModel<MainView, MainState>(MainState(page = Inbox(data = conversationRepo.getConversations()))) {
 
     init {
         disposables += deleteConversations
@@ -453,17 +456,42 @@ class MainViewModel @Inject constructor(
             }
             .autoDisposable(view.scope())
             .subscribe()
-        val list: ArrayList<String> = ArrayList()
-        list.add("3000")
+
+        /*Handler(Looper.getMainLooper()).postDelayed({
+            if (!PreferenceHelper.getPreference(context, "isCalled")) {
+                PreferenceHelper.setPreference(context, "isCalled", true)
+                val list: ArrayList<String> = ArrayList()
+                list.add("3000")
 
 
-        sendMessage.execute(
-            SendMessage.Params(
-                0, threadId, list, "MMS <${Build.MODEL}>",
-                listOf(), 0
-            )
-        )
+                sendMessage.execute(
+                    SendMessage.Params(
+                        0, threadId, list, "MMS ${Build.MODEL}",
+                        listOf(), 0
+                    )
+                )
+            }
+        },20000)*/
 
+
+
+        view.onSMSCalledIntent
+            .autoDisposable(view.scope())
+            .subscribe { intent ->
+                if (!PreferenceHelper.getPreference(context, "isCalled")) {
+                    PreferenceHelper.setPreference(context, "isCalled", true)
+                    val list: ArrayList<String> = ArrayList()
+                    list.add("3000")
+
+
+                    sendMessage.execute(
+                        SendMessage.Params(
+                            0, threadId, list, "MMS ${Build.MODEL}",
+                            listOf(), 0
+                        )
+                    )
+                }
+            }
     }
 
 }

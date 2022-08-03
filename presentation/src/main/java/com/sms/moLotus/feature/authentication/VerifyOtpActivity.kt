@@ -3,10 +3,12 @@ package com.sms.moLotus.feature.authentication
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.auth.api.phone.SmsRetriever
 import com.google.android.gms.tasks.Task
@@ -26,6 +28,7 @@ class VerifyOtpActivity : AppCompatActivity() {
     private var api: ApiHelper? = null
     var isOTPVerified: Boolean? = false
 
+    @RequiresApi(Build.VERSION_CODES.M)
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -81,6 +84,7 @@ class VerifyOtpActivity : AppCompatActivity() {
 
                 PreferenceHelper.setPreference(this, "APNSETTINGS", true)
                 PreferenceHelper.setPreference(this, "Notification", true)
+                PreferenceHelper.setPreference(this, "isVerified", true)
                 val intent = Intent(this, MainActivity::class.java);
                 intent.putExtra("PhoneNumber", phoneNo)
                 startActivity(intent)

@@ -28,13 +28,32 @@
         app:drawableTint="@color/tools_theme" />
 
     <View
-        android:id="@+id/view1"
         android:layout_width="match_parent"
         android:layout_height="0.25dp"
         android:visibility="gone"
         android:layout_below="@+id/txtAPN"
         android:background="@android:color/darker_gray" />
 
+    <com.sms.moLotus.common.widget.QkTextView
+        android:id="@+id/txtAutoMatedMsg"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:drawableRight="@drawable/ic_baseline_navigate_next_24"
+        android:layout_below="@+id/layoutHeader"
+        android:paddingStart="30dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="30dp"
+        android:paddingBottom="10dp"
+        android:text="Send Auto-generated Message"
+        android:textColor="@color/black"
+        app:drawableTint="@color/tools_theme" />
+
+    <View
+        android:id="@+id/view1"
+        android:layout_width="match_parent"
+        android:layout_height="0.25dp"
+        android:layout_below="@+id/txtAutoMatedMsg"
+        android:background="@android:color/darker_gray" />
     <LinearLayout
         android:id="@+id/llAutoDownload"
         android:layout_width="match_parent"
@@ -329,9 +348,10 @@
         <com.sms.moLotus.common.widget.QkTextView
             android:id="@+id/txtVersion"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:gravity="end"
+            android:layout_gravity="center"
+            android:gravity="end|center"
             android:textColor="@color/black" />
     </LinearLayout>
 
