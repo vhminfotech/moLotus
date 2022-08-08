@@ -179,7 +179,7 @@ class MainViewModel constructor(/*private val repository: MainRepository*/) : Vi
             try {
                 val response = client?.mutation(registerUserMutation)?.execute()
                 registerUser.postValue(response?.data)
-            } catch (e: Exception) {
+            } catch (e: ApolloException) {
                 errorMessage.postValue(e.message)
             }
         }
