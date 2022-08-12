@@ -3,10 +3,12 @@ package com.sms.moLotus.feature.authentication
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.auth.api.phone.SmsRetriever
 import com.google.android.gms.tasks.Task
@@ -15,6 +17,7 @@ import com.sms.moLotus.R
 import com.sms.moLotus.extension.toast
 import com.sms.moLotus.feature.authentication.MySMSBroadcastReceiver.OTPReceiveListener
 import com.sms.moLotus.feature.intro.APNDetailsActivity
+import com.sms.moLotus.feature.main.MainActivity
 import com.sms.moLotus.feature.networkcall.ApiHelper
 import kotlinx.android.synthetic.main.activity_verify_otp.*
 
@@ -25,6 +28,7 @@ class VerifyOtpActivity : AppCompatActivity() {
     private var api: ApiHelper? = null
     var isOTPVerified: Boolean? = false
 
+    @RequiresApi(Build.VERSION_CODES.M)
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,9 +76,24 @@ class VerifyOtpActivity : AppCompatActivity() {
                 PreferenceHelper.setPreference(this, "UserLoggedIn", true)
                 PreferenceHelper.setPreference(this, "INTRO", true)
                 PreferenceHelper.setStringPreference(this, "PhoneNumber", phoneNo.toString())
-                val intent = Intent(this, APNDetailsActivity::class.java)
+
+                val settings = getSharedPreferences("appInfo", 0)
+                val editor = settings.edit()
+                editor.putBoolean("first_time", false)
+                editor.commit()
+
+                PreferenceHelper.setPreference(this, "APNSETTINGS", true)
+                PreferenceHelper.setPreference(this, "Notification", true)
+                PreferenceHelper.setPreference(this, "isVerified", true)
+                val intent = Intent(this, MainActivity::class.java);
                 intent.putExtra("PhoneNumber", phoneNo)
                 startActivity(intent)
+                finish()
+
+
+                /*val intent = Intent(this, APNDetailsActivity::class.java)
+                intent.putExtra("PhoneNumber", phoneNo)
+                startActivity(intent)*/
             } else {
                 Toast.makeText(
                     this,

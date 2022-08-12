@@ -4,11 +4,11 @@ import android.content.Intent
 import com.sms.moLotus.common.base.QkView
 import com.sms.moLotus.manager.ChangelogManager
 import io.reactivex.Observable
-import io.reactivex.subjects.Subject
 
 interface MainView : QkView<MainState> {
 
     val onNewIntentIntent: Observable<Intent>
+    val onSMSCalledIntent: Observable<Intent>
     val activityResumedIntent: Observable<Boolean>
     val queryChangedIntent: Observable<CharSequence>
     val composeIntent: Observable<Unit>

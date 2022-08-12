@@ -31,7 +31,7 @@ class APNDetailsActivity : AppCompatActivity() {
 
     private fun getApnDetails(carrierId: Int) {
 
-        viewModel.apnDetails.observe(this, {
+        viewModel.apnDetails.observe(this) {
 //            Log.e("=====", "response:: $it")
             etName.setText(it.getApnDetails?.apnName)
             etApn.setText(it.getApnDetails?.apn)
@@ -47,9 +47,9 @@ class APNDetailsActivity : AppCompatActivity() {
             MNC_et.setText(it.getApnDetails?.mnc)
             Auth_Type_et.setText(it.getApnDetails?.authType)
             APN_Type_et.setText(it.getApnDetails?.apnType)
-            if (it.getApnDetails?.apnProtocol?.isEmpty() == true){
+            if (it.getApnDetails?.apnProtocol?.isEmpty() == true) {
                 APN_Protocol_et.setText("1Pv4/1Pv6")
-            }else{
+            } else {
                 APN_Protocol_et.setText(it.getApnDetails?.apnProtocol)
             }
 
@@ -57,8 +57,8 @@ class APNDetailsActivity : AppCompatActivity() {
             Bearer_et.setText(it.getApnDetails?.bearer)
             MVNO_Type_et.setText(it.getApnDetails?.mvnoType)
             MVNO_Value_et.setText(it.getApnDetails?.mvnoValue)
-        })
-        viewModel.errorMessage.observe(this, {
+        }
+        viewModel.errorMessage.observe(this) {
 //            Log.e("=====", "errorMessage:: $it")
 
 
@@ -79,7 +79,7 @@ class APNDetailsActivity : AppCompatActivity() {
             } else {
                 toast(it.toString(), Toast.LENGTH_SHORT)
             }
-        })
+        }
         viewModel.getApnDetails(carrierId)
     }
 

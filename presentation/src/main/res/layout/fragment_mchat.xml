@@ -15,7 +15,14 @@
         android:gravity="center"
         android:text="No chats available"
         android:visibility="gone" />
-
+    <TextView
+        android:id="@+id/txtUpcomingFeature"
+        android:layout_width="match_parent"
+        android:visibility="gone"
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        android:text="Upcoming feature"/>
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvChatRecyclerView"
         android:layout_width="match_parent"

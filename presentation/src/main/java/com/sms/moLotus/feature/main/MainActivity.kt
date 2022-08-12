@@ -26,14 +26,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
-import com.google.android.material.tabs.TabLayout
 import com.jakewharton.rxbinding2.view.clicks
 import com.jakewharton.rxbinding2.widget.textChanges
 import com.sms.moLotus.GetThreadListQuery
 import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
 import com.sms.moLotus.common.Navigator
-import com.sms.moLotus.common.QKApplication
 import com.sms.moLotus.common.base.QkThemedActivity
 import com.sms.moLotus.common.util.extensions.*
 import com.sms.moLotus.extension.toast
@@ -96,6 +94,7 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
     lateinit var viewModelFactory: ViewModelProvider.Factory
 
     override val onNewIntentIntent: Subject<Intent> = PublishSubject.create()
+    override val onSMSCalledIntent: Subject<Intent> = PublishSubject.create()
     override val activityResumedIntent: Subject<Boolean> = PublishSubject.create()
     override val queryChangedIntent by lazy { toolbarSearch.textChanges() }
     override val composeIntent by lazy {
@@ -171,6 +170,13 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
     var currentUserId: String? = ""
 
 
+    override fun onPostCreate(savedInstanceState: Bundle?) {
+        super.onPostCreate(savedInstanceState)
+        Log.e("====================", "onPostCreate")
+
+    }
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
@@ -184,10 +190,51 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
         imgSearch.setOnClickListener {
             relSearch?.visibility = View.VISIBLE
         }
+        Log.e("====================", "onCreate")
 
-        tabLayout?.newTab()?.setText("MESSAGES")?.let { tabLayout?.addTab(it) }
+
+        /*tabLayout?.newTab()?.setText("MESSAGES")?.let { tabLayout?.addTab(it) }
         tabLayout?.newTab()?.setText("CHATS")?.let { tabLayout?.addTab(it) }
         tabLayout?.tabGravity = TabLayout.GRAVITY_FILL
+        tabLayout?.get(0)?.backgroundTintList = ContextCompat.getColorStateList(
+            this,
+            R.color.colorAccentCyan
+        )*/
+
+
+        txtMessages?.setOnClickListener {
+            txtNoChat?.visibility = View.GONE
+            recyclerView?.visibility = View.VISIBLE
+            rvChatRecyclerView?.visibility = View.GONE
+            txtUpcomingFeature?.visibility = View.GONE
+            compose?.visibility = View.VISIBLE
+            createChat?.visibility = View.GONE
+            tabAppears = true
+            chatClicked = false
+
+            toolbarVisible?.visibility = View.GONE
+            if (conversationsAdapter.itemCount == 0) {
+                empty?.visibility = View.VISIBLE
+            }
+        }
+
+
+        txtChats?.setOnClickListener {
+            recyclerView?.visibility = View.GONE
+            empty?.visibility = View.GONE
+            compose?.visibility = View.GONE
+            txtUpcomingFeature?.visibility = View.VISIBLE
+
+            /*createChat?.visibility = View.VISIBLE
+            getChatList()
+            chatClicked = true
+            toolbarVisible?.visibility = View.GONE*/
+        }
+
+        /* tabLayout?.get(1)?.backgroundTintList = ContextCompat.getColorStateList(
+             this,
+             R.color.colorAccentTeal
+         )*/
 
 
         /* val adapter = MyAdapter(this, supportFragmentManager, tabLayout.tabCount)
@@ -195,7 +242,7 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
 
          viewPager?.addOnPageChangeListener(TabLayout.TabLayoutOnPageChangeListener(tabLayout))*/
 
-        tabLayout?.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+        /*tabLayout?.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab) {
                 //  viewPager?.currentItem = tab.position
                 val position = tab.position
@@ -203,14 +250,17 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
                     recyclerView?.visibility = View.GONE
                     empty?.visibility = View.GONE
                     compose?.visibility = View.GONE
-                    createChat?.visibility = View.VISIBLE
+                    txtUpcomingFeature?.visibility = View.VISIBLE
+
+                    *//*createChat?.visibility = View.VISIBLE
                     getChatList()
                     chatClicked = true
-                    toolbarVisible?.visibility = View.GONE
+                    toolbarVisible?.visibility = View.GONE*//*
                 } else {
                     txtNoChat?.visibility = View.GONE
                     recyclerView?.visibility = View.VISIBLE
                     rvChatRecyclerView?.visibility = View.GONE
+                    txtUpcomingFeature?.visibility = View.GONE
                     compose?.visibility = View.VISIBLE
                     createChat?.visibility = View.GONE
                     tabAppears = true
@@ -230,7 +280,7 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
             override fun onTabReselected(tab: TabLayout.Tab) {
 
             }
-        })
+        })*/
 
 
         imgClose.setOnClickListener {
@@ -286,11 +336,13 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
                 ColorStateList.valueOf(theme.blockingFirst().theme)
         }
 
+
         //toggle.syncState()
         toolbar.setNavigationOnClickListener {
             dismissKeyboard()
             homeIntent.onNext(Unit)
         }
+
 
         conversationsAdapter.autoScrollToStart(recyclerView)
 
@@ -379,16 +431,26 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
     override fun onItemClick(item: GetThreadListQuery.RecipientUser?) {
         /* val receiverUserIdList = ArrayList<String>()
         receiverUserIdList.add(item?.userId.toString())*/
-        LogHelper.e("===========================","list isNotParticipant?:: ${item?.isNotParticipant}")
+        LogHelper.e(
+            "===========================",
+            "list isNotParticipant?:: ${item?.isNotParticipant}"
+        )
 
         var isNotParticipant = false
-        if (item?.isNotParticipant?.contains(PreferenceHelper.getStringPreference(this, Constants.USERID)) == true){
+        if (item?.isNotParticipant?.contains(
+                PreferenceHelper.getStringPreference(
+                    this,
+                    Constants.USERID
+                )
+            ) == true
+        ) {
             isNotParticipant = true
         }
-        LogHelper.e("===========================","isNotParticipant:: $isNotParticipant")
+        LogHelper.e("===========================", "isNotParticipant:: $isNotParticipant")
         val intent = Intent(this, ChatActivity::class.java)
             .putExtra("currentUserId", PreferenceHelper.getStringPreference(this, Constants.USERID))
-            .putStringArrayListExtra("receiverUserId",
+            .putStringArrayListExtra(
+                "receiverUserId",
                 item?.recipientIds as java.util.ArrayList<String>?
             )
             .putExtra("threadId", item?.threadId)
@@ -405,7 +467,7 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
         rvChatRecyclerView?.layoutManager = LinearLayoutManager(this)
 
         // This will pass the ArrayList to our Adapter
-        chatListAdapter = ChatListAdapter(this, chatList, this,this)
+        chatListAdapter = ChatListAdapter(this, chatList, this, this)
 
         // Setting the Adapter with the recyclerview
         rvChatRecyclerView?.adapter = chatListAdapter
@@ -477,7 +539,9 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
         when (state.page) {
 
             is Inbox -> {
+
                 showBackButton(state.page.selected > 0)
+
                 title = getString(R.string.main_title_selected, state.page.selected)
                 if (recyclerView.adapter !== conversationsAdapter) recyclerView.adapter =
                     conversationsAdapter
@@ -535,6 +599,11 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
                 }.start()
                 syncingProgress.isIndeterminate = state.syncing.indeterminate
                 snackbar.isVisible = false
+                /*Handler(Looper.getMainLooper()).postDelayed({
+
+
+                }, 25000)*/
+
             }
         }
 
@@ -561,21 +630,27 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
 
     override fun onResume() {
         super.onResume()
+        Log.e("====================", "onResume ====== ${PreferenceHelper.getPreference(this, "isVerified")}")
+
+        if (PreferenceHelper.getPreference(this, "isVerified")){
+            intent?.run(onSMSCalledIntent::onNext)
+        }
+
         activityResumedIntent.onNext(true)
-        val app = application as QKApplication
-        mSocket = app.socket
-        currentUserId = PreferenceHelper.getStringPreference(this, Constants.USERID).toString()
-        mSocket?.on(Socket.EVENT_CONNECT) {
-            mSocket?.emit("addUser", currentUserId)
-            mSocket?.emit("addUser", currentUserId)
-            mSocket?.emit("addUser", currentUserId)
-            mSocket?.emit("addUser", currentUserId)
-        }
-        mSocket?.on(Socket.EVENT_DISCONNECT, onDisconnect)
-        mSocket?.connect()
-        if (tabAppears) {
-            getChatList()
-        }
+        /*  val app = application as QKApplication
+          mSocket = app.socket
+          currentUserId = PreferenceHelper.getStringPreference(this, Constants.USERID).toString()
+          mSocket?.on(Socket.EVENT_CONNECT) {
+              mSocket?.emit("addUser", currentUserId)
+              mSocket?.emit("addUser", currentUserId)
+              mSocket?.emit("addUser", currentUserId)
+              mSocket?.emit("addUser", currentUserId)
+          }
+          mSocket?.on(Socket.EVENT_DISCONNECT, onDisconnect)
+          mSocket?.connect()
+          if (tabAppears) {
+              getChatList()
+          }*/
     }
 
     override fun onPause() {
@@ -684,7 +759,7 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         if (chatClicked) {
             menuInflater.inflate(R.menu.chat_options, menu)
-        }else{
+        } else {
             menuInflater.inflate(R.menu.main, menu)
         }
         return super.onCreateOptionsMenu(menu)
@@ -698,6 +773,7 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
     override fun onBackPressed() {
         super.onBackPressed()
     }
+
     val threadIdList: ArrayList<String> = ArrayList()
 
     override fun onChatClick(

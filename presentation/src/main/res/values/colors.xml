@@ -6,6 +6,9 @@
     <color name="primary_dark">#ff6b13</color>
     <color name="accent">#27a9e1</color>
 
+    <color name="chat_tab">#2196F3</color>
+    <color name="message_tab">#ff6b13</color>
+
     <!-- Teal Theme Colors -->
     <color name="colorPrimaryTeal">#008577</color>
     <color name="colorPrimaryDarkTeal">#00574B</color>

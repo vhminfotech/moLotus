@@ -14,7 +14,7 @@ plugins {
     id("kotlin-kapt")
     id("com.google.firebase.crashlytics")
     id("com.google.gms.google-services")
-    id("com.apollographql.apollo3").version("3.4.0")
+    id("com.apollographql.apollo3").version("3.5.0")
 }
 
 
@@ -263,12 +263,12 @@ dependencies {
 
     //apollo
 //    implementation("com.apollographql.apollo3:apollo-runtime:3.3.0")
-    implementation("com.apollographql.apollo3:apollo-runtime:3.4.0")
+    implementation("com.apollographql.apollo3:apollo-runtime:3.5.0")
 // optional: if you want to use the normalized cache
-    implementation("com.apollographql.apollo3:apollo-normalized-cache-sqlite:3.4.0")
+    implementation("com.apollographql.apollo3:apollo-normalized-cache-sqlite:3.5.0")
     // optional: if you just want the generated models and parsers and write your own HTTP code/cache code, you can remove apollo-runtime
     // and use apollo-api instead
-    implementation("com.apollographql.apollo3:apollo-api:3.4.0")
+    implementation("com.apollographql.apollo3:apollo-api:3.5.0")
 
 //    implementation "com.apollographql.apollo:apollo-runtime:2.4.0"
 //    implementation "com.apollographql.apollo:apollo-android-support:2.4.0"

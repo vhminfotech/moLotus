@@ -3,9 +3,11 @@ package com.sms.moLotus.feature.intro
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.WindowManager
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.ads.identifier.AdvertisingIdClient
 import com.sms.moLotus.PreferenceHelper
@@ -14,6 +16,7 @@ import com.sms.moLotus.feature.main.MainActivity
 import kotlinx.android.synthetic.main.activity_app_intro.*
 import timber.log.Timber
 
+@RequiresApi(Build.VERSION_CODES.M)
 class AppIntroActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
