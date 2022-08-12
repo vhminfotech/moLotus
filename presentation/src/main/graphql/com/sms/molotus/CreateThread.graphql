@@ -9,6 +9,7 @@ mutation CreateThread($message: String!, $lastSenderId: ID!, $recipientsIds:[ID!
         url: $url
     }) {
         id
+        messageId
         lastSenderId
         message
         date

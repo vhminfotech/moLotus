@@ -15,6 +15,7 @@ import android.os.Looper
 import android.provider.ContactsContract
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -131,6 +132,8 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
         mSocket?.on(Socket.EVENT_DISCONNECT, onDisconnect)
         mSocket?.on(Socket.EVENT_CONNECT_ERROR, onConnectError)
         mSocket?.off("getMessage")?.on("getMessage", getMessage)
+        mSocket?.off("delivered")?.on("delivered", delivered)
+        mSocket?.off("markedSeen")?.on("markedSeen", markedSeen)
         // mSocket?.off("typing")?.on("typing", typing)
         mSocket?.connect()
 
@@ -480,6 +483,11 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
             } else {
                 getGroupMessageList(it.createThread?.id.toString())
             }
+            val map : HashMap<String, String> = HashMap()
+            map["SENDER_ID"] = currentUserId.toString()
+            map["MESSAGE_ID"] = it.createThread?.messageId.toString()
+            mSocket?.emit("received",map)
+            mSocket?.emit("markSeen",map)
         }
         viewModel.errorMessage.observe(this) {
             val conMgr =
@@ -515,6 +523,11 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
 
         viewModel.createMessage.observe(this) {
             txtMessage.text = null
+            val map : HashMap<String, String> = HashMap()
+            map["SENDER_ID"] = currentUserId.toString()
+            map["MESSAGE_ID"] = it.createMessage?._id.toString()
+            mSocket?.emit("received",map)
+            mSocket?.emit("markSeen",map)
         }
         viewModel.errorMessage.observe(this) {
             val conMgr = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -910,6 +923,8 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
     private val getMessage = Emitter.Listener { args ->
         runOnUiThread(Runnable {
             val data = args[0] as JSONObject
+            Log.e("CHATACTIVITY","data: getMessage: $data")
+
             val senderId: String
             val text: String
             val currTime: String
@@ -932,6 +947,21 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
             } else {
                 addMessage(senderId, text, currTime, "", url)
             }
+        })
+    }
+
+    private val delivered = Emitter.Listener { args ->
+        runOnUiThread(Runnable {
+            val data = args[0] as JSONObject
+           Log.e("CHATACTIVITY","data: delivered: $data")
+        })
+    }
+
+    private val markedSeen = Emitter.Listener { args ->
+        runOnUiThread(Runnable {
+            val data = args[0] as JSONObject
+
+            Log.e("CHATACTIVITY","data: markedSeen: $data")
         })
     }
 
