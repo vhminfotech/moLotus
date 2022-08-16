@@ -32,6 +32,7 @@ import com.sms.moLotus.GetThreadListQuery
 import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
 import com.sms.moLotus.common.Navigator
+import com.sms.moLotus.common.QKApplication
 import com.sms.moLotus.common.base.QkThemedActivity
 import com.sms.moLotus.common.util.extensions.*
 import com.sms.moLotus.extension.toast
@@ -223,8 +224,12 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
             recyclerView?.visibility = View.GONE
             empty?.visibility = View.GONE
             compose?.visibility = View.GONE
-            txtUpcomingFeature?.visibility = View.VISIBLE
+            //txtUpcomingFeature?.visibility = View.VISIBLE
 
+            createChat?.visibility = View.VISIBLE
+            getChatList()
+            chatClicked = true
+            toolbarVisible?.visibility = View.GONE
             /*createChat?.visibility = View.VISIBLE
             getChatList()
             chatClicked = true
@@ -637,7 +642,7 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
         }
 
         activityResumedIntent.onNext(true)
-        /*  val app = application as QKApplication
+        val app = application as QKApplication
           mSocket = app.socket
           currentUserId = PreferenceHelper.getStringPreference(this, Constants.USERID).toString()
           mSocket?.on(Socket.EVENT_CONNECT) {
@@ -650,7 +655,7 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
           mSocket?.connect()
           if (tabAppears) {
               getChatList()
-          }*/
+          }
     }
 
     override fun onPause() {
