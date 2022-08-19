@@ -113,7 +113,7 @@ class GroupDetailsActivity : AppCompatActivity(), OnGroupItemClickListener {
             if (netInfo == null) {
                 //No internet
                 Snackbar.make(
-                    findViewById(R.id.relMain),
+                    findViewById(R.id.llGroupDetails),
                     "No Internet Connection. Please turn on your internet!",
                     Snackbar.LENGTH_INDEFINITE
                 )

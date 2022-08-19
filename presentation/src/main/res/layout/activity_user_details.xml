@@ -2,7 +2,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/llGroupDetails"
+    android:id="@+id/llUserDetails"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white">
@@ -38,11 +38,11 @@
                 android:orientation="vertical">
 
                 <com.sms.moLotus.common.widget.QkTextView
-                    android:id="@+id/txtGroupName"
+                    android:id="@+id/txtUserName"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:paddingStart="10dp"
-                    android:text="GroupName"
+                    android:text="Name"
                     android:textColor="@color/white"
                     android:textSize="16sp" />
 
@@ -71,39 +71,10 @@
                 android:scaleType="fitXY"
                 android:src="@drawable/bg_chat" />
 
-            <com.sms.moLotus.common.widget.QkTextView
-                android:id="@+id/txtCreatedAt"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:paddingStart="10dp"
-                android:paddingBottom="10dp"
-                android:textColor="@color/black" />
         </FrameLayout>
 
         <com.sms.moLotus.common.widget.QkTextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:elevation="10dp"
-            android:padding="10dp"
-            android:text="Participants"
-            android:textColor="@color/black"
-            android:textStyle="bold" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvParticipants"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:layout_marginEnd="10dp"
-            android:background="@drawable/background_button"
-            android:elevation="5dp"
-            android:nestedScrollingEnabled="false"
-            android:paddingStart="10dp"
-            android:paddingEnd="10dp" />
-
-        <com.sms.moLotus.common.widget.QkTextView
-            android:id="@+id/txtExitGroup"
+            android:id="@+id/txtBlockUser"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
@@ -112,14 +83,13 @@
             android:layout_marginEnd="10dp"
             android:layout_marginBottom="20dp"
             android:background="@drawable/background_button"
-            android:drawableLeft="@drawable/ic_exit"
+            android:drawableStart="@drawable/ic_block"
             android:drawablePadding="7dp"
-            android:drawableTint="@color/colorThemeRed"
             android:elevation="10dp"
             android:gravity="center_vertical"
             android:textStyle="bold"
             android:padding="20dp"
-            android:text="Exit Group"
+            android:text="Block User"
             android:textColor="@color/colorThemeRed" />
 
     </LinearLayout>

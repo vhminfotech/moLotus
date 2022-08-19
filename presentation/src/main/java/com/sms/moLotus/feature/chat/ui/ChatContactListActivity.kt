@@ -256,6 +256,7 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
             .putExtra("threadId", item?.threadId.toString())
             .putExtra("userName", item?.name.toString())
             .putExtra("flag", true)
+            .putExtra("isChatContact", true)
             .putExtra("isGroup", false)
         startActivity(intent)
         overridePendingTransition(0, 0)

@@ -60,6 +60,7 @@ import io.socket.emitter.Emitter
 import kotlinx.android.synthetic.main.activity_chat.*
 import kotlinx.android.synthetic.main.dialog_delete_message.*
 import kotlinx.android.synthetic.main.dialog_select_contacts.view.*
+import kotlinx.android.synthetic.main.dialog_unblock_user.*
 import kotlinx.android.synthetic.main.layout_attachments.view.*
 import kotlinx.coroutines.launch
 import org.json.JSONException
@@ -96,6 +97,8 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
     private var isConnected = true
     private var myUserId: String? = ""
     private var flag: Boolean? = true
+    private var isChatContact: Boolean? = false
+    private var blocked: Boolean? = false
     var isGroup: Boolean = false
     private var isNotParticipant: Boolean = false
     private val chatDatabase by lazy { ChatDatabase.getDatabase(this).getChatDao() }
@@ -142,6 +145,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
         recipientsIds = intent?.getStringArrayListExtra("receiverUserId")
         threadId = intent?.getStringExtra("threadId")
         flag = intent?.getBooleanExtra("flag", false)
+        isChatContact = intent?.getBooleanExtra("isChatContact", false)
         isGroup = intent.getBooleanExtra("isGroup", false)
         isNotParticipant = intent.getBooleanExtra("isNotParticipant", false)
         userName = intent.getStringExtra("userName")
@@ -175,6 +179,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
 
         LogHelper.e("CHATACTIVITY", "===threadId:: $threadId")
         LogHelper.e("CHATACTIVITY", "===isGroup:: $isGroup")
+
         if (!isGroup) {
             getMessageList(threadId.toString())
         } else {
@@ -202,32 +207,43 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
 
         imgSend.setOnClickListener {
             //getMessage list empty then create thread else create message
-            if (flag == true) {
-                createThread(txtMessage.text.toString(), isGroup, groupName.toString(), "")
-            } else {
-                if ((threadId?.isEmpty() == true || threadId == "null")) {
-                    createThread(
-                        txtMessage.text.toString(), isGroup,
-                        groupName.toString(), ""
-                    )
-                } else {
-                    if (isGroup) {
-                        createMessage(
-                            threadId.toString(),
-                            txtMessage.text.toString(),
-                            "",
-                            ""
-                        )
+
+            if (blocked == false) {
+                if (txtMessage?.text?.isNotEmpty() == true) {
+                    if (flag == true) {
+                        createThread(txtMessage.text.toString(),
+                            isGroup,
+                            groupName.toString(),
+                            "")
                     } else {
-                        createMessage(
-                            threadId.toString(),
-                            txtMessage.text.toString(),
-                            recipientsIds?.get(0).toString(),
-                            ""
-                        )
+                        if ((threadId?.isEmpty() == true || threadId == "null")) {
+                            createThread(
+                                txtMessage.text.toString(), isGroup,
+                                groupName.toString(), ""
+                            )
+                        } else {
+                            if (isGroup) {
+                                createMessage(
+                                    threadId.toString(),
+                                    txtMessage.text.toString(),
+                                    "",
+                                    ""
+                                )
+                            } else {
+                                createMessage(
+                                    threadId.toString(),
+                                    txtMessage.text.toString(),
+                                    recipientsIds?.get(0).toString(),
+                                    ""
+                                )
+                            }
+                        }
                     }
                 }
+            } else {
+                showUnBlockDialog()
             }
+
         }
 
         txtMessage?.addTextChangedListener(object : TextWatcher {
@@ -253,6 +269,15 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
                     .putExtra("groupId", threadId)
                 startActivity(intent)
                 overridePendingTransition(0, 0)
+            } else {
+                Log.e("==================", "blocked :: $blocked")
+                val intent = Intent(this, UserDetailsActivity::class.java)
+                    .putExtra("userId", myUserId)
+                    .putExtra("userName", userName)
+                    .putExtra("blockUserId", recipientsIds?.get(0).toString())
+                    .putExtra("blocked", blocked)
+                startActivity(intent)
+                overridePendingTransition(0, 0)
             }
         }
 
@@ -260,6 +285,58 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
             showAttachmentOptions()
         }
     }
+
+    private fun showUnBlockDialog() {
+        val dialog = Dialog(this)
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        dialog.setCancelable(false)
+        dialog.setContentView(R.layout.dialog_unblock_user)
+
+        dialog.btnCancelUnBlock.setOnClickListener {
+            dialog.dismiss()
+        }
+        dialog.btnUnblock.setOnClickListener {
+            unBlockUser()
+            dialog.dismiss()
+        }
+        dialog.show()
+    }
+
+    private fun unBlockUser() {
+        viewModel.unBlockUser.observe(this) {
+            if (it.unblockUser?.error.toString() == "false") {
+                toast("User unblocked successfully!")
+
+                blocked = false
+            }
+        }
+        viewModel.errorMessage.observe(this) {
+            val conMgr =
+                getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val netInfo = conMgr.activeNetworkInfo
+            if (netInfo == null) {
+                //No internet
+                Snackbar.make(
+                    findViewById(R.id.llUserDetails),
+                    "No Internet Connection. Please turn on your internet!",
+                    Snackbar.LENGTH_INDEFINITE
+                )
+                    .setAction("Retry") {
+
+                    }
+                    .setActionTextColor(resources.getColor(android.R.color.holo_red_light))
+                    .show()
+            } else {
+                toast(it.toString(), Toast.LENGTH_SHORT)
+            }
+        }
+
+        viewModel.unBlockUser(
+            myUserId.toString(),
+            recipientsIds?.get(0).toString()
+        )
+    }
+
 
     private fun showAttachmentOptions() {
         val dialog = BottomSheetDialog(this, R.style.BottomSheetDialog)
@@ -477,17 +554,19 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
         )
         addMessage(currentUserId.toString(), message, "", "", url)
         viewModel.createThread.observe(this) {
+            Log.e("==================", "createThread:: ${it.createThread}")
+
             txtMessage.text = null
             if (!isGroup) {
                 getMessageList(it.createThread?.id.toString())
             } else {
                 getGroupMessageList(it.createThread?.id.toString())
             }
-            val map : HashMap<String, String> = HashMap()
+            val map: HashMap<String, String> = HashMap()
             map["SENDER_ID"] = currentUserId.toString()
             map["MESSAGE_ID"] = it.createThread?.messageId.toString()
-            mSocket?.emit("received",map)
-            mSocket?.emit("markSeen",map)
+            mSocket?.emit("received", map)
+            mSocket?.emit("markSeen", map)
         }
         viewModel.errorMessage.observe(this) {
             val conMgr =
@@ -522,12 +601,14 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
         addMessage(currentUserId.toString(), message, "", "", url)
 
         viewModel.createMessage.observe(this) {
+            Log.e("==================", "createThread:: ${it.createMessage}")
+
             txtMessage.text = null
-            val map : HashMap<String, String> = HashMap()
+            val map: HashMap<String, String> = HashMap()
             map["SENDER_ID"] = currentUserId.toString()
             map["MESSAGE_ID"] = it.createMessage?._id.toString()
-            mSocket?.emit("received",map)
-            mSocket?.emit("markSeen",map)
+            mSocket?.emit("received", map)
+            mSocket?.emit("markSeen", map)
         }
         viewModel.errorMessage.observe(this) {
             val conMgr = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -553,7 +634,8 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
             message,
             threadId,
             PreferenceHelper.getStringPreference(this, Constants.USERID).toString(),
-            PreferenceHelper.getStringPreference(this, Constants.TOKEN).toString(), url, receiverId,
+            PreferenceHelper.getStringPreference(this, Constants.TOKEN).toString(), url,
+            receiverId,
         )
     }
 
@@ -571,7 +653,12 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
 
     private fun getMessageList(threadId: String) {
         viewModel.allMessages.observe(this) {
-            LogHelper.e("CHATACTIVITY","list :: ${it.getMessageList}")
+            LogHelper.e("CHATACTIVITY", "list :: ${it.getMessageList?.messages}")
+
+            blocked = it.getMessageList?.blocked
+
+            LogHelper.e("CHATACTIVITY", "blocked getMessageList:: $blocked")
+
             if (it.getMessageList?.messages?.isNotEmpty() == true) {
                 getMessageList =
                     it.getMessageList.messages as MutableList<GetMessageListQuery.Message>
@@ -828,7 +915,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
     private fun showDeleteDialog(
         llOnClick: LinearLayout,
         messageIdList: ArrayList<String>,
-        adapterPosition: Int
+        adapterPosition: Int,
     ) {
         val dialog = Dialog(this)
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -923,7 +1010,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
     private val getMessage = Emitter.Listener { args ->
         runOnUiThread(Runnable {
             val data = args[0] as JSONObject
-            Log.e("CHATACTIVITY","data: getMessage: $data")
+            Log.e("CHATACTIVITY", "data: getMessage: $data")
 
             val senderId: String
             val text: String
@@ -953,7 +1040,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
     private val delivered = Emitter.Listener { args ->
         runOnUiThread(Runnable {
             val data = args[0] as JSONObject
-           Log.e("CHATACTIVITY","data: delivered: $data")
+            Log.e("CHATACTIVITY", "data: delivered: $data")
         })
     }
 
@@ -961,7 +1048,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
         runOnUiThread(Runnable {
             val data = args[0] as JSONObject
 
-            Log.e("CHATACTIVITY","data: markedSeen: $data")
+            Log.e("CHATACTIVITY", "data: markedSeen: $data")
         })
     }
 
@@ -970,7 +1057,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
         message: String,
         currTime: String,
         userName: String,
-        url: String
+        url: String,
     ) {
         val dateFormat =
             SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).format(Date())
@@ -1076,7 +1163,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
         message: String,
         receiverId: String,
         url: String,
-        name: String
+        name: String,
     ) {
         val list = ArrayList<String>()
         list.add(receiverId)
@@ -1092,7 +1179,8 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
         viewModel.forwardMessage.observe(this) {
             LogHelper.e("CHATACTIVITY", "==== ${it?.forwardMessage?.threadId}")
             val intent = Intent(this, ChatActivity::class.java)
-                .putExtra("currentUserId", PreferenceHelper.getStringPreference(this, Constants.USERID))
+                .putExtra("currentUserId",
+                    PreferenceHelper.getStringPreference(this, Constants.USERID))
                 .putExtra("threadId", it?.forwardMessage?.threadId)
                 .putExtra("userName", name)
                 .putStringArrayListExtra("receiverUserId",

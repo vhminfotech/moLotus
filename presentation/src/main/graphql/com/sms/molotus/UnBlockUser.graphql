@@ -1,0 +1,5 @@
+mutation UnBlockUser($userId: ID!, $userIdToUnblock: ID!){
+    unblockUser(userId: $userId, userIdToUnblock: $userIdToUnblock) {
+        error
+    }
+}

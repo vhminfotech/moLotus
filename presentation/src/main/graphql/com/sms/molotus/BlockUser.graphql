@@ -1,0 +1,5 @@
+mutation BlockUser($userId: ID!, $userIdToBlock: ID!){
+    blockUser(userId: $userId, userIdToBlock: $userIdToBlock) {
+        error
+    }
+}

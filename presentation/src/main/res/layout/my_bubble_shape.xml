@@ -5,18 +5,15 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraintMyMsg"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-
         android:layout_gravity="end|center"
         android:layout_marginStart="50dp"
         android:layout_marginTop="5dp"
         android:layout_marginEnd="15dp"
         android:layout_marginBottom="5dp"
-
         android:orientation="vertical">
 
         <LinearLayout
@@ -122,7 +119,7 @@
                 android:layout_marginTop="2dp"
                 android:background="@drawable/my_bubble_shape"
                 android:padding="7dp"
-                android:text="akanksja"
+                android:text="akanksha"
                 android:textColor="@color/black"
                 android:textSize="15sp"
                 app:layout_constraintEnd_toEndOf="parent"

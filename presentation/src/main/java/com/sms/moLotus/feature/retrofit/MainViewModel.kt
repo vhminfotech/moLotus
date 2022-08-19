@@ -28,6 +28,8 @@ class MainViewModel constructor(/*private val repository: MainRepository*/) : Vi
     val allGroupMessages = MutableLiveData<GetGroupMessageListQuery.Data>()
     val getGroupDetails = MutableLiveData<GetGroupDetailsQuery.Data>()
     val exitGroup = MutableLiveData<ExitGroupMutation.Data>()
+    val blockUser = MutableLiveData<BlockUserMutation.Data>()
+    val unBlockUser = MutableLiveData<UnBlockUserMutation.Data>()
     val createAdmin = MutableLiveData<CreateUserAAdminOfGroupMutation.Data>()
     val removeAdmin = MutableLiveData<DismissionAdminMutation.Data>()
     val removeParticipant = MutableLiveData<RemoveParticipantFromGroupIfUAreAdminMutation.Data>()
@@ -193,7 +195,7 @@ class MainViewModel constructor(/*private val repository: MainRepository*/) : Vi
         token: String,
         isGroup: Boolean,
         groupName: String,
-        url: String
+        url: String,
     ) {
         client = ApolloClientService.setUpApolloClient(token)
         val createThreadMutation =
@@ -237,7 +239,7 @@ class MainViewModel constructor(/*private val repository: MainRepository*/) : Vi
         threadId: String,
         senderId: String,
         receiverId: String,
-        url: String
+        url: String,
     ) {
         client = ApolloClientService.setUpApolloClient("")
         val forwardMessageMutation =
@@ -305,6 +307,34 @@ class MainViewModel constructor(/*private val repository: MainRepository*/) : Vi
             try {
                 val response = client?.mutation(exitGroupMutation)?.execute()
                 exitGroup.postValue(response?.data)
+            } catch (e: ApolloException) {
+                errorMessage.postValue(e.message)
+            }
+        }
+    }
+
+    fun blockUser(myUserId: String, userToBlockId: String) {
+        client = ApolloClientService.setUpApolloClient("")
+        val blockUserMutation = BlockUserMutation(myUserId, userToBlockId)
+
+        GlobalScope.launch(Dispatchers.Main) {
+            try {
+                val response = client?.mutation(blockUserMutation)?.execute()
+                blockUser.postValue(response?.data)
+            } catch (e: ApolloException) {
+                errorMessage.postValue(e.message)
+            }
+        }
+    }
+
+    fun unBlockUser(myUserId: String, userToUnblockId: String) {
+        client = ApolloClientService.setUpApolloClient("")
+        val unBlockUserMutation = UnBlockUserMutation(myUserId, userToUnblockId)
+
+        GlobalScope.launch(Dispatchers.Main) {
+            try {
+                val response = client?.mutation(unBlockUserMutation)?.execute()
+                unBlockUser.postValue(response?.data)
             } catch (e: ApolloException) {
                 errorMessage.postValue(e.message)
             }

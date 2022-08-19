@@ -1,5 +1,6 @@
 query GetMessageList($threadId: ID!,$senderId: ID!, $receiverId:ID!){
     getMessageList(threadId:$threadId,senderId:$senderId,receiverId:$receiverId){
+        blocked
         messages{
             senderId
             threadId

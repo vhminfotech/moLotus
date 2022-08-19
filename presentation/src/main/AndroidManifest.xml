@@ -64,9 +64,13 @@
         android:theme="@style/AppLaunchTheme"
         android:usesCleartextTraffic="true">
         <activity
-            android:name=".feature.chat.ui.SendContactActivity"
+            android:name=".feature.chat.ui.UserDetailsActivity"
             android:exported="true"
             android:theme="@style/AppTheme1"/>
+        <activity
+            android:name=".feature.chat.ui.SendContactActivity"
+            android:exported="true"
+            android:theme="@style/AppTheme1" />
         <activity
             android:name=".feature.chat.ui.CameraActivity"
             android:exported="true" />
