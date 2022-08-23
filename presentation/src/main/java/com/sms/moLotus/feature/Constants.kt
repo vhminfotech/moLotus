@@ -3,7 +3,7 @@ package com.sms.moLotus.feature
 object Constants {
     //const val BASE_URL = "http://mgram-backend.vhminfotech.com/api/"
 //    const val BASE_URL = "http://dev-mgram.vhminfotech.com/api/"
-    const val BASE_URL = "https://34b7-27-57-189-9.in.ngrok.io/"
+    const val BASE_URL = "https://6c70-27-57-189-9.in.ngrok.io/"
 //    const val BASE_URL = "https://mchat.molotus.com/"
 //    const val BASE_URL = "https://192.168.25.204:81/"
     const val BASE_GRAPHQL_URL = BASE_URL + "graphql"

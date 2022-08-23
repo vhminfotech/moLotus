@@ -1,8 +1,10 @@
 package com.sms.moLotus.feature
 
+import android.app.PendingIntent
 import android.content.ContentResolver
 import android.content.ContentValues
 import android.content.Context
+import android.content.Intent
 import android.database.Cursor
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -13,6 +15,11 @@ import android.os.Environment
 import android.os.StrictMode
 import android.provider.MediaStore
 import android.util.Log
+import androidx.annotation.RequiresApi
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import com.sms.moLotus.R
+import com.sms.moLotus.feature.chat.ui.ChatActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -672,5 +679,35 @@ object Utils {
             Log.e("DOWNLOAD URL", "downloading file failed due to $e")
         }
         return destination
+    }
+
+    private fun basicNotification(context: Context) {
+        val builder = NotificationCompat.Builder(context, "NOTIFY")
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setContentTitle("Test notification")
+            .setContentText("Test Notification body")
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+        with(NotificationManagerCompat.from(context)) {
+            notify(1, builder.build())
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.M)
+    private fun pendingNotification(context: Context) {
+        val intent = Intent(context, ChatActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        val pendingIntent: PendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
+
+        val builder = NotificationCompat.Builder(context, "NOTIFY")
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setContentTitle("My notification")
+            .setContentText("Hello World!")
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+        with(NotificationManagerCompat.from(context)) {
+            notify(1, builder.build())
+        }
     }
 }
