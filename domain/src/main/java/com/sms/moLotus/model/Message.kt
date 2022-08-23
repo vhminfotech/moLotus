@@ -105,9 +105,9 @@ open class Message : RealmObject() {
             isSms() -> body
 
             else -> parts
-                    .filter { it.type == "text/plain" }
-                    .mapNotNull { it.text }
-                    .joinToString("\n") { text -> text }
+                .filter { it.type == "text/plain" }
+                .mapNotNull { it.text }
+                .joinToString("\n") { text -> text }
         }
     }
 
@@ -122,10 +122,10 @@ open class Message : RealmObject() {
             val sb = StringBuilder()
 
             // Add subject
-            getCleansedSubject().takeIf { it.isNotEmpty() }?.run(sb::this.appendLine(value))
+            getCleansedSubject().takeIf { it.isNotEmpty() }?.run(sb::appendln)
 
             // Add parts
-            parts.mapNotNull { it.getSummary() }.forEach { summary -> sb.appendLine(summary) }
+            parts.mapNotNull { it.getSummary() }.forEach { summary -> sb.appendln(summary) }
 
             sb.toString().trim()
         }
