@@ -46,13 +46,15 @@ import io.realm.Realm
 import io.realm.RealmResults
 import io.realm.Sort
 import timber.log.Timber
-import java.io.*
+import java.io.File
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.collections.ArrayList
 import kotlin.math.sqrt
 
 
@@ -428,7 +430,7 @@ class MessageRepositoryImpl @Inject constructor(
                 .toMutableMap()
 
             val imageByteCount =
-                imageBytesByAttachment.values.sumOf<T>({ byteArray -> byteArray.size })
+                imageBytesByAttachment.values.sumBy { byteArray -> byteArray.size }
             if (imageByteCount > remainingBytes) {
                 imageBytesByAttachment.forEach { (attachment, originalBytes) ->
                     var uri = attachment.getUri() ?: return@forEach
