@@ -169,13 +169,7 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
 
     private var mSocket: Socket? = null
     var currentUserId: String? = ""
-
-
-    override fun onPostCreate(savedInstanceState: Bundle?) {
-        super.onPostCreate(savedInstanceState)
-        Log.e("====================", "onPostCreate")
-
-    }
+    var threadList : GetThreadListQuery.GetThreadList ?=null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -210,7 +204,6 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
             txtUpcomingFeature?.visibility = View.GONE
             compose?.visibility = View.VISIBLE
             createChat?.visibility = View.GONE
-            tabAppears = true
             chatClicked = false
 
             toolbarVisible?.visibility = View.GONE
@@ -224,69 +217,20 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
             recyclerView?.visibility = View.GONE
             empty?.visibility = View.GONE
             compose?.visibility = View.GONE
-            //txtUpcomingFeature?.visibility = View.VISIBLE
-
             createChat?.visibility = View.VISIBLE
-            getChatList()
             chatClicked = true
             toolbarVisible?.visibility = View.GONE
-            /*createChat?.visibility = View.VISIBLE
             getChatList()
-            chatClicked = true
-            toolbarVisible?.visibility = View.GONE*/
+            if (threadList?.recipientUser?.size == 0) {
+                rvChatRecyclerView?.visibility = View.GONE
+                txtNoChat?.visibility = View.VISIBLE
+            } else {
+                rvChatRecyclerView?.visibility = View.VISIBLE
+                txtNoChat?.visibility = View.GONE
+                initRecyclerView(threadList)
+            }
+
         }
-
-        /* tabLayout?.get(1)?.backgroundTintList = ContextCompat.getColorStateList(
-             this,
-             R.color.colorAccentTeal
-         )*/
-
-
-        /* val adapter = MyAdapter(this, supportFragmentManager, tabLayout.tabCount)
-         viewPager?.adapter = adapter
-
-         viewPager?.addOnPageChangeListener(TabLayout.TabLayoutOnPageChangeListener(tabLayout))*/
-
-        /*tabLayout?.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-            override fun onTabSelected(tab: TabLayout.Tab) {
-                //  viewPager?.currentItem = tab.position
-                val position = tab.position
-                if (position == 1) {
-                    recyclerView?.visibility = View.GONE
-                    empty?.visibility = View.GONE
-                    compose?.visibility = View.GONE
-                    txtUpcomingFeature?.visibility = View.VISIBLE
-
-                    *//*createChat?.visibility = View.VISIBLE
-                    getChatList()
-                    chatClicked = true
-                    toolbarVisible?.visibility = View.GONE*//*
-                } else {
-                    txtNoChat?.visibility = View.GONE
-                    recyclerView?.visibility = View.VISIBLE
-                    rvChatRecyclerView?.visibility = View.GONE
-                    txtUpcomingFeature?.visibility = View.GONE
-                    compose?.visibility = View.VISIBLE
-                    createChat?.visibility = View.GONE
-                    tabAppears = true
-                    chatClicked = false
-
-                    toolbarVisible?.visibility = View.GONE
-                    if (conversationsAdapter.itemCount == 0) {
-                        empty?.visibility = View.VISIBLE
-                    }
-                }
-            }
-
-            override fun onTabUnselected(tab: TabLayout.Tab) {
-
-            }
-
-            override fun onTabReselected(tab: TabLayout.Tab) {
-
-            }
-        })*/
-
 
         imgClose.setOnClickListener {
             dismissKeyboard()
@@ -383,15 +327,7 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
     private fun getChatList() {
         mainViewModel.chatList.observe(this) {
             Log.e("=====", "response:: $it")
-
-            if (it.getThreadList?.recipientUser?.size == 0) {
-                rvChatRecyclerView?.visibility = View.GONE
-                txtNoChat?.visibility = View.VISIBLE
-            } else {
-                rvChatRecyclerView?.visibility = View.VISIBLE
-                txtNoChat?.visibility = View.GONE
-                it.getThreadList?.let { it1 -> initRecyclerView(it1) }
-            }
+            threadList = it.getThreadList
         }
         mainViewModel.errorMessage.observe(this) {
             Log.e("=====", "errorMessage:: $it")
@@ -434,12 +370,6 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
     }
 
     override fun onItemClick(item: GetThreadListQuery.RecipientUser?) {
-        /* val receiverUserIdList = ArrayList<String>()
-        receiverUserIdList.add(item?.userId.toString())*/
-        LogHelper.e(
-            "===========================",
-            "list isNotParticipant?:: ${item?.isNotParticipant}"
-        )
 
         var isNotParticipant = false
         if (item?.isNotParticipant?.contains(
@@ -468,11 +398,11 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
         overridePendingTransition(0, 0)
     }
 
-    private fun initRecyclerView(chatList: GetThreadListQuery.GetThreadList) {
+    private fun initRecyclerView(chatList: GetThreadListQuery.GetThreadList?) {
         rvChatRecyclerView?.layoutManager = LinearLayoutManager(this)
 
         // This will pass the ArrayList to our Adapter
-        chatListAdapter = ChatListAdapter(this, chatList, this, this)
+        chatListAdapter = chatList?.let { ChatListAdapter(this, it, this, this) }
 
         // Setting the Adapter with the recyclerview
         rvChatRecyclerView?.adapter = chatListAdapter
@@ -577,14 +507,6 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
             }
         }
 
-        /*inbox.isActivated = state.page is Inbox
-        archived.isActivated = state.page is Archived
-
-        if (drawerLayout.isDrawerOpen(GravityCompat.START) && !state.drawerOpen) {
-            drawerLayout.closeDrawer(GravityCompat.START)
-        } else if (!drawerLayout.isDrawerVisible(GravityCompat.START) && state.drawerOpen) {
-            drawerLayout.openDrawer(GravityCompat.START)
-        }*/
 
         when (state.syncing) {
             is SyncRepository.SyncProgress.Idle -> {
@@ -653,9 +575,9 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
           }
           mSocket?.on(Socket.EVENT_DISCONNECT, onDisconnect)
           mSocket?.connect()
-          if (tabAppears) {
+          /*if (tabAppears) {
               getChatList()
-          }
+          }*/
     }
 
     override fun onPause() {
