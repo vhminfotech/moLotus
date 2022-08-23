@@ -108,11 +108,6 @@ class IntroActivity : AppCompatActivity() {
         )
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-       // mSocket?.off("getUsers", getUsers)
-    }
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

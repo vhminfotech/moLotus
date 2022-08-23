@@ -15,8 +15,8 @@ import timber.log.Timber;
  * settings or of the MMS Client.
  */
 public class TransactionSettings {
-    private String mServiceCenter;
-    private String mProxyAddress;
+    private final String mServiceCenter;
+    private final String mProxyAddress;
     private int mProxyPort = -1;
 
     private static final String[] APN_PROJECTION = {

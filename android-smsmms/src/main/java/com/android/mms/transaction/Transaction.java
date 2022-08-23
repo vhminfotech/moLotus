@@ -224,9 +224,7 @@ public abstract class Transaction extends Observable {
             ConnectivityManager mConnMgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
             if (mConnMgr != null) {
                 NetworkInfo niWF = mConnMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-                if ((niWF != null) && (niWF.isConnected())) {
-                    return true;
-                }
+                return (niWF != null) && (niWF.isConnected());
             }
         }
         return false;

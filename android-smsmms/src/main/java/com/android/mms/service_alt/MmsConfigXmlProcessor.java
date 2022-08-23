@@ -13,7 +13,7 @@ import java.io.IOException;
 public class MmsConfigXmlProcessor {
 
     public interface MmsConfigHandler {
-        public void process(String key, String value, String type);
+        void process(String key, String value, String type);
     }
 
     private static final String TAG_MMS_CONFIG = "mms_config";

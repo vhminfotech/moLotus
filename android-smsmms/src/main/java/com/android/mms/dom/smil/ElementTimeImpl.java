@@ -277,7 +277,7 @@ public abstract class ElementTimeImpl implements ElementTime {
     public void setDur(float dur) throws DOMException {
         // In SMIL 3.0, the dur could be a timecount-value which may contain fractions.
         // However, in MMS 1.3, the dur SHALL be expressed in integer milliseconds.
-        mSmilElement.setAttribute("dur", Integer.toString((int)(dur * 1000)) + "ms");
+        mSmilElement.setAttribute("dur", (int) (dur * 1000) + "ms");
     }
 
     public void setEnd(TimeList end) throws DOMException {
@@ -312,7 +312,7 @@ public abstract class ElementTimeImpl implements ElementTime {
     public void setRepeatDur(float repeatDur) throws DOMException {
         String repeatDurString = "indefinite";
         if (repeatDur > 0) {
-            repeatDurString = Float.toString(repeatDur) + "ms";
+            repeatDurString = repeatDur + "ms";
         }
         mSmilElement.setAttribute("repeatDur", repeatDurString);
     }

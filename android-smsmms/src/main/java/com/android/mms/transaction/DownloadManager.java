@@ -31,7 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * We should manage to call SMSManager.downloadMultimediaMessage().
  */
 public class DownloadManager {
-    private static DownloadManager ourInstance = new DownloadManager();
+    private static final DownloadManager ourInstance = new DownloadManager();
     private static final ConcurrentHashMap<String, MmsDownloadReceiver> mMap = new ConcurrentHashMap<>();
 
     public static DownloadManager getInstance() {
@@ -59,7 +59,7 @@ public class DownloadManager {
         context.getApplicationContext().registerReceiver(receiver, new IntentFilter(receiver.mAction));
 
         Timber.v("receiving with system method");
-        final String fileName = "download." + String.valueOf(Math.abs(new Random().nextLong())) + ".dat";
+        final String fileName = "download." + Math.abs(new Random().nextLong()) + ".dat";
         File mDownloadFile = new File(context.getCacheDir(), fileName);
         Uri contentUri = (new Uri.Builder())
                 .authority(context.getPackageName() + ".MmsFileProvider")

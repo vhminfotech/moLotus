@@ -26,8 +26,8 @@ import java.io.RandomAccessFile;
 
 
 public class DrmConvertSession {
-    private DrmManagerClient mDrmClient;
-    private int mConvertSessionId;
+    private final DrmManagerClient mDrmClient;
+    private final int mConvertSessionId;
 
     private static final int STATUS_UNKNOWN_ERROR = 491;
     private static final int STATUS_NOT_ACCEPTABLE = 406;

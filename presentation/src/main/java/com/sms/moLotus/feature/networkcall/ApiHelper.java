@@ -30,7 +30,7 @@ public class ApiHelper extends ContextWrapper {
     public static final String RESPONSE_SUCCESS = "success";
     public static final String RESPONSE_PHONE = "phone";
 
-    private RequestQueue requestQueue;
+    private final RequestQueue requestQueue;
 
     public ApiHelper(Context base) {
         super(base);
@@ -148,18 +148,18 @@ public class ApiHelper extends ContextWrapper {
     }
 
     public interface RequestResponse {
-        public void onResponse(boolean success);
+        void onResponse(boolean success);
     }
 
     public interface VerifyResponse {
-        public void onResponse(boolean success, String phoneNumber);
+        void onResponse(boolean success, String phoneNumber);
     }
 
     public interface ResetResponse {
-        public void onResponse(boolean success);
+        void onResponse(boolean success);
     }
 
     public interface ApiError {
-        public void onError(VolleyError error);
+        void onError(VolleyError error);
     }
 }

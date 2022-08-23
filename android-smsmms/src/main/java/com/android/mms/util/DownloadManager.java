@@ -94,9 +94,7 @@ public class DownloadManager {
                 Timber.v("auto download during roaming -> " + alwaysAuto);
             }
 
-            if (!roaming || alwaysAuto) {
-                return true;
-            }
+            return !roaming || alwaysAuto;
         }
         return false;
     }

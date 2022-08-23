@@ -11,7 +11,7 @@ public interface INetworkPolicyListener extends android.os.IInterface {
     /**
      * Local-side IPC implementation stub class.
      */
-    public static abstract class Stub extends android.os.Binder implements android.net.INetworkPolicyListener {
+    abstract class Stub extends android.os.Binder implements android.net.INetworkPolicyListener {
         private static final java.lang.String DESCRIPTOR = "android.net.INetworkPolicyListener";
 
         /**
@@ -76,7 +76,7 @@ public interface INetworkPolicyListener extends android.os.IInterface {
         }
 
         private static class Proxy implements android.net.INetworkPolicyListener {
-            private android.os.IBinder mRemote;
+            private final android.os.IBinder mRemote;
 
             Proxy(android.os.IBinder remote) {
                 mRemote = remote;
@@ -130,9 +130,9 @@ public interface INetworkPolicyListener extends android.os.IInterface {
         static final int TRANSACTION_onRestrictBackgroundChanged = (android.os.IBinder.FIRST_CALL_TRANSACTION + 2);
     }
 
-    public void onUidRulesChanged(int uid, int uidRules) throws android.os.RemoteException;
+    void onUidRulesChanged(int uid, int uidRules) throws android.os.RemoteException;
 
-    public void onMeteredIfacesChanged(java.lang.String[] meteredIfaces) throws android.os.RemoteException;
+    void onMeteredIfacesChanged(java.lang.String[] meteredIfaces) throws android.os.RemoteException;
 
-    public void onRestrictBackgroundChanged(boolean restrictBackground) throws android.os.RemoteException;
+    void onRestrictBackgroundChanged(boolean restrictBackground) throws android.os.RemoteException;
 }

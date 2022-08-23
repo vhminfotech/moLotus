@@ -214,7 +214,7 @@ class APNDetailsActivity : AppCompatActivity() {
 
             PreferenceHelper.setPreference(this, "APNSETTINGS", true)
             PreferenceHelper.setPreference(this, "Notification", true)
-            val intent = Intent(this, MainActivity::class.java);
+            val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
             finish()
         }

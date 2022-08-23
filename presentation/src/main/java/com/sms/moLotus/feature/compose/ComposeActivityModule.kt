@@ -50,7 +50,7 @@ class ComposeActivityModule {
     @Provides
     @Named("text")
     fun provideSharedText(activity: ComposeActivity): String {
-        var subject = activity.intent.getStringExtra(Intent.EXTRA_SUBJECT) ?: "";
+        var subject = activity.intent.getStringExtra(Intent.EXTRA_SUBJECT) ?: ""
         if (subject != "") {
             subject += "\n"
         }
@@ -74,7 +74,7 @@ class ComposeActivityModule {
     @Provides
     @Named("subject")
     fun provideSubjectText(activity: ComposeActivity): String {
-        var subject = activity.intent.getStringExtra(Intent.EXTRA_SUBJECT) ?: "";
+        var subject = activity.intent.getStringExtra(Intent.EXTRA_SUBJECT) ?: ""
         if (subject != "") {
             subject += "\n"
         }
@@ -148,7 +148,7 @@ class ComposeActivityModule {
                     }
                     val data = String(fileContent)
                     Log.e("==============", "data: $data")
-                    data?.let(Attachment::Contact)
+                    data.let(Attachment::Contact)
                 }
 
                 else -> Attachment.Image(uri)

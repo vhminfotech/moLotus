@@ -98,7 +98,7 @@ class GalleryPagerAdapter @Inject constructor(private val context: Context) : Qk
 
                 val dataSourceFactory = DefaultDataSourceFactory(context, Util.getUserAgent(context, "QKSMS"))
                 val videoSource = ExtractorMediaSource.Factory(dataSourceFactory).createMediaSource(part.getUri())
-                exoPlayer?.prepare(videoSource)
+                exoPlayer.prepare(videoSource)
             }
         }
     }

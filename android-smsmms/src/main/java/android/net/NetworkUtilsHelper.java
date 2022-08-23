@@ -221,7 +221,7 @@ public class NetworkUtilsHelper {
         try {
             netPart = InetAddress.getByAddress(array);
         } catch (UnknownHostException e) {
-            throw new RuntimeException("getNetworkPart error - " + e.toString());
+            throw new RuntimeException("getNetworkPart error - " + e);
         }
         return netPart;
     }

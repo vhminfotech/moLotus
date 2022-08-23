@@ -1,10 +1,10 @@
 package com.sms.moLotus.feature.compose
 
-import java.io.File;
-import java.io.IOException;
-import android.media.MediaPlayer;
-import android.media.MediaRecorder;
-import android.os.Environment;
+import java.io.File
+import java.io.IOException
+import android.media.MediaPlayer
+import android.media.MediaRecorder
+import android.os.Environment
 import android.util.Log
 
 object AudioRecorderDemo {
@@ -22,7 +22,7 @@ object AudioRecorderDemo {
         if (!path.contains(".")) {
             path += ".3gp"
         }
-        return Environment.getExternalStorageDirectory().getAbsolutePath()
+        return Environment.getExternalStorageDirectory().absolutePath
             .toString() + path
     }
 

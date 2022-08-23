@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 public class EventTargetImpl implements EventTarget {
     private ArrayList<EventListenerEntry> mListenerEntries;
-    private EventTarget mNodeTarget;
+    private final EventTarget mNodeTarget;
 
     static class EventListenerEntry
     {

@@ -1,6 +1,6 @@
 package com.sms.moLotus.feature.chat.viewmodel
 
-class ChatViewModel{} /*(private val sendChatMessageUseCase: CompletableUseCase<SendMessageParams>,
+class ChatViewModel /*(private val sendChatMessageUseCase: CompletableUseCase<SendMessageParams>,
                      private val openChatChannelUseCase: ObservableUseCase<String>){
 
 

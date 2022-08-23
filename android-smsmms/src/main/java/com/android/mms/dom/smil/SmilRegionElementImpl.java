@@ -201,7 +201,7 @@ public class SmilRegionElementImpl extends SmilElementImpl implements
     }
 
     public void setHeight(int height) throws DOMException {
-        this.setAttribute(HEIGHT_ATTRIBUTE_NAME, String.valueOf(height) + "px");
+        this.setAttribute(HEIGHT_ATTRIBUTE_NAME, height + "px");
     }
 
     public void setTitle(String title) throws DOMException {
@@ -209,7 +209,7 @@ public class SmilRegionElementImpl extends SmilElementImpl implements
     }
 
     public void setWidth(int width) throws DOMException {
-        this.setAttribute(WIDTH_ATTRIBUTE_NAME, String.valueOf(width) + "px");
+        this.setAttribute(WIDTH_ATTRIBUTE_NAME, width + "px");
     }
 
     /*

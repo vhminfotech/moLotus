@@ -151,7 +151,7 @@ class IntroActivity2 : AppCompatActivity() {
             }
 
             if (CarrierText != "Select carrier provider") {
-                val intent = Intent(this, APNDetailsActivity::class.java);
+                val intent = Intent(this, APNDetailsActivity::class.java)
                 intent.putExtra("CarrierText", CarrierText)
                 intent.putExtra("CarrierId", CarrierId)
                 startActivity(intent)

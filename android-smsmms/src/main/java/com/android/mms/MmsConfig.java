@@ -150,7 +150,6 @@ public class MmsConfig {
         int type;
         while ((type=parser.next()) != parser.START_TAG
                    && type != parser.END_DOCUMENT) {
-            ;
         }
 
         if (type != parser.START_TAG) {
@@ -168,7 +167,6 @@ public class MmsConfig {
         int type;
         while ((type=parser.next()) != parser.START_TAG
                    && type != parser.END_DOCUMENT) {
-            ;
         }
     }
 

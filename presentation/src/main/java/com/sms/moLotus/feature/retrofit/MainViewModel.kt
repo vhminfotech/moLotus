@@ -16,7 +16,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 
-class MainViewModel constructor(/*private val repository: MainRepository*/) : ViewModel() {
+class MainViewModel : ViewModel() {
     val operatorsList = MutableLiveData<List<Operators>>()
     val versionCode = MutableLiveData<GetAppConfigQuery.GetAppConfig>()
     val apnDetails = MutableLiveData<GetApnDetailsQuery.Data>()

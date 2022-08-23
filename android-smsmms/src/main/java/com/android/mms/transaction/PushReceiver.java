@@ -48,12 +48,12 @@ public class PushReceiver extends BroadcastReceiver {
 
     static final int COLUMN_CONTENT_LOCATION = 0;
 
-    private static Set<String> downloadedUrls = new HashSet<String>();
+    private static final Set<String> downloadedUrls = new HashSet<String>();
     private static final ExecutorService PUSH_RECEIVER_EXECUTOR = Executors.newSingleThreadExecutor();
 
     private class ReceivePushTask extends AsyncTask<Intent, Void, Void> {
-        private Context mContext;
-        private PendingResult pendingResult;
+        private final Context mContext;
+        private final PendingResult pendingResult;
 
         private ReceivePushTask(Context context, PendingResult pendingResult) {
             mContext = context;

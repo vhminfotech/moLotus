@@ -32,7 +32,7 @@ object Utils {
 
     fun getVideoContentUri(context: Context, absPath: String): Uri? {
         Log.e("=============", "getImageContentUri: $absPath")
-        val cursor: Cursor? = context.getContentResolver().query(
+        val cursor: Cursor? = context.contentResolver.query(
             MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
             arrayOf(MediaStore.Video.Media._ID),
             MediaStore.Video.Media.DATA + "=? ",
@@ -56,7 +56,7 @@ object Utils {
     }
 
     fun getAudioContentUri(context: Context, absPath: String): Uri? {
-        val cursor: Cursor? = context.getContentResolver().query(
+        val cursor: Cursor? = context.contentResolver.query(
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
             arrayOf(MediaStore.Audio.Media._ID),
             MediaStore.Audio.Media.DATA + "=? ",
@@ -509,7 +509,7 @@ object Utils {
                 os.write(buffer, 0, length)
             }
             `is`?.close()
-            os?.close()
+            os.close()
         } catch (e: java.lang.Exception) {
             e.printStackTrace()
         } /*finally {

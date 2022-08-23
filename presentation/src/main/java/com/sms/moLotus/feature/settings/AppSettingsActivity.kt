@@ -172,10 +172,6 @@ class AppSettingsActivity : QkThemedActivity(), SettingsView {
 
     }
 
-    override fun onBackPressed() {
-        super.onBackPressed()
-    }
-
     private fun openSignatureDialog() {
         val dialog = Dialog(this)
         dialog.setCancelable(false)

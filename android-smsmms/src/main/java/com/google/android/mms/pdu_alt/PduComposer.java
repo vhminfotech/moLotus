@@ -773,12 +773,9 @@ public class PduComposer {
             return PDU_COMPOSE_CONTENT_ERROR;
         }
 
-        boolean recipient = false;
+        boolean recipient = appendHeader(PduHeaders.TO) != PDU_COMPOSE_CONTENT_ERROR;
 
         // To
-        if (appendHeader(PduHeaders.TO) != PDU_COMPOSE_CONTENT_ERROR) {
-            recipient = true;
-        }
 
         // Cc
         if (appendHeader(PduHeaders.CC) != PDU_COMPOSE_CONTENT_ERROR) {

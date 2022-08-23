@@ -46,7 +46,7 @@ public class DhcpInfoInternal {
      */
     public String vendorInfo;
 
-    private Collection<RouteInfo> mRoutes;
+    private final Collection<RouteInfo> mRoutes;
 
     public DhcpInfoInternal() {
         mRoutes = new ArrayList<RouteInfo>();

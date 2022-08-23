@@ -5,12 +5,12 @@ import java.util.Map;
 import java.util.Vector;
 
 public class PduBody {
-    private Vector<PduPart> mParts;
+    private final Vector<PduPart> mParts;
 
-    private Map<String, PduPart> mPartMapByContentId;
-    private Map<String, PduPart> mPartMapByContentLocation;
-    private Map<String, PduPart> mPartMapByName;
-    private Map<String, PduPart> mPartMapByFileName;
+    private final Map<String, PduPart> mPartMapByContentId;
+    private final Map<String, PduPart> mPartMapByContentLocation;
+    private final Map<String, PduPart> mPartMapByName;
+    private final Map<String, PduPart> mPartMapByFileName;
 
     /**
      * Constructor.

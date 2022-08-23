@@ -809,7 +809,7 @@ public class PduPersister {
                     || ContentType.TEXT_HTML.equals(contentType)) {
                 ContentValues cv = new ContentValues();
                 if (data == null) {
-                    data = new String("").getBytes(CharacterSets.DEFAULT_CHARSET_NAME);
+                    data = "".getBytes(CharacterSets.DEFAULT_CHARSET_NAME);
                 }
                 String dataText = new EncodedStringValue(data).getString();
                 cv.put(Part.TEXT, dataText);
@@ -818,10 +818,10 @@ public class PduPersister {
                         ContentValues cv2 = new ContentValues();
                         cv2.put(Part.TEXT, cutString(dataText, MAX_TEXT_BODY_SIZE));
                         if (mContentResolver.update(uri, cv2, null, null) != 1) {
-                            throw new MmsException("unable to update " + uri.toString());
+                            throw new MmsException("unable to update " + uri);
                         }
                     } else {
-                        throw new MmsException("unable to update " + uri.toString());
+                        throw new MmsException("unable to update " + uri);
                     }
                 }
             } else {
@@ -1487,8 +1487,7 @@ public class PduPersister {
         for (EncodedStringValue v : array) {
             if (v != null) {
                 String number = v.getString();
-                if ((myNumber == null || !PhoneNumberUtils.compare(number, myNumber)) &&
-                        !recipients.contains(number)) {
+                if ((myNumber == null || !PhoneNumberUtils.compare(number, myNumber))) {
                     // Only add numbers which aren't my own number.
                     recipients.add(number);
                 }
@@ -1534,13 +1533,7 @@ public class PduPersister {
      * Wrap a byte[] into a String.
      */
     public static String toIsoString(byte[] bytes) {
-        try {
-            return new String(bytes, CharacterSets.MIMENAME_ISO_8859_1);
-        } catch (UnsupportedEncodingException e) {
-            // Impossible to reach here!
-            Timber.e(e, "ISO_8859_1 must be supported!");
-            return "";
-        }
+        return new String(bytes, StandardCharsets.ISO_8859_1);
     }
 
     /**
@@ -1548,14 +1541,8 @@ public class PduPersister {
      */
     public static byte[] getBytes(String data) {
 //        return data.getBytes(StandardCharsets.ISO_8859_1);
-        try {
-            Log.e("=======","bytes:::"+data.getBytes(CharacterSets.MIMENAME_ISO_8859_1));
-            return data.getBytes(CharacterSets.MIMENAME_ISO_8859_1);
-        } catch (UnsupportedEncodingException e) {
-            // Impossible to reach here!
-            Timber.e(e.getMessage()+" ISO_8859_1 must be supported!");
-            return new byte[0];
-        }
+        Log.e("=======","bytes:::"+data.getBytes(StandardCharsets.ISO_8859_1));
+        return data.getBytes(StandardCharsets.ISO_8859_1);
     }
 
     /**

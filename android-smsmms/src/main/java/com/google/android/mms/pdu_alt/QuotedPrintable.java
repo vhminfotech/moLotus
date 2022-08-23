@@ -3,7 +3,7 @@ package com.google.android.mms.pdu_alt;
 import java.io.ByteArrayOutputStream;
 
 public class QuotedPrintable {
-    private static byte ESCAPE_CHAR = '=';
+    private static final byte ESCAPE_CHAR = '=';
 
     /**
      * Decodes an array quoted-printable characters into an array of original bytes.

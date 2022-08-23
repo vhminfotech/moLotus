@@ -22,7 +22,7 @@ import java.util.Map;
  */
 public class MmsConfigManager {
 
-    private static volatile MmsConfigManager sInstance = new MmsConfigManager();
+    private static final MmsConfigManager sInstance = new MmsConfigManager();
 
     public static MmsConfigManager getInstance() {
         return sInstance;

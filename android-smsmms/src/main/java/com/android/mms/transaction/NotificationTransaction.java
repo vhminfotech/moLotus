@@ -58,7 +58,7 @@ public class NotificationTransaction extends Transaction implements Runnable {
     private static final boolean LOCAL_LOGV = false;
 
     private Uri mUri;
-    private NotificationInd mNotificationInd;
+    private final NotificationInd mNotificationInd;
     private String mContentLocation;
 
     public NotificationTransaction(

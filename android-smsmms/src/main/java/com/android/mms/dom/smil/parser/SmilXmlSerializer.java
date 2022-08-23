@@ -13,12 +13,13 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 
 public class SmilXmlSerializer {
 
     public static void serialize(SMILDocument smilDoc, OutputStream out) {
         try {
-            Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"), 2048);
+            Writer writer = new BufferedWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8), 2048);
 
             writeElement(writer, smilDoc.getDocumentElement());
             writer.flush();

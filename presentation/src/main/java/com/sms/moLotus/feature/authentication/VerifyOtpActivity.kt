@@ -85,7 +85,7 @@ class VerifyOtpActivity : AppCompatActivity() {
                 PreferenceHelper.setPreference(this, "APNSETTINGS", true)
                 PreferenceHelper.setPreference(this, "Notification", true)
                 PreferenceHelper.setPreference(this, "isVerified", true)
-                val intent = Intent(this, MainActivity::class.java);
+                val intent = Intent(this, MainActivity::class.java)
                 intent.putExtra("PhoneNumber", phoneNo)
                 startActivity(intent)
                 finish()

@@ -40,7 +40,7 @@ public class SystemPropertiesProxy {
 
             //Parameters
             Object[] params = new Object[1];
-            params[0] = new String(key);
+            params[0] = key;
 
             ret = (String) get.invoke(SystemProperties, params);
 
@@ -81,8 +81,8 @@ public class SystemPropertiesProxy {
 
             //Parameters
             Object[] params = new Object[2];
-            params[0] = new String(key);
-            params[1] = new String(def);
+            params[0] = key;
+            params[1] = def;
 
             ret = (String) get.invoke(SystemProperties, params);
 
@@ -126,7 +126,7 @@ public class SystemPropertiesProxy {
 
             //Parameters
             Object[] params = new Object[2];
-            params[0] = new String(key);
+            params[0] = key;
             params[1] = new Integer(def);
 
             ret = (Integer) getInt.invoke(SystemProperties, params);
@@ -171,7 +171,7 @@ public class SystemPropertiesProxy {
 
             //Parameters
             Object[] params = new Object[2];
-            params[0] = new String(key);
+            params[0] = key;
             params[1] = new Long(def);
 
             ret = (Long) getLong.invoke(SystemProperties, params);
@@ -221,7 +221,7 @@ public class SystemPropertiesProxy {
 
             //Parameters
             Object[] params = new Object[2];
-            params[0] = new String(key);
+            params[0] = key;
             params[1] = new Boolean(def);
 
             ret = (Boolean) getBoolean.invoke(SystemProperties, params);
@@ -264,8 +264,8 @@ public class SystemPropertiesProxy {
 
             //Parameters
             Object[] params = new Object[2];
-            params[0] = new String(key);
-            params[1] = new String(val);
+            params[0] = key;
+            params[1] = val;
 
             set.invoke(SystemProperties, params);
 

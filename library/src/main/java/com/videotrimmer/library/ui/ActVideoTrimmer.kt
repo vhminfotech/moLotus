@@ -169,7 +169,7 @@ class ActVideoTrimmer : AppCompatActivity() {
             totalDuration = TrimmerUtils.getDuration(this, uri)
             imagePlayPause!!.setOnClickListener { v: View? -> onVideoClicked() }
             Objects.requireNonNull(playerView!!.videoSurfaceView)
-                ?.setOnClickListener { v: View? -> onVideoClicked() }
+                .setOnClickListener { v: View? -> onVideoClicked() }
             initTrimData()
             buildMediaSource(uri)
             loadThumbnails()
@@ -666,7 +666,7 @@ class ActVideoTrimmer : AppCompatActivity() {
             })
         try {
             if (uri != null) {
-                context.getContentResolver().openInputStream(uri).use { ins ->
+                context.contentResolver.openInputStream(uri).use { ins ->
                     ins?.let {
                         createFileFromStream(
                             it,
@@ -699,7 +699,7 @@ class ActVideoTrimmer : AppCompatActivity() {
     }
 
     private fun queryName(context: Context, uri: Uri): String {
-        val returnCursor: Cursor = context.getContentResolver().query(uri, null, null, null, null)!!
+        val returnCursor: Cursor = context.contentResolver.query(uri, null, null, null, null)!!
         val nameIndex: Int = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
         returnCursor.moveToFirst()
         val name: String = returnCursor.getString(nameIndex)

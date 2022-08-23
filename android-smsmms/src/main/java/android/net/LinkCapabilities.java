@@ -37,7 +37,7 @@ public class LinkCapabilities implements Parcelable {
     /**
      * The Map of Keys to Values
      */
-    private HashMap<Integer, String> mCapabilities;
+    private final HashMap<Integer, String> mCapabilities;
 
 
     /**

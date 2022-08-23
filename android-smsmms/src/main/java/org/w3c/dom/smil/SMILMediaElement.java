@@ -11,8 +11,8 @@ public interface SMILMediaElement extends ElementTime, SMILElement {
      * @exception DOMException
      *    NO_MODIFICATION_ALLOWED_ERR: Raised if this attribute is readonly. 
      */
-    public String getAbstractAttr();
-    public void setAbstractAttr(String abstractAttr)
+    String getAbstractAttr();
+    void setAbstractAttr(String abstractAttr)
                               throws DOMException;
 
     /**
@@ -20,8 +20,8 @@ public interface SMILMediaElement extends ElementTime, SMILElement {
      * @exception DOMException
      *    NO_MODIFICATION_ALLOWED_ERR: Raised if this attribute is readonly. 
      */
-    public String getAlt();
-    public void setAlt(String alt)
+    String getAlt();
+    void setAlt(String alt)
                               throws DOMException;
 
     /**
@@ -29,8 +29,8 @@ public interface SMILMediaElement extends ElementTime, SMILElement {
      * @exception DOMException
      *    NO_MODIFICATION_ALLOWED_ERR: Raised if this attribute is readonly. 
      */
-    public String getAuthor();
-    public void setAuthor(String author)
+    String getAuthor();
+    void setAuthor(String author)
                               throws DOMException;
 
     /**
@@ -38,8 +38,8 @@ public interface SMILMediaElement extends ElementTime, SMILElement {
      * @exception DOMException
      *    NO_MODIFICATION_ALLOWED_ERR: Raised if this attribute is readonly. 
      */
-    public String getClipBegin();
-    public void setClipBegin(String clipBegin)
+    String getClipBegin();
+    void setClipBegin(String clipBegin)
                               throws DOMException;
 
     /**
@@ -47,8 +47,8 @@ public interface SMILMediaElement extends ElementTime, SMILElement {
      * @exception DOMException
      *    NO_MODIFICATION_ALLOWED_ERR: Raised if this attribute is readonly. 
      */
-    public String getClipEnd();
-    public void setClipEnd(String clipEnd)
+    String getClipEnd();
+    void setClipEnd(String clipEnd)
                               throws DOMException;
 
     /**
@@ -56,8 +56,8 @@ public interface SMILMediaElement extends ElementTime, SMILElement {
      * @exception DOMException
      *    NO_MODIFICATION_ALLOWED_ERR: Raised if this attribute is readonly. 
      */
-    public String getCopyright();
-    public void setCopyright(String copyright)
+    String getCopyright();
+    void setCopyright(String copyright)
                               throws DOMException;
 
     /**
@@ -65,8 +65,8 @@ public interface SMILMediaElement extends ElementTime, SMILElement {
      * @exception DOMException
      *    NO_MODIFICATION_ALLOWED_ERR: Raised if this attribute is readonly. 
      */
-    public String getLongdesc();
-    public void setLongdesc(String longdesc)
+    String getLongdesc();
+    void setLongdesc(String longdesc)
                               throws DOMException;
 
     /**
@@ -74,8 +74,8 @@ public interface SMILMediaElement extends ElementTime, SMILElement {
      * @exception DOMException
      *    NO_MODIFICATION_ALLOWED_ERR: Raised if this attribute is readonly. 
      */
-    public String getPort();
-    public void setPort(String port)
+    String getPort();
+    void setPort(String port)
                               throws DOMException;
 
     /**
@@ -83,8 +83,8 @@ public interface SMILMediaElement extends ElementTime, SMILElement {
      * @exception DOMException
      *    NO_MODIFICATION_ALLOWED_ERR: Raised if this attribute is readonly. 
      */
-    public String getReadIndex();
-    public void setReadIndex(String readIndex)
+    String getReadIndex();
+    void setReadIndex(String readIndex)
                               throws DOMException;
 
     /**
@@ -92,8 +92,8 @@ public interface SMILMediaElement extends ElementTime, SMILElement {
      * @exception DOMException
      *    NO_MODIFICATION_ALLOWED_ERR: Raised if this attribute is readonly. 
      */
-    public String getRtpformat();
-    public void setRtpformat(String rtpformat)
+    String getRtpformat();
+    void setRtpformat(String rtpformat)
                               throws DOMException;
 
     /**
@@ -101,8 +101,8 @@ public interface SMILMediaElement extends ElementTime, SMILElement {
      * @exception DOMException
      *    NO_MODIFICATION_ALLOWED_ERR: Raised if this attribute is readonly. 
      */
-    public String getSrc();
-    public void setSrc(String src)
+    String getSrc();
+    void setSrc(String src)
                               throws DOMException;
 
     /**
@@ -110,8 +110,8 @@ public interface SMILMediaElement extends ElementTime, SMILElement {
      * @exception DOMException
      *    NO_MODIFICATION_ALLOWED_ERR: Raised if this attribute is readonly. 
      */
-    public String getStripRepeat();
-    public void setStripRepeat(String stripRepeat)
+    String getStripRepeat();
+    void setStripRepeat(String stripRepeat)
                               throws DOMException;
 
     /**
@@ -119,8 +119,8 @@ public interface SMILMediaElement extends ElementTime, SMILElement {
      * @exception DOMException
      *    NO_MODIFICATION_ALLOWED_ERR: Raised if this attribute is readonly. 
      */
-    public String getTitle();
-    public void setTitle(String title)
+    String getTitle();
+    void setTitle(String title)
                               throws DOMException;
 
     /**
@@ -128,8 +128,8 @@ public interface SMILMediaElement extends ElementTime, SMILElement {
      * @exception DOMException
      *    NO_MODIFICATION_ALLOWED_ERR: Raised if this attribute is readonly. 
      */
-    public String getTransport();
-    public void setTransport(String transport)
+    String getTransport();
+    void setTransport(String transport)
                               throws DOMException;
 
     /**
@@ -137,8 +137,8 @@ public interface SMILMediaElement extends ElementTime, SMILElement {
      * @exception DOMException
      *    NO_MODIFICATION_ALLOWED_ERR: Raised if this attribute is readonly. 
      */
-    public String getType();
-    public void setType(String type)
+    String getType();
+    void setType(String type)
                               throws DOMException;
 
 }

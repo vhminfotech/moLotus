@@ -20,7 +20,7 @@ object ApolloClientService {
                 val builder: Request.Builder =
                     original.newBuilder().method(original.method, original.body)
                 //builder.header("Authorization", "Bearer  $authHeader")
-                builder.header("User-Agent", "Android Apollo Client");
+                builder.header("User-Agent", "Android Apollo Client")
                 //Timber.e("Authorization $authHeader")
                 chain.proceed(builder.build())
             }

@@ -125,7 +125,7 @@ public class TransactionService extends Service implements Observer {
     private ConnectivityManager mConnMgr;
     private ConnectivityBroadcastReceiver mReceiver;
     private boolean mobileDataEnabled;
-    private boolean lollipopReceiving = false;
+    private final boolean lollipopReceiving = false;
 
     private PowerManager.WakeLock mWakeLock;
 
@@ -225,10 +225,10 @@ public class TransactionService extends Service implements Observer {
             return false;
         } else if (Utils.isMmsOverWifiEnabled(this)) {
             NetworkInfo niWF = mConnMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-            return (niWF == null ? false : niWF.isConnected());
+            return (niWF != null && niWF.isConnected());
         } else {
             NetworkInfo ni = mConnMgr.getNetworkInfo(ConnectivityManager.TYPE_MOBILE_MMS);
-            return (ni == null ? false : ni.isAvailable());
+            return (ni != null && ni.isAvailable());
         }
     }
 

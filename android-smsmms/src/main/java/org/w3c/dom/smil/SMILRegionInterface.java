@@ -7,8 +7,8 @@ package org.w3c.dom.smil;
 public interface SMILRegionInterface {
     /**
      */
-    public SMILRegionElement getRegion();
-    public void setRegion(SMILRegionElement region);
+    SMILRegionElement getRegion();
+    void setRegion(SMILRegionElement region);
 
 }
 

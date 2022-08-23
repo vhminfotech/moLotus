@@ -266,7 +266,7 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
         val firstTime = settings.getBoolean("first_time", true)
 
         if (firstTime) {
-            val intent = Intent(this, IntroActivity::class.java);
+            val intent = Intent(this, IntroActivity::class.java)
             startActivity(intent)
         }
 
@@ -695,10 +695,6 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         optionsItemIntent.onNext(item.itemId)
         return true
-    }
-
-    override fun onBackPressed() {
-        super.onBackPressed()
     }
 
     val threadIdList: ArrayList<String> = ArrayList()

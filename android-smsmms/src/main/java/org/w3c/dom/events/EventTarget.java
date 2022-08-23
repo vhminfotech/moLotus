@@ -36,9 +36,9 @@ public interface EventTarget {
      *   are bubbling upward through the tree will not trigger an 
      *   <code>EventListener</code> designated to use capture.
      */
-    public void addEventListener(String type, 
-                                 EventListener listener, 
-                                 boolean useCapture);
+    void addEventListener(String type,
+                          EventListener listener,
+                          boolean useCapture);
 
     /**
      * This method allows the removal of event listeners from the event 
@@ -60,9 +60,9 @@ public interface EventTarget {
      *   does not affect a non-capturing version of the same listener, and 
      *   vice versa. 
      */
-    public void removeEventListener(String type, 
-                                    EventListener listener, 
-                                    boolean useCapture);
+    void removeEventListener(String type,
+                             EventListener listener,
+                             boolean useCapture);
 
     /**
      * This method allows the dispatch of events into the implementations 
@@ -84,7 +84,7 @@ public interface EventTarget {
      *   <code>Event</code>'s type as <code>null</code> or an empty string 
      *   will also trigger this exception.
      */
-    public boolean dispatchEvent(Event evt)
+    boolean dispatchEvent(Event evt)
                                  throws EventException;
 
 }

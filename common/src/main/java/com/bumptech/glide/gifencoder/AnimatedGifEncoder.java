@@ -49,7 +49,7 @@ public class AnimatedGifEncoder {
 
     private byte[] colorTab; // RGB palette
 
-    private boolean[] usedEntry = new boolean[256]; // active palette entries
+    private final boolean[] usedEntry = new boolean[256]; // active palette entries
 
     private int palSize = 7; // color table size (bits-1)
 

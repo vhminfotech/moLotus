@@ -302,7 +302,7 @@ public class MmsHttpClient {
                     }
                 }
             }
-            Timber.v("HTTP: headers\n" + sb.toString());
+            Timber.v("HTTP: headers\n" + sb);
         }
     }
 
@@ -390,7 +390,7 @@ public class MmsHttpClient {
             }
             final int matchedStart = matcher.start();
             if (matchedStart > nextStart) {
-                replaced.append(value.substring(nextStart, matchedStart));
+                replaced.append(value, nextStart, matchedStart);
             }
             final String macro = matcher.group(1);
             final String macroValue = mmsConfig.getHttpParamMacro(context, macro);
@@ -419,9 +419,9 @@ public class MmsHttpClient {
         final String extraHttpParams = mmsConfig.getHttpParams();
         if (!TextUtils.isEmpty(extraHttpParams)) {
             // Parse the parameter list
-            String paramList[] = extraHttpParams.split("\\|");
+            String[] paramList = extraHttpParams.split("\\|");
             for (String paramPair : paramList) {
-                String splitPair[] = paramPair.split(":", 2);
+                String[] splitPair = paramPair.split(":", 2);
                 if (splitPair.length == 2) {
                     final String name = splitPair[0].trim();
                     final String value = resolveMacro(mContext, splitPair[1].trim(), mmsConfig);

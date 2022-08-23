@@ -13,6 +13,7 @@ import timber.log.Timber;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -585,16 +586,8 @@ public class MmsConfig {
                     nai = nai + naiSuffix;
                 }
                 byte[] encoded = null;
-                try {
-                    encoded = Base64.encode(nai.getBytes("UTF-8"), Base64.NO_WRAP);
-                } catch (UnsupportedEncodingException e) {
-                    encoded = Base64.encode(nai.getBytes(), Base64.NO_WRAP);
-                }
-                try {
-                    nai = new String(encoded, "UTF-8");
-                } catch (UnsupportedEncodingException e) {
-                    nai = new String(encoded);
-                }
+                encoded = Base64.encode(nai.getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP);
+                nai = new String(encoded, StandardCharsets.UTF_8);
             }
             return nai;
         }
