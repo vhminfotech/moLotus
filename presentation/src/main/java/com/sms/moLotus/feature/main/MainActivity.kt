@@ -12,6 +12,8 @@ import android.content.res.ColorStateList
 import android.net.ConnectivityManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.*
 import android.widget.PopupWindow
@@ -169,7 +171,7 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
 
     private var mSocket: Socket? = null
     var currentUserId: String? = ""
-    var threadList : GetThreadListQuery.GetThreadList ?=null
+    var threadList: GetThreadListQuery.GetThreadList? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -205,6 +207,7 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
             compose?.visibility = View.VISIBLE
             createChat?.visibility = View.GONE
             chatClicked = false
+            tabAppears = false
 
             toolbarVisible?.visibility = View.GONE
             if (conversationsAdapter.itemCount == 0) {
@@ -217,8 +220,15 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
             recyclerView?.visibility = View.GONE
             empty?.visibility = View.GONE
             compose?.visibility = View.GONE
+
+            //without chat
+            //txtUpcomingFeature?.visibility = View.VISIBLE
+
+
+            //with chat
             createChat?.visibility = View.VISIBLE
             chatClicked = true
+            tabAppears = true
             toolbarVisible?.visibility = View.GONE
             getChatList()
             if (threadList?.recipientUser?.size == 0) {
@@ -557,27 +567,39 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
 
     override fun onResume() {
         super.onResume()
-        Log.e("====================", "onResume ====== ${PreferenceHelper.getPreference(this, "isVerified")}")
+        Log.e("====================",
+            "onResume ====== ${PreferenceHelper.getPreference(this, "isVerified")}")
 
-        if (PreferenceHelper.getPreference(this, "isVerified")){
+        if (PreferenceHelper.getPreference(this, "isVerified")) {
             intent?.run(onSMSCalledIntent::onNext)
         }
 
         activityResumedIntent.onNext(true)
         val app = application as QKApplication
-          mSocket = app.socket
-          currentUserId = PreferenceHelper.getStringPreference(this, Constants.USERID).toString()
-          mSocket?.on(Socket.EVENT_CONNECT) {
-              mSocket?.emit("addUser", currentUserId)
-              mSocket?.emit("addUser", currentUserId)
-              mSocket?.emit("addUser", currentUserId)
-              mSocket?.emit("addUser", currentUserId)
-          }
-          mSocket?.on(Socket.EVENT_DISCONNECT, onDisconnect)
-          mSocket?.connect()
-          /*if (tabAppears) {
-              getChatList()
-          }*/
+        mSocket = app.socket
+        currentUserId = PreferenceHelper.getStringPreference(this, Constants.USERID).toString()
+        mSocket?.on(Socket.EVENT_CONNECT) {
+            mSocket?.emit("addUser", currentUserId)
+            mSocket?.emit("addUser", currentUserId)
+            mSocket?.emit("addUser", currentUserId)
+            mSocket?.emit("addUser", currentUserId)
+        }
+        mSocket?.on(Socket.EVENT_DISCONNECT, onDisconnect)
+        mSocket?.connect()
+        //if (tabAppears) {
+        getChatList()
+        Handler(Looper.getMainLooper()).postDelayed({
+            if (threadList?.recipientUser?.size == 0) {
+                rvChatRecyclerView?.visibility = View.GONE
+                txtNoChat?.visibility = View.VISIBLE
+            } else {
+                rvChatRecyclerView?.visibility = View.VISIBLE
+                txtNoChat?.visibility = View.GONE
+                initRecyclerView(threadList)
+            }
+        }, 2000)
+
+        //}
     }
 
     override fun onPause() {
@@ -702,7 +724,7 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
     override fun onChatClick(
         item: GetThreadListQuery.RecipientUser?,
         llOnClick: ConstraintLayout,
-        adapterPosition: Int
+        adapterPosition: Int,
     ) {
         chatClicked = true
         toolbarVisible?.visibility = View.GONE
@@ -719,6 +741,16 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
             runOnUiThread {
                 toast("Chat Deleted!")
                 getChatList()
+                Handler(Looper.getMainLooper()).postDelayed({
+                    if (threadList?.recipientUser?.size == 0) {
+                        rvChatRecyclerView?.visibility = View.GONE
+                        txtNoChat?.visibility = View.VISIBLE
+                    } else {
+                        rvChatRecyclerView?.visibility = View.VISIBLE
+                        txtNoChat?.visibility = View.GONE
+                        initRecyclerView(threadList)
+                    }
+                }, 2000)
             }
         }
         mainViewModel.errorMessage.observe(this) {
@@ -748,7 +780,7 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
     private fun showDialog(
         llOnClick: ConstraintLayout,
         threadIdList: ArrayList<String>,
-        adapterPosition: Int
+        adapterPosition: Int,
     ) {
         val dialog = Dialog(this)
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)

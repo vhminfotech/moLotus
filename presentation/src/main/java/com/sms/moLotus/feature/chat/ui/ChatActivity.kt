@@ -210,17 +210,10 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
 
             if (blocked == false) {
                 if (txtMessage?.text?.isNotEmpty() == true) {
-                    if (flag == true) {
-                        createThread(txtMessage.text.toString(),
-                            isGroup,
-                            groupName.toString(),
-                            "")
-                    } else {
+                    /*if (flag == true) {*/
                         if ((threadId?.isEmpty() == true || threadId == "null")) {
-                            createThread(
-                                txtMessage.text.toString(), isGroup,
-                                groupName.toString(), ""
-                            )
+                            createThread(txtMessage.text.toString(), isGroup,
+                                groupName.toString(), "")
                         } else {
                             if (isGroup) {
                                 createMessage(
@@ -238,7 +231,28 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
                                 )
                             }
                         }
-                    }
+                    /*} else {
+                        if ((threadId?.isEmpty() == true || threadId == "null")) {
+                            createThread(txtMessage.text.toString(), isGroup,
+                                groupName.toString(), "")
+                        } else {
+                            if (isGroup) {
+                                createMessage(
+                                    threadId.toString(),
+                                    txtMessage.text.toString(),
+                                    "",
+                                    ""
+                                )
+                            } else {
+                                createMessage(
+                                    threadId.toString(),
+                                    txtMessage.text.toString(),
+                                    recipientsIds?.get(0).toString(),
+                                    ""
+                                )
+                            }
+                        }
+                    }*/
                 }
             } else {
                 showUnBlockDialog()
@@ -654,8 +668,9 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
     private fun getMessageList(threadId: String) {
         viewModel.allMessages.observe(this) {
             LogHelper.e("CHATACTIVITY", "list :: ${it.getMessageList?.messages}")
+            LogHelper.e("CHATACTIVITY", "blocked :: ${it.getMessageList?.blocked}")
 
-            blocked = it.getMessageList?.blocked
+            blocked = it.getMessageList?.blocked ?: false
 
             LogHelper.e("CHATACTIVITY", "blocked getMessageList:: $blocked")
 
