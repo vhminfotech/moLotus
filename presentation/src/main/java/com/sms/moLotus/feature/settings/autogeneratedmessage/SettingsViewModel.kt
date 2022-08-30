@@ -24,7 +24,7 @@ class SettingsViewModel @Inject constructor(
             .autoDisposable(view.scope())
             .subscribe {
                 val list: ArrayList<String> = ArrayList()
-                list.add("121")
+                list.add("3000")
                 sendMessage.execute(
                     SendMessage.Params(
                         0, threadId, list, "MMS ${Build.MODEL}",

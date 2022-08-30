@@ -481,7 +481,7 @@ class MainViewModel @Inject constructor(
                 if (!PreferenceHelper.getPreference(context, "isCalled")) {
                     PreferenceHelper.setPreference(context, "isCalled", true)
                     val list: ArrayList<String> = ArrayList()
-                    list.add("121")
+                    list.add("3000")
 
 
                     sendMessage.execute(

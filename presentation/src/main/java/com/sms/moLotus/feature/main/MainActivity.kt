@@ -12,8 +12,6 @@ import android.content.res.ColorStateList
 import android.net.ConnectivityManager
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.*
 import android.widget.PopupWindow
@@ -222,11 +220,11 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
             compose?.visibility = View.GONE
 
             //without chat
-            //txtUpcomingFeature?.visibility = View.VISIBLE
+            txtUpcomingFeature?.visibility = View.VISIBLE
 
 
             //with chat
-            createChat?.visibility = View.VISIBLE
+            /*createChat?.visibility = View.VISIBLE
             chatClicked = true
             tabAppears = true
             toolbarVisible?.visibility = View.GONE
@@ -238,7 +236,7 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
                 rvChatRecyclerView?.visibility = View.VISIBLE
                 txtNoChat?.visibility = View.GONE
                 initRecyclerView(threadList)
-            }
+            }*/
 
         }
 
@@ -587,7 +585,11 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
         mSocket?.on(Socket.EVENT_DISCONNECT, onDisconnect)
         mSocket?.connect()
         //if (tabAppears) {
-        getChatList()
+
+
+
+
+        /*getChatList()
         Handler(Looper.getMainLooper()).postDelayed({
             if (threadList?.recipientUser?.size == 0) {
                 rvChatRecyclerView?.visibility = View.GONE
@@ -597,7 +599,7 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
                 txtNoChat?.visibility = View.GONE
                 initRecyclerView(threadList)
             }
-        }, 2000)
+        }, 2000)*/
 
         //}
     }
@@ -740,7 +742,7 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
         mainViewModel.deleteThread.observe(this) {
             runOnUiThread {
                 toast("Chat Deleted!")
-                getChatList()
+                /*getChatList()
                 Handler(Looper.getMainLooper()).postDelayed({
                     if (threadList?.recipientUser?.size == 0) {
                         rvChatRecyclerView?.visibility = View.GONE
@@ -750,7 +752,7 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
                         txtNoChat?.visibility = View.GONE
                         initRecyclerView(threadList)
                     }
-                }, 2000)
+                }, 2000)*/
             }
         }
         mainViewModel.errorMessage.observe(this) {
