@@ -50,7 +50,6 @@ import com.sms.moLotus.feature.chat.adapter.ChatAdapter
 import com.sms.moLotus.feature.chat.adapter.ChatContactListAdapter
 import com.sms.moLotus.feature.chat.listener.OnChatContactClickListener
 import com.sms.moLotus.feature.chat.listener.OnMessageClickListener
-import com.sms.moLotus.feature.chat.listener.OnReadReceiptListener
 import com.sms.moLotus.feature.chat.model.ChatMessage
 import com.sms.moLotus.feature.chat.model.Users
 import com.sms.moLotus.feature.retrofit.MainViewModel
