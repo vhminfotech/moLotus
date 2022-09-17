@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:id="@+id/constraintMyMsg"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -14,15 +14,16 @@
         android:layout_marginTop="5dp"
         android:layout_marginEnd="15dp"
         android:layout_marginBottom="5dp"
-        android:orientation="vertical">
+        android:gravity="end"
+        android:orientation="horizontal">
 
         <LinearLayout
+            android:id="@+id/llMain"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-
             android:orientation="vertical"
             app:layout_constrainedWidth="true"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/imgSeen"
             app:layout_constraintTop_toTopOf="parent">
 
             <ImageView
@@ -72,10 +73,10 @@
             <LinearLayout
                 android:id="@+id/llContact"
                 android:layout_width="220dp"
-                android:visibility="gone"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:background="@drawable/my_bubble_shape">
+                android:background="@drawable/my_bubble_shape"
+                android:visibility="gone">
 
                 <androidx.cardview.widget.CardView
                     android:layout_width="match_parent"
@@ -127,5 +128,18 @@
 
 
         </LinearLayout>
-    </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/imgSeen"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_gravity="bottom"
+            android:padding="3dp"
+            android:src="@drawable/ic_tick"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/llMain"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/exo_gray" />
+    </LinearLayout>
 </LinearLayout>

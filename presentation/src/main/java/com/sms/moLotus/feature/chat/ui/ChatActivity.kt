@@ -50,6 +50,7 @@ import com.sms.moLotus.feature.chat.adapter.ChatAdapter
 import com.sms.moLotus.feature.chat.adapter.ChatContactListAdapter
 import com.sms.moLotus.feature.chat.listener.OnChatContactClickListener
 import com.sms.moLotus.feature.chat.listener.OnMessageClickListener
+import com.sms.moLotus.feature.chat.listener.OnReadReceiptListener
 import com.sms.moLotus.feature.chat.model.ChatMessage
 import com.sms.moLotus.feature.chat.model.Users
 import com.sms.moLotus.feature.retrofit.MainViewModel
@@ -579,8 +580,8 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
             val map: HashMap<String, String> = HashMap()
             map["SENDER_ID"] = currentUserId.toString()
             map["MESSAGE_ID"] = it.createThread?.messageId.toString()
-            mSocket?.emit("received", map)
-            mSocket?.emit("markSeen", map)
+            mSocket?.emit("received", currentUserId.toString(),it.createThread?.messageId.toString())
+            mSocket?.emit("markSeen",  currentUserId.toString(),it.createThread?.messageId.toString())
         }
         viewModel.errorMessage.observe(this) {
             val conMgr =
@@ -621,8 +622,8 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
             val map: HashMap<String, String> = HashMap()
             map["SENDER_ID"] = currentUserId.toString()
             map["MESSAGE_ID"] = it.createMessage?._id.toString()
-            mSocket?.emit("received", map)
-            mSocket?.emit("markSeen", map)
+            mSocket?.emit("received",  currentUserId.toString(),it.createMessage?._id.toString())
+            mSocket?.emit("markSeen", currentUserId.toString(),it.createMessage?._id.toString())
         }
         viewModel.errorMessage.observe(this) {
             val conMgr = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -1056,12 +1057,15 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
         runOnUiThread(Runnable {
             val data = args[0] as JSONObject
             Log.e("CHATACTIVITY", "data: delivered: $data")
+            chatAdapter?.onDelivered(true)
+
         })
     }
 
     private val markedSeen = Emitter.Listener { args ->
         runOnUiThread(Runnable {
             val data = args[0] as JSONObject
+            chatAdapter?.onMarkSeen(true)
 
             Log.e("CHATACTIVITY", "data: markedSeen: $data")
         })

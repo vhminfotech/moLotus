@@ -2,6 +2,7 @@ package com.sms.moLotus.feature.chat.adapter
 
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,7 +24,7 @@ import com.sms.moLotus.feature.chat.model.ChatMessage
 
 @RequiresApi(Build.VERSION_CODES.M)
 class ChatAdapter(
-    var list: MutableList<ChatMessage>, context: Context, val listener: OnMessageClickListener
+    var list: MutableList<ChatMessage>, context: Context, val listener: OnMessageClickListener,
 ) :
     RecyclerView.Adapter<MessageViewHolder<*>>() {
     companion object {
@@ -87,7 +88,7 @@ class ChatAdapter(
     class MyMessageViewHolder(val view: View) :
         MessageViewHolder<ChatMessage>(view) {
         private val messageContent = view.findViewById<TextView>(R.id.message)
-        private val constraintMyMsg = view.findViewById<ConstraintLayout>(R.id.constraintMyMsg)
+        private val constraintMyMsg = view.findViewById<LinearLayout>(R.id.constraintMyMsg)
         private val llOnClick = view.findViewById<LinearLayout>(R.id.llOnClick)
         private val imgThumbnail = view.findViewById<ImageView>(R.id.imgThumbnail)
         private val llDoc = view.findViewById<LinearLayout>(R.id.llDoc)
@@ -98,7 +99,7 @@ class ChatAdapter(
         override fun bind(
             item: List<ChatMessage?>?,
             listener: OnMessageClickListener,
-            context: Context
+            context: Context,
         ) {
 
             val data = item?.get(adapterPosition)
@@ -178,7 +179,8 @@ class ChatAdapter(
     class FriendMessageViewHolder(val view: View) :
         MessageViewHolder<ChatMessage>(view) {
         private val messageContent = view.findViewById<TextView>(R.id.message)
-        private val constraintFriendMsg = view.findViewById<ConstraintLayout>(R.id.constraintFriendMsg)
+        private val constraintFriendMsg =
+            view.findViewById<ConstraintLayout>(R.id.constraintFriendMsg)
         private val llOnClick = view.findViewById<LinearLayout>(R.id.llOnClick)
         private val txtName = view.findViewById<TextView>(R.id.txtName)
         private val imgThumbnail = view.findViewById<ImageView>(R.id.imgThumbnail)
@@ -190,7 +192,7 @@ class ChatAdapter(
         override fun bind(
             item: List<ChatMessage?>?,
             listener: OnMessageClickListener,
-            context: Context
+            context: Context,
         ) {
             val data = item?.get(adapterPosition)
             if (data?.message == "null" || data?.message == "" || data?.message?.isEmpty() == true) {
@@ -220,13 +222,13 @@ class ChatAdapter(
                     llDoc?.visibility = View.GONE
                     Glide.with(context).asBitmap().load(data.url)
                         .diskCacheStrategy(DiskCacheStrategy.DATA).into(imgThumbnail)
-                }else if (data?.url?.endsWith(".vcf") == true) {
+                } else if (data?.url?.endsWith(".vcf") == true) {
                     imgThumbnail?.visibility = View.GONE
                     llDoc?.visibility = View.GONE
                     llContact?.visibility = View.VISIBLE
                     val fileName: String = data.url.substring(data.url.lastIndexOf('/') + 1)
                     txtContactName.text = fileName
-                } else  {
+                } else {
                     llContact?.visibility = View.GONE
                     imgThumbnail?.visibility = View.GONE
                     llDoc?.visibility = View.VISIBLE
@@ -272,5 +274,14 @@ class ChatAdapter(
                 return@setOnLongClickListener true
             }
         }
+    }
+
+    fun onDelivered(delivered: Boolean) {
+        Log.e("READ","=OnDelivered== $delivered")
+
+    }
+
+    fun onMarkSeen(markSeen: Boolean) {
+        Log.e("READ","=OnMarkSeen== $markSeen")
     }
 }
