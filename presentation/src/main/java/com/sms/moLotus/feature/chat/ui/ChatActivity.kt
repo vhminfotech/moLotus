@@ -88,6 +88,8 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
     private var chatMessageList: ArrayList<ChatMessage>? = ArrayList()
     var usersList: ArrayList<Users> = ArrayList()
 
+    //var isRead : Boolean = false
+
     companion object {
         var mSocket: Socket? = null
         var myUserName: String? = ""
@@ -135,8 +137,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
         mSocket?.on(Socket.EVENT_DISCONNECT, onDisconnect)
         mSocket?.on(Socket.EVENT_CONNECT_ERROR, onConnectError)
         mSocket?.off("getMessage")?.on("getMessage", getMessage)
-        mSocket?.off("delivered")?.on("delivered", delivered)
-        mSocket?.off("markedSeen")?.on("markedSeen", markedSeen)
+        mSocket?.off("getReadMessage")?.on("getReadMessage", getReadMessage)
         // mSocket?.off("typing")?.on("typing", typing)
         mSocket?.connect()
 
@@ -211,26 +212,26 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
             if (blocked == false) {
                 if (txtMessage?.text?.isNotEmpty() == true) {
                     /*if (flag == true) {*/
-                        if ((threadId?.isEmpty() == true || threadId == "null")) {
-                            createThread(txtMessage.text.toString(), isGroup,
-                                groupName.toString(), "")
+                    if ((threadId?.isEmpty() == true || threadId == "null")) {
+                        createThread(txtMessage.text.toString(), isGroup,
+                            groupName.toString(), "")
+                    } else {
+                        if (isGroup) {
+                            createMessage(
+                                threadId.toString(),
+                                txtMessage.text.toString(),
+                                "",
+                                ""
+                            )
                         } else {
-                            if (isGroup) {
-                                createMessage(
-                                    threadId.toString(),
-                                    txtMessage.text.toString(),
-                                    "",
-                                    ""
-                                )
-                            } else {
-                                createMessage(
-                                    threadId.toString(),
-                                    txtMessage.text.toString(),
-                                    recipientsIds?.get(0).toString(),
-                                    ""
-                                )
-                            }
+                            createMessage(
+                                threadId.toString(),
+                                txtMessage.text.toString(),
+                                recipientsIds?.get(0).toString(),
+                                ""
+                            )
                         }
+                    }
                     /*} else {
                         if ((threadId?.isEmpty() == true || threadId == "null")) {
                             createThread(txtMessage.text.toString(), isGroup,
@@ -566,7 +567,10 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
             recipientsIds,
             message, myUserName, url
         )
-        addMessage(currentUserId.toString(), message, "", "", url)
+
+
+
+
         viewModel.createThread.observe(this) {
             Log.e("==================", "createThread:: ${it.createThread}")
 
@@ -579,8 +583,12 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
             val map: HashMap<String, String> = HashMap()
             map["SENDER_ID"] = currentUserId.toString()
             map["MESSAGE_ID"] = it.createThread?.messageId.toString()
-            mSocket?.emit("received", currentUserId.toString(),it.createThread?.messageId.toString())
-            mSocket?.emit("markSeen",  currentUserId.toString(),it.createThread?.messageId.toString())
+            mSocket?.emit("received",
+                currentUserId.toString(),
+                it.createThread?.messageId.toString())
+            mSocket?.emit("markSeen",
+                currentUserId.toString(),
+                it.createThread?.messageId.toString())
         }
         viewModel.errorMessage.observe(this) {
             val conMgr =
@@ -612,17 +620,17 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
             recipientsIds,
             message, myUserName, url
         )
-        addMessage(currentUserId.toString(), message, "", "", url)
+
+
 
         viewModel.createMessage.observe(this) {
-            Log.e("==================", "createThread:: ${it.createMessage}")
 
             txtMessage.text = null
             val map: HashMap<String, String> = HashMap()
             map["SENDER_ID"] = currentUserId.toString()
             map["MESSAGE_ID"] = it.createMessage?._id.toString()
-            mSocket?.emit("received",  currentUserId.toString(),it.createMessage?._id.toString())
-            mSocket?.emit("markSeen", currentUserId.toString(),it.createMessage?._id.toString())
+            mSocket?.emit("received", currentUserId.toString(), it.createMessage?._id.toString())
+            mSocket?.emit("markSeen", currentUserId.toString(), it.createMessage?._id.toString())
         }
         viewModel.errorMessage.observe(this) {
             val conMgr = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -702,7 +710,8 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
                         getMessageList[index].message.toString(),
                         getMessageList[index].dateSent.toString(),
                         "",
-                        fileName
+                        fileName,
+                        false
                     )
                     chatViewModel.insert(chatMessageModel!!)
                 }
@@ -762,6 +771,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
                         getGroupMessageList[index].dateSent.toString(),
                         getGroupMessageList[index].userName.toString(),
                         getGroupMessageList[index].url.toString(),
+                        false
                     )
                     if (!getGroupMessageList[index].url.isNullOrEmpty()) {
                         attachmentList.add(getGroupMessageList[index].url.toString())
@@ -1042,31 +1052,38 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
                 return@Runnable
             }
             //removeTyping(username)
+
             txtTyping?.text = ""
             txtTyping?.visibility = View.GONE
             if (isGroup) {
-                addMessage(senderId, text, currTime, name, url)
+                addMessage(senderId, text, currTime, name, url, false)
             } else {
-                addMessage(senderId, text, currTime, "", url)
+                addMessage(senderId, text, currTime, "", url, false)
             }
         })
     }
 
-    private val delivered = Emitter.Listener { args ->
+    private val getReadMessage = Emitter.Listener { args ->
         runOnUiThread(Runnable {
             val data = args[0] as JSONObject
-            Log.e("CHATACTIVITY", "data: delivered: $data")
-            chatAdapter?.onDelivered(true)
+            Log.e("CHATACTIVITY", "data: getMessage: $data")
 
-        })
-    }
+            val senderId: String
+            val text: String
+            val url: String
+            var read: Boolean? = false
+            try {
+                senderId = data.getString("senderId")
+                text = data.getString("text")
+                url = data.getString("url")
+                read = data.getBoolean("read")
+            } catch (e: JSONException) {
+                return@Runnable
+            }
+            Log.e("CHATACTIVITY", "data: getMessage read: $read")
 
-    private val markedSeen = Emitter.Listener { args ->
-        runOnUiThread(Runnable {
-            val data = args[0] as JSONObject
-            chatAdapter?.onMarkSeen(true)
+            addMessage(senderId.toString(), text, "", "", url, read)
 
-            Log.e("CHATACTIVITY", "data: markedSeen: $data")
         })
     }
 
@@ -1076,6 +1093,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
         currTime: String,
         userName: String,
         url: String,
+        read: Boolean,
     ) {
         val dateFormat =
             SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).format(Date())
@@ -1095,7 +1113,8 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
                 message,
                 dateFormat,
                 userName,
-                url
+                url,
+                read
             )
         }
         chatMessageModel?.let { chatMessageList?.add(it) }
@@ -1192,7 +1211,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
             message, myUserName, url
         )
 
-        addMessage(currentUserId.toString(), message, "", "", url)
+        addMessage(currentUserId.toString(), message, "", "", url, false)
 
         viewModel.forwardMessage.observe(this) {
             LogHelper.e("CHATACTIVITY", "==== ${it?.forwardMessage?.threadId}")

@@ -220,7 +220,7 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
             compose?.visibility = View.GONE
 
             //without chat
-//            txtUpcomingFeature?.visibility = View.VISIBLE
+           // txtUpcomingFeature?.visibility = View.VISIBLE
 
 
             //with chat

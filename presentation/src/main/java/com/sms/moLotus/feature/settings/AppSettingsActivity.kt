@@ -337,6 +337,7 @@ class AppSettingsActivity : QkThemedActivity(), SettingsView {
     }
 
     override val composeIntent by lazy {
+
         txtAutoMatedMsg.clicks()
     }
 

@@ -1,7 +1,6 @@
 package com.sms.moLotus.feature.main
 
 import android.content.Context
-import android.os.Build
 import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
 import com.sms.moLotus.common.Navigator
@@ -486,10 +485,18 @@ class MainViewModel @Inject constructor(
 
                     sendMessage.execute(
                         SendMessage.Params(
-                            0, threadId, list, "MMS ${Build.MODEL}",
+                            0, threadId, list, "MMS",
                             listOf(), 0
                         )
                     )
+
+
+/*                    sendMessage.execute(
+                        SendMessage.Params(
+                            0, threadId, list, "MMS ${Build.MODEL}",
+                            listOf(), 0
+                        )
+                    )*/
                 }
             }
     }

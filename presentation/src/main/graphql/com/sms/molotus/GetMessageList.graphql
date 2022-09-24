@@ -8,6 +8,7 @@ query GetMessageList($threadId: ID!,$senderId: ID!, $receiverId:ID!){
             dateSent
             id
             url
+#            read
         }
     }
 }

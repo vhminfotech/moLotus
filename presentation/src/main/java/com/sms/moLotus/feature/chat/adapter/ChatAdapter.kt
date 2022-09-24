@@ -11,6 +11,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
@@ -38,6 +39,7 @@ class ChatAdapter(
         list.clear()
         list.addAll(data)
         list.sortBy { it.dateSent }
+
     }
 
     fun deleteMessage(position: Int) {
@@ -95,6 +97,7 @@ class ChatAdapter(
         private val txtDocName = view.findViewById<TextView>(R.id.txtDocName)
         private val llContact = view.findViewById<LinearLayout>(R.id.llContact)
         private val txtContactName = view.findViewById<TextView>(R.id.txtContactName)
+        private val imgSeen = view.findViewById<ImageView>(R.id.imgSeen)
 
         override fun bind(
             item: List<ChatMessage?>?,
@@ -172,6 +175,18 @@ class ChatAdapter(
                     )
                 )
                 return@setOnLongClickListener true
+            }
+
+            Log.e("CHATACTIVITY", "data: getMessage read adapter: ${data?.read}")
+
+
+
+            if (data?.read == true){
+                imgSeen?.setImageResource(R.drawable.double_tick)
+                imgSeen.setColorFilter(ContextCompat.getColor(context, R.color.tools_theme))
+
+            }else{
+                imgSeen?.setImageResource(R.drawable.double_tick)
             }
         }
     }

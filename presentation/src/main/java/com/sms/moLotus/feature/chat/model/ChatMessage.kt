@@ -31,6 +31,8 @@ data class ChatMessage(
     val userName: String,
     @ColumnInfo(name = "url")
     val url: String,
+    @ColumnInfo(name = "read")
+    val read: Boolean,
 )
 /*@Entity(tableName = "MessageTable")
 data class ChatMessage(
