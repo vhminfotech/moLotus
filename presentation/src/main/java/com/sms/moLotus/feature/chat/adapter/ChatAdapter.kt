@@ -178,8 +178,7 @@ class ChatAdapter(
             }
 
             Log.e("CHATACTIVITY", "data: getMessage read adapter: ${data?.read}")
-
-
+            
 
             if (data?.read == true){
                 imgSeen?.setImageResource(R.drawable.double_tick)
