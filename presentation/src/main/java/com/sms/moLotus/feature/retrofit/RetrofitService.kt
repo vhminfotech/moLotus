@@ -11,6 +11,14 @@ import retrofit2.http.*
 
 interface RetrofitService {
 
+    @FormUrlEncoded
+    @Headers("Accept: application/json")
+    @POST("novoconnectorOTPMIA/otp/mia")
+    fun getOtp(
+        @Field("msgText") msgText: String,
+        @Field("msisdn") msisdn: String
+    ): Call<String>
+
     @GET("operators")
     fun getAllOperators(): Call<List<Operators>>
 
@@ -58,7 +66,8 @@ interface RetrofitService {
         fun getInstance(): RetrofitService {
             if (retrofitService == null) {
                 val retrofit = Retrofit.Builder()
-                    .baseUrl(Constants.BASE_URL)
+                    .baseUrl(Constants.NOVOSOL_BASE_URL)
+//                    .baseUrl(Constants.BASE_URL)
                     .addConverterFactory(GsonConverterFactory.create(gson))
                     .build()
                 retrofitService = retrofit.create(RetrofitService::class.java)

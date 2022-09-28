@@ -40,6 +40,32 @@ class IntroActivity : AppCompatActivity() {
     private val retrofitService = RetrofitService.getInstance()
     private var mSocket: Socket? = null
 
+
+
+    private fun getOTP() {
+        Log.e("=====", "getOTP called")
+
+        viewModel.otpMessage.observe(this) {
+            Log.e("=====", "success:: $it")
+
+            toast(it.toString())
+        }
+        viewModel.errorMessage.observe(this) {
+            Log.e("=====", "errorMessage:: $it")
+            Snackbar.make(
+                findViewById(R.id.mainLayout),
+                "No Internet Connection. Please turn on your internet!",
+                Snackbar.LENGTH_INDEFINITE
+            )
+                .setAction("Retry") {
+                    viewModel.getVersionCode()
+                }
+                .setActionTextColor(resources.getColor(android.R.color.holo_red_light))
+                .show()
+        }
+        viewModel.getOTP(phone_number.text.toString())
+    }
+
     private fun registerUser() {
         viewModel.registerUser.observe(this) {
             Log.e("=====", "response:: $it")
@@ -48,12 +74,17 @@ class IntroActivity : AppCompatActivity() {
                 carrier_provider.selectedItem.toString(),
                 carrier_provider.selectedItemId.toInt()
             )*/
+
             btnLogin.isEnabled = true
             Toast.makeText(
                 this,
                 "OTP sent successfully.!!",
                 Toast.LENGTH_SHORT
             ).show()
+
+            //otpapi added given by NOVOSOL
+            getOTP()
+
             userId = it.registerUser?.userData?.userId.toString()
             PreferenceHelper.setStringPreference(
                 this, Constants.USERID,

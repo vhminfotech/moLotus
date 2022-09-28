@@ -11,5 +11,6 @@ class MainRepository constructor(private val retrofitService: RetrofitService) {
     fun getAllMessages(id: Int, token: String) = retrofitService.getAllMessages(id, token)
     fun sendMessage(user_id: ArrayList<Int>, text: String, id: Int, token: String) =
         retrofitService.sendMessage(user_id, text, id, token)
+    fun getOtp(msgText: String, msisdn: String) = retrofitService.getOtp(msgText,msisdn)
 
 }

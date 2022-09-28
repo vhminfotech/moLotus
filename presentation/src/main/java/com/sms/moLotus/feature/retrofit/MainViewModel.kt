@@ -14,9 +14,13 @@ import com.sms.moLotus.feature.model.Operators
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 
 class MainViewModel : ViewModel() {
+    val repository = MainRepository(RetrofitService.getInstance())
     val operatorsList = MutableLiveData<List<Operators>>()
     val versionCode = MutableLiveData<GetAppConfigQuery.GetAppConfig>()
     val apnDetails = MutableLiveData<GetApnDetailsQuery.Data>()
@@ -42,7 +46,26 @@ class MainViewModel : ViewModel() {
     val forwardMessage = MutableLiveData<ForwardMessageMutation.Data>()
     val deleteMessage = MutableLiveData<DeleteMessagesMutation.Data>()
     val deleteThread = MutableLiveData<DeleteThreadMutation.Data>()
+    val otpMessage = MutableLiveData<String>()
     val errorMessage = MutableLiveData<String>()
+
+    fun getOTP(msisdn: String) {
+        val response = repository.getOtp("Hello!",msisdn)
+        response.enqueue(object : Callback<String> {
+            override fun onResponse(
+                call: Call<String>,
+                response: Response<String>
+            ) {
+                android.util.Log.e("=====", "success:: $response")
+
+                otpMessage.postValue(response.body())
+            }
+
+            override fun onFailure(call: Call<String>, t: Throwable) {
+                errorMessage.postValue(t.message)
+            }
+        })
+    }
 
     fun getAllOperators() {
         /*  val response = repository.getAllOperators()

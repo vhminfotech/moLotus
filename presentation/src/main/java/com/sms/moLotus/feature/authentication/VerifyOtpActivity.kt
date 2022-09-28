@@ -7,23 +7,31 @@ import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.auth.api.phone.SmsRetriever
 import com.google.android.gms.tasks.Task
+import com.google.android.material.snackbar.Snackbar
+import com.google.gson.Gson
 import com.sms.moLotus.PreferenceHelper
 import com.sms.moLotus.R
 import com.sms.moLotus.extension.toast
 import com.sms.moLotus.feature.authentication.MySMSBroadcastReceiver.OTPReceiveListener
+import com.sms.moLotus.feature.chat.LogHelper
 import com.sms.moLotus.feature.intro.APNDetailsActivity
 import com.sms.moLotus.feature.main.MainActivity
 import com.sms.moLotus.feature.networkcall.ApiHelper
+import com.sms.moLotus.feature.retrofit.MainViewModel
 import kotlinx.android.synthetic.main.activity_verify_otp.*
+import org.json.JSONArray
 
 class VerifyOtpActivity : AppCompatActivity() {
     private var mySMSBroadcastReceiver: MySMSBroadcastReceiver? = null
     private var phoneNo: String? = null
+    lateinit var viewModel: MainViewModel
 
     private var api: ApiHelper? = null
     var isOTPVerified: Boolean? = false
@@ -38,6 +46,10 @@ class VerifyOtpActivity : AppCompatActivity() {
         phoneNo = intent?.getStringExtra("PhoneNumber")
         txtOTP?.text = resources.getString(R.string.otp_desc) + " $phoneNo"
         mySMSBroadcastReceiver = MySMSBroadcastReceiver()
+        viewModel =
+            ViewModelProvider(this).get(
+                MainViewModel::class.java
+            )
         api = ApiHelper(this)
 
         registerReceiver(
@@ -63,6 +75,7 @@ class VerifyOtpActivity : AppCompatActivity() {
             }
         })
         btnResendOtp?.setOnClickListener {
+
             toast("OTP sent successfully.!!")
             //carrierId?.let { it1 -> requestOtp(phoneNo.toString(), carrierText.toString(), it1) }
         }
@@ -73,6 +86,7 @@ class VerifyOtpActivity : AppCompatActivity() {
                     this,
                     "Phone no. successfully verified.!!", Toast.LENGTH_SHORT
                 ).show()
+
                 PreferenceHelper.setPreference(this, "UserLoggedIn", true)
                 PreferenceHelper.setPreference(this, "INTRO", true)
                 PreferenceHelper.setStringPreference(this, "PhoneNumber", phoneNo.toString())
@@ -168,6 +182,8 @@ class VerifyOtpActivity : AppCompatActivity() {
             ).show()
         }
     }
+
+
 
     private fun startSMSRetrieverClient() {
         val client = SmsRetriever.getClient(this)

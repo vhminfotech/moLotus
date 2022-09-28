@@ -220,11 +220,11 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
             compose?.visibility = View.GONE
 
             //without chat
-           // txtUpcomingFeature?.visibility = View.VISIBLE
+            txtUpcomingFeature?.visibility = View.VISIBLE
 
 
             //with chat
-            createChat?.visibility = View.VISIBLE
+            /*createChat?.visibility = View.VISIBLE
             chatClicked = true
             tabAppears = true
             toolbarVisible?.visibility = View.GONE
@@ -236,7 +236,7 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
                 rvChatRecyclerView?.visibility = View.VISIBLE
                 txtNoChat?.visibility = View.GONE
                 initRecyclerView(threadList)
-            }
+            }*/
 
         }
 
