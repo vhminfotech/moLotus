@@ -1,5 +1,6 @@
 package com.sms.moLotus.feature.retrofit
 
+import android.content.Context
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.apollographql.apollo3.ApolloClient
@@ -46,11 +47,12 @@ class MainViewModel : ViewModel() {
     val forwardMessage = MutableLiveData<ForwardMessageMutation.Data>()
     val deleteMessage = MutableLiveData<DeleteMessagesMutation.Data>()
     val deleteThread = MutableLiveData<DeleteThreadMutation.Data>()
+    val verifyOtp = MutableLiveData<VerifyOTPQuery.Data>()
     val otpMessage = MutableLiveData<String>()
     val errorMessage = MutableLiveData<String>()
 
-    fun getOTP(msisdn: String) {
-        val response = repository.getOtp("Hello!",msisdn)
+    fun getOTP(context: Context, msisdn: String) {
+        val response = repository.getOtp(context.getString(R.string.otp_message), msisdn)
         response.enqueue(object : Callback<String> {
             override fun onResponse(
                 call: Call<String>,
@@ -92,6 +94,25 @@ class MainViewModel : ViewModel() {
                 val response = client?.query(getAppConfig)?.execute()
                 if (response?.data?.getAppConfig != null) {
                     versionCode.postValue(response.data?.getAppConfig)
+                } else {
+                    errorMessage.postValue("null")
+                }
+            } catch (e: ApolloException) {
+                errorMessage.postValue(e.message)
+            }
+        }
+
+    }
+
+    fun verifyOTP(msisdn: String, otp: String) {
+        client = ApolloClientService.setUpApolloClient("")
+        val verifyOtpData = VerifyOTPQuery(msisdn,otp)
+
+        GlobalScope.launch(Dispatchers.Main) {
+            try {
+                val response = client?.query(verifyOtpData)?.execute()
+                if (response?.data?.verifyOTP != null) {
+                    verifyOtp.postValue(response.data)
                 } else {
                     errorMessage.postValue("null")
                 }

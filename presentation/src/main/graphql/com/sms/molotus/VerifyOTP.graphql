@@ -1,4 +1,4 @@
-mutation VerifyOTP($msisdn: String!, $otp: String!){
+query VerifyOTP($msisdn: String!, $otp: String!){
      verifyOTP(msisdn:$msisdn, otp: $otp) {
        error
        message

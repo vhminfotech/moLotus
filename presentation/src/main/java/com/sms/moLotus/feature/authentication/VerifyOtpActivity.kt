@@ -26,6 +26,7 @@ import com.sms.moLotus.feature.main.MainActivity
 import com.sms.moLotus.feature.networkcall.ApiHelper
 import com.sms.moLotus.feature.retrofit.MainViewModel
 import kotlinx.android.synthetic.main.activity_verify_otp.*
+import kotlinx.android.synthetic.main.intro_activity_main.*
 import org.json.JSONArray
 
 class VerifyOtpActivity : AppCompatActivity() {
@@ -81,7 +82,7 @@ class VerifyOtpActivity : AppCompatActivity() {
         }
 
         btnVerifyOtp?.setOnClickListener {
-            if (etOTP?.text?.toString().equals("123456")) {
+            /*if (etOTP?.text?.toString().equals("123456")) {
                 Toast.makeText(
                     this,
                     "Phone no. successfully verified.!!", Toast.LENGTH_SHORT
@@ -105,16 +106,16 @@ class VerifyOtpActivity : AppCompatActivity() {
                 finish()
 
 
-                /*val intent = Intent(this, APNDetailsActivity::class.java)
+                *//*val intent = Intent(this, APNDetailsActivity::class.java)
                 intent.putExtra("PhoneNumber", phoneNo)
-                startActivity(intent)*/
+                startActivity(intent)*//*
             } else {
                 Toast.makeText(
                     this,
                     "Please enter correct OTP!", Toast.LENGTH_LONG
                 ).show()
-            }
-            //verifyOtp(phoneNo.toString(), etOTP.text?.toString().toString())
+            }*/
+            verifyOTP(phoneNo.toString(), etOTP.text?.toString().toString())
         }
 
         etOTP?.addTextChangedListener(object : TextWatcher {
@@ -144,6 +145,52 @@ class VerifyOtpActivity : AppCompatActivity() {
         finishAndRemoveTask()
     }
 
+    @SuppressLint("NewApi")
+    private fun verifyOTP(requestPhone: String, otp: String) {
+        viewModel.verifyOtp.observe(this) {
+            Log.e("=====", "success:: $it")
+
+//            toast(it.toString())
+
+            Toast.makeText(
+                this,
+                "Phone no. successfully verified.!!", Toast.LENGTH_SHORT
+            ).show()
+
+            PreferenceHelper.setPreference(this, "UserLoggedIn", true)
+            PreferenceHelper.setPreference(this, "INTRO", true)
+            PreferenceHelper.setStringPreference(this, "PhoneNumber", phoneNo.toString())
+
+            val settings = getSharedPreferences("appInfo", 0)
+            val editor = settings.edit()
+            editor.putBoolean("first_time", false)
+            editor.commit()
+
+            PreferenceHelper.setPreference(this, "APNSETTINGS", true)
+            PreferenceHelper.setPreference(this, "Notification", true)
+            PreferenceHelper.setPreference(this, "isVerified", true)
+            val intent = Intent(this, MainActivity::class.java)
+            intent.putExtra("PhoneNumber", phoneNo)
+            startActivity(intent)
+            finish()
+        }
+        viewModel.errorMessage.observe(this) {
+            Log.e("=====", "errorMessage:: $it")
+            Snackbar.make(
+                findViewById(R.id.mainLayout),
+                "No Internet Connection. Please turn on your internet!",
+                Snackbar.LENGTH_INDEFINITE
+            )
+                .setAction("Retry") {
+                    viewModel.getVersionCode()
+                }
+                .setActionTextColor(resources.getColor(android.R.color.holo_red_light))
+                .show()
+        }
+        viewModel.verifyOTP(requestPhone, otp)
+
+    }
+
 
     private fun verifyOtp(requestPhone: String, otp: String) {
         api?.verify(requestPhone, otp,
@@ -160,7 +207,7 @@ class VerifyOtpActivity : AppCompatActivity() {
                     PreferenceHelper.setPreference(this, "UserLoggedIn", true)
                     PreferenceHelper.setPreference(this, "INTRO", true)
                     PreferenceHelper.setStringPreference(this, "PhoneNumber", phoneNumber)
-                     val intent = Intent(this, APNDetailsActivity::class.java)
+                    val intent = Intent(this, APNDetailsActivity::class.java)
                     intent.putExtra("PhoneNumber", phoneNumber)
                     startActivity(intent)
                 } else {
@@ -182,7 +229,6 @@ class VerifyOtpActivity : AppCompatActivity() {
             ).show()
         }
     }
-
 
 
     private fun startSMSRetrieverClient() {

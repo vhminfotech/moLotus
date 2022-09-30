@@ -63,7 +63,7 @@ class IntroActivity : AppCompatActivity() {
                 .setActionTextColor(resources.getColor(android.R.color.holo_red_light))
                 .show()
         }
-        viewModel.getOTP(phone_number.text.toString())
+        viewModel.getOTP(this,phone_number.text.toString())
     }
 
     private fun registerUser() {
