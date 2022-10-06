@@ -102,7 +102,7 @@ class AppSettingsActivity : QkThemedActivity(), SettingsView {
 
         toggleSendPaidMessages.isChecked = PreferenceHelper.getPreference(this, "SendPaidMessage")
         toggleNotification.isChecked = PreferenceHelper.getPreference(this, "Notification")
-        toggleAutoDownload.isChecked = PreferenceHelper.getPreference(this, "AutoDownload")
+//        toggleAutoDownload.isChecked = PreferenceHelper.getPreference(this, "AutoDownload")
 
         /*txtAutoMatedMsg?.setOnClickListener {
            *//* val list: ArrayList<String> = ArrayList()
@@ -127,7 +127,7 @@ class AppSettingsActivity : QkThemedActivity(), SettingsView {
             }
         }
 
-        toggleAutoDownload?.setOnCheckedChangeListener { _, isChecked ->
+        /*toggleAutoDownload?.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 toggleAutoDownload.isChecked = true
                 PreferenceHelper.setPreference(this, "AutoDownload", true)
@@ -135,7 +135,7 @@ class AppSettingsActivity : QkThemedActivity(), SettingsView {
                 toggleAutoDownload.isChecked = false
                 PreferenceHelper.setPreference(this, "AutoDownload", false)
             }
-        }
+        }*/
 
         toggleNotification?.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
