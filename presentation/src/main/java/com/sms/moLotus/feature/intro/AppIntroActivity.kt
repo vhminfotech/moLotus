@@ -31,7 +31,8 @@ class AppIntroActivity : AppCompatActivity() {
             getAppId()
         }*/
         llGetStarted?.setOnClickListener {
-            val intent = Intent(this, MainActivity::class.java)
+            val intent = Intent(this, IntroActivity::class.java)
+//            val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
             overridePendingTransition(0, 0)
             finish()
