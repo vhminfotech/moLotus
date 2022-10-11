@@ -1,11 +1,13 @@
 package com.sms.moLotus.feature.chat.ui
 
 import android.annotation.SuppressLint
-import android.app.Activity
-import android.app.Dialog
+import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.database.Cursor
+import android.graphics.BitmapFactory
+import android.graphics.Color
+import android.media.RingtoneManager
 import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Build
@@ -25,6 +27,7 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationCompat
 import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -72,6 +75,14 @@ import java.util.*
 
 @RequiresApi(Build.VERSION_CODES.M)
 class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactClickListener {
+
+    // declaring variables
+    lateinit var notificationManager: NotificationManager
+    lateinit var notificationChannel: NotificationChannel
+    lateinit var builder: Notification.Builder
+    private val channelId = "com.sms.moLotus"
+
+
     lateinit var viewModel: MainViewModel
     private lateinit var chatViewModel: ChatViewModel
     private var chatAdapter: ChatAdapter? = null
@@ -196,10 +207,76 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
         setSupportActionBar(toolbar)
+        // it is a class to notify the user of events that happen.
+        // This is how you tell the user that something has happened in the
+        // background.
+        notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
         LogHelper.e("CHATACTIVITY", "=== onCreate threadId:: $threadId")
         LogHelper.e("CHATACTIVITY", "=== onCreate isGroup:: $isGroup")
     }
 
+
+    private fun getNotification(name: String, message: String) {
+        val intent = Intent(this, ChatActivity::class.java)
+
+        // FLAG_UPDATE_CURRENT specifies that if a previous
+        // PendingIntent already exists, then the current one
+        // will update it with the latest intent
+        // 0 is the request code, using it later with the
+        // same method again will get back the same pending
+        // intent for future reference
+        // intent passed here is to our afterNotification class
+        val pendingIntent = PendingIntent.getActivity(
+            this, 0, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        val ringtone: Uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+
+
+        // checking if android version is greater than oreo(API 26) or not
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            notificationChannel = NotificationChannel(
+                channelId,
+                "Chat Notification",
+                NotificationManager.IMPORTANCE_HIGH
+            )
+            notificationChannel.enableLights(true)
+            notificationChannel.lightColor = Color.GREEN
+            notificationChannel.enableVibration(false)
+            notificationManager.createNotificationChannel(notificationChannel)
+
+            builder = Notification.Builder(this, channelId)
+                .setContentTitle("You got a message from $name")
+                .setContentText(message)
+                .setSmallIcon(R.drawable.ic_notification)
+                .setLargeIcon(
+                    BitmapFactory.decodeResource(
+                        this.resources,
+                        R.drawable.ic_notification
+                    )
+                )
+                .setVibrate(longArrayOf(0))
+                .setSound(ringtone)
+                .setContentIntent(pendingIntent)
+        } else {
+
+            builder = Notification.Builder(this)
+                .setContentTitle("You got a message from $name")
+                .setContentText(message)
+                .setSmallIcon(R.drawable.ic_notification)
+                .setLargeIcon(
+                    BitmapFactory.decodeResource(
+                        this.resources,
+                        R.drawable.ic_notification
+                    )
+                )
+                .setVibrate(longArrayOf(0))
+                .setSound(ringtone)
+                .setContentIntent(pendingIntent)
+        }
+        notificationManager.notify(1234, builder.build())
+    }
 
     private fun setListeners() {
         imgBack?.setOnClickListener {
@@ -213,8 +290,10 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
                 if (txtMessage?.text?.isNotEmpty() == true) {
                     /*if (flag == true) {*/
                     if ((threadId?.isEmpty() == true || threadId == "null")) {
-                        createThread(txtMessage.text.toString(), isGroup,
-                            groupName.toString(), "")
+                        createThread(
+                            txtMessage.text.toString(), isGroup,
+                            groupName.toString(), ""
+                        )
                     } else {
                         if (isGroup) {
                             createMessage(
@@ -583,12 +662,16 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
             val map: HashMap<String, String> = HashMap()
             map["SENDER_ID"] = currentUserId.toString()
             map["MESSAGE_ID"] = it.createThread?.messageId.toString()
-            mSocket?.emit("received",
+            mSocket?.emit(
+                "received",
                 currentUserId.toString(),
-                it.createThread?.messageId.toString())
-            mSocket?.emit("markSeen",
+                it.createThread?.messageId.toString()
+            )
+            mSocket?.emit(
+                "markSeen",
                 currentUserId.toString(),
-                it.createThread?.messageId.toString())
+                it.createThread?.messageId.toString()
+            )
         }
         viewModel.errorMessage.observe(this) {
             val conMgr =
@@ -711,7 +794,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
                         getMessageList[index].dateSent.toString(),
                         "",
                         fileName,
-                        false
+                        getMessageList[index].read.toBoolean()
                     )
                     chatViewModel.insert(chatMessageModel!!)
                 }
@@ -1048,6 +1131,9 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
                 name = data.getString("name")
                 currTime = data.getString("currTime")
                 url = data.getString("url")
+
+                //notification display
+                getNotification(name, text)
             } catch (e: JSONException) {
                 return@Runnable
             }
@@ -1060,6 +1146,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
             } else {
                 addMessage(senderId, text, currTime, "", url, false)
             }
+
         })
     }
 
@@ -1216,11 +1303,14 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
         viewModel.forwardMessage.observe(this) {
             LogHelper.e("CHATACTIVITY", "==== ${it?.forwardMessage?.threadId}")
             val intent = Intent(this, ChatActivity::class.java)
-                .putExtra("currentUserId",
-                    PreferenceHelper.getStringPreference(this, Constants.USERID))
+                .putExtra(
+                    "currentUserId",
+                    PreferenceHelper.getStringPreference(this, Constants.USERID)
+                )
                 .putExtra("threadId", it?.forwardMessage?.threadId)
                 .putExtra("userName", name)
-                .putStringArrayListExtra("receiverUserId",
+                .putStringArrayListExtra(
+                    "receiverUserId",
                     list as ArrayList<String>?
                 )
             startActivity(intent)
