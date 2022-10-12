@@ -54,20 +54,20 @@
         android:ellipsize="end"
         android:maxLines="1"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/pinned"
+        app:layout_constraintEnd_toStartOf="@id/mute"
         app:layout_constraintStart_toStartOf="@id/txtUserName"
         app:layout_constraintTop_toBottomOf="@id/txtUserName"
         tools:text="@tools:sample/lorem/random" />
 
     <ImageView
-        android:id="@+id/pinned"
+        android:id="@+id/mute"
         android:layout_width="20dp"
         android:layout_height="16dp"
         android:layout_marginTop="2dp"
         android:paddingStart="4dp"
-        android:src="@drawable/ic_baseline_push_pin_24"
         android:visibility="gone"
-        app:layout_constraintEnd_toStartOf="@id/unread"
+        android:src="@drawable/ic_mute"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/txtLastMessage"
         app:tint="?android:attr/textColorTertiary"
         tools:visibility="visible" />

@@ -400,6 +400,7 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
             .putExtra("userName", item?.name.toString())
             .putExtra("groupName", item?.groupName.toString())
             .putExtra("isGroup", item?.isGroup)
+            .putExtra("isMute", item?.isMuted)
             .putExtra("isNotParticipant", isNotParticipant)
 
         startActivity(intent)

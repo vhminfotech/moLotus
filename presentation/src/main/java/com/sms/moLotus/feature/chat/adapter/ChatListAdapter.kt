@@ -67,6 +67,13 @@ class ChatListAdapter(
             }
         }
 
+        if(chatList?.isMuted == true){
+            holder.imgMute.visibility = View.VISIBLE
+        }else{
+            holder.imgMute.visibility = View.GONE
+
+        }
+
 
         holder.constraintLayout.setOnLongClickListener {
             onChatClickListener.onChatClick(chatList, holder.constraintLayout, position)
@@ -92,5 +99,6 @@ class ChatListAdapter(
         val txtDate: QkTextView = itemView.findViewById(R.id.txtDate)
         val constraintLayout: ConstraintLayout = itemView.findViewById(R.id.itemClick)
         val avatars: ImageView = itemView.findViewById(R.id.avatars)
+        val imgMute: ImageView = itemView.findViewById(R.id.mute)
     }
 }

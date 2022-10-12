@@ -113,6 +113,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
     private var isChatContact: Boolean? = false
     private var blocked: Boolean? = false
     var isGroup: Boolean = false
+    var isMute: Boolean = false
     private var isNotParticipant: Boolean = false
     private val chatDatabase by lazy { ChatDatabase.getDatabase(this).getChatDao() }
 
@@ -159,6 +160,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
         flag = intent?.getBooleanExtra("flag", false)
         isChatContact = intent?.getBooleanExtra("isChatContact", false)
         isGroup = intent.getBooleanExtra("isGroup", false)
+        isMute = intent.getBooleanExtra("isMute", false)
         isNotParticipant = intent.getBooleanExtra("isNotParticipant", false)
         userName = intent.getStringExtra("userName")
         groupName = intent.getStringExtra("groupName")
@@ -1083,6 +1085,11 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
 
             R.id.mute -> {
                 toolbar?.visibility = View.GONE
+                if (isMute) {
+                    unMuteChat()
+                } else {
+                    muteChat()
+                }
             }
         }
         return true
