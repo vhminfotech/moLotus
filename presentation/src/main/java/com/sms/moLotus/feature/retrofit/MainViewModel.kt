@@ -48,6 +48,8 @@ class MainViewModel : ViewModel() {
     val deleteMessage = MutableLiveData<DeleteMessagesMutation.Data>()
     val deleteThread = MutableLiveData<DeleteThreadMutation.Data>()
     val verifyOtp = MutableLiveData<VerifyOTPQuery.Data>()
+    val muteChat = MutableLiveData<MuteChatMutation.Data>()
+    val unMuteChat = MutableLiveData<UnMuteChatMutation.Data>()
     val otpMessage = MutableLiveData<String>()
     val errorMessage = MutableLiveData<String>()
 
@@ -379,6 +381,33 @@ class MainViewModel : ViewModel() {
             try {
                 val response = client?.mutation(unBlockUserMutation)?.execute()
                 unBlockUser.postValue(response?.data)
+            } catch (e: ApolloException) {
+                errorMessage.postValue(e.message)
+            }
+        }
+    }
+
+    fun muteChat(myUserId: String, threadId: String) {
+        client = ApolloClientService.setUpApolloClient("")
+        val muteChatMutation = MuteChatMutation(myUserId, threadId)
+
+        GlobalScope.launch(Dispatchers.Main) {
+            try {
+                val response = client?.mutation(muteChatMutation)?.execute()
+                muteChat.postValue(response?.data)
+            } catch (e: ApolloException) {
+                errorMessage.postValue(e.message)
+            }
+        }
+    }
+    fun unMuteChat(myUserId: String, threadId: String) {
+        client = ApolloClientService.setUpApolloClient("")
+        val unMuteChatMutation = UnMuteChatMutation(myUserId, threadId)
+
+        GlobalScope.launch(Dispatchers.Main) {
+            try {
+                val response = client?.mutation(unMuteChatMutation)?.execute()
+                unMuteChat.postValue(response?.data)
             } catch (e: ApolloException) {
                 errorMessage.postValue(e.message)
             }

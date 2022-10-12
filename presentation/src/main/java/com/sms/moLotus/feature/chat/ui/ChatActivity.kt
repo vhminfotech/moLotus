@@ -431,6 +431,71 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
         )
     }
 
+    private fun unMuteChat() {
+        viewModel.unMuteChat.observe(this) {
+
+            toast(it.unmuteChat?.message.toString())
+        }
+        viewModel.errorMessage.observe(this) {
+            val conMgr =
+                getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val netInfo = conMgr.activeNetworkInfo
+            if (netInfo == null) {
+                //No internet
+                Snackbar.make(
+                    findViewById(R.id.llUserDetails),
+                    "No Internet Connection. Please turn on your internet!",
+                    Snackbar.LENGTH_INDEFINITE
+                )
+                    .setAction("Retry") {
+
+                    }
+                    .setActionTextColor(resources.getColor(android.R.color.holo_red_light))
+                    .show()
+            } else {
+                toast(it.toString(), Toast.LENGTH_SHORT)
+            }
+        }
+
+        viewModel.unMuteChat(
+            myUserId.toString(),
+            threadId.toString()
+        )
+    }
+
+    private fun muteChat() {
+        viewModel.muteChat.observe(this) {
+
+            toast(it.muteChat?.message.toString())
+
+        }
+        viewModel.errorMessage.observe(this) {
+            val conMgr =
+                getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val netInfo = conMgr.activeNetworkInfo
+            if (netInfo == null) {
+                //No internet
+                Snackbar.make(
+                    findViewById(R.id.llUserDetails),
+                    "No Internet Connection. Please turn on your internet!",
+                    Snackbar.LENGTH_INDEFINITE
+                )
+                    .setAction("Retry") {
+
+                    }
+                    .setActionTextColor(resources.getColor(android.R.color.holo_red_light))
+                    .show()
+            } else {
+                toast(it.toString(), Toast.LENGTH_SHORT)
+            }
+        }
+
+        viewModel.muteChat(
+            myUserId.toString(),
+            threadId.toString()
+        )
+    }
+
 
     private fun showAttachmentOptions() {
         val dialog = BottomSheetDialog(this, R.style.BottomSheetDialog)
@@ -1014,6 +1079,10 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
 
             R.id.forward -> {
                 showContactBottomSheet()
+            }
+
+            R.id.mute -> {
+                toolbar?.visibility = View.GONE
             }
         }
         return true
