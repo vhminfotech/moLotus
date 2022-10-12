@@ -1,0 +1,7 @@
+mutation UnMuteChat($userId: ID!, $threadId: ID!){
+    unmuteChat(userId: $userId, threadId: $threadId) {
+        message
+        error
+    }
+}
+

@@ -1,0 +1,7 @@
+mutation MuteChat($userId: ID!, $threadId: ID!){
+    muteChat(userId: $userId, threadId: $threadId) {
+        message
+        error
+    }
+}
+
