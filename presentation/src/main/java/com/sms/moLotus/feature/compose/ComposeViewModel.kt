@@ -393,7 +393,7 @@ class ComposeViewModel @Inject constructor(
                         ""
                     }
                     ComposeActivity.msgFwd = true
-                 //  ComposeActivity.selectContact = true
+                    //  ComposeActivity.selectContact = true
                     navigator.showCompose(sub, message.getText(), images)
 //                    navigator.showCompose("<Subject: Fwd: ${message.subject}>",message.getText(), images)
                 }
@@ -492,15 +492,15 @@ class ComposeViewModel @Inject constructor(
                 if (part.isAudio()) {
                     navigator.showAudioMedia(part.getUri())
                 } else {
-                    if (PreferenceHelper.getPreference(context, "AutoDownload")) {
-                        navigator.showMedia(part.id)
-                    } else {
+                    //if (PreferenceHelper.getPreference(context, "AutoDownload")) {
+                    navigator.showMedia(part.id)
+                    /*} else {
                         Toast.makeText(
                             context,
                             "Auto Download is OFF. You can turn it on from Settings!",
                             Toast.LENGTH_SHORT
                         ).show()
-                    }
+                    }*/
                 }
             }
 
@@ -1062,7 +1062,7 @@ class ComposeViewModel @Inject constructor(
         this.attachments.onNext(ArrayList())
         view.setDraft(PreferenceHelper.deletePreference(context, Constants.DRAFT_SAVED).toString())
 //        ComposeActivity.msgSent = true
-        PreferenceHelper.setPreference(context,"msg_sent",true)
+        PreferenceHelper.setPreference(context, "msg_sent", true)
 
         if (state.editingMode) {
             newState { copy(editingMode = false, hasError = !sendAsGroup) }

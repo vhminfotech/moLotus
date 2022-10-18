@@ -82,6 +82,7 @@
             android:layout_gravity="center_vertical"
             android:layout_weight="1"
             android:checked="true"
+            android:enabled="false"
             android:thumb="@drawable/bg_thumb"
             app:track="@drawable/bg_switch_states" />
     </LinearLayout>

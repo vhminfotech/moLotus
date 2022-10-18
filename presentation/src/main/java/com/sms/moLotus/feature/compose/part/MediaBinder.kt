@@ -69,12 +69,12 @@ class MediaBinder @Inject constructor(colors: Colors, private val context: Conte
             holder.imgDownload.visibility = View.GONE
             GlideApp.with(context).load(part.getUri()).fitCenter().into(holder.thumbnail)
         } else {
-            if (PreferenceHelper.getPreference(context, "AutoDownload")) {
+            //if (PreferenceHelper.getPreference(context, "AutoDownload")) {
                 holder.imgDownload.visibility = View.GONE
                 GlideApp.with(context).load(part.getUri()).fitCenter().into(holder.thumbnail)
-            } else {
-                holder.imgDownload.visibility = View.VISIBLE
-            }
+            /* } else {
+                 holder.imgDownload.visibility = View.VISIBLE
+             }*/
         }
     }
 }
