@@ -776,6 +776,12 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
         viewModel.createMessage.observe(this) {
 
             txtMessage.text = null
+            addMessage(currentUserId.toString(), message,it.createMessage?.dateSend.toString(),"",it.createMessage?.url.toString(),false)
+            /*if (!isGroup) {
+                getMessageList(it.createMessage?._id.toString())
+            } else {
+                getGroupMessageList(it.createMessage?._id.toString())
+            }*/
             val map: HashMap<String, String> = HashMap()
             map["SENDER_ID"] = currentUserId.toString()
             map["MESSAGE_ID"] = it.createMessage?._id.toString()
