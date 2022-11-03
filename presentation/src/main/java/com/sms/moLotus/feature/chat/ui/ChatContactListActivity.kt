@@ -67,7 +67,7 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
             }
             Handler(Looper.getMainLooper()).postDelayed({
                 getUserUsingAppList(contactList.sorted())
-            }, 4000)
+            }, 15000)
         }
 
         Handler(Looper.getMainLooper()).postDelayed({
@@ -80,7 +80,7 @@ class ChatContactListActivity : AppCompatActivity(), OnChatContactClickListener 
             }
             Handler(Looper.getMainLooper()).postDelayed({
                 getUserUsingAppList(contactList.sorted())
-            }, 4000)
+            }, 15000)
         }
 
         txtCreateGroup?.setOnClickListener {
