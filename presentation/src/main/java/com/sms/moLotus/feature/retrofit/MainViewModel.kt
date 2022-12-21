@@ -4,14 +4,19 @@ import android.content.Context
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.apollographql.apollo3.ApolloClient
+import com.apollographql.apollo3.api.Optional
 import com.apollographql.apollo3.api.Upload
 import com.apollographql.apollo3.exception.ApolloException
 import com.google.android.exoplayer2.util.Log
 import com.sms.moLotus.*
 import com.sms.moLotus.feature.Constants
 import com.sms.moLotus.feature.apollo.ApolloClientService
-import com.sms.moLotus.feature.model.MessageList
+import com.sms.moLotus.feature.chat.LogHelper
+import com.sms.moLotus.feature.chat.model.ChatMessage
+import com.sms.moLotus.feature.model.MessagesList
 import com.sms.moLotus.feature.model.Operators
+import com.sms.moLotus.type.AttachmentTypeEnum
+import com.sms.moLotus.type.ChatObject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -39,7 +44,7 @@ class MainViewModel : ViewModel() {
     val removeAdmin = MutableLiveData<DismissionAdminMutation.Data>()
     val removeParticipant = MutableLiveData<RemoveParticipantFromGroupIfUAreAdminMutation.Data>()
     val uploadAttachments = MutableLiveData<UploadAttachmentsMutation.Data>()
-    val sendMessage = MutableLiveData<MessageList>()
+    val sendMessage = MutableLiveData<MessagesList>()
     private var client: ApolloClient? = null
     val registerUser = MutableLiveData<RegisterUserMutation.Data>()
     val createThread = MutableLiveData<CreateThreadMutation.Data>()
@@ -281,15 +286,14 @@ class MainViewModel : ViewModel() {
     }
 
     fun forwardMessage(
-        message: String,
         threadId: String,
         senderId: String,
         receiverId: String,
-        url: String,
+        chatList: List<ChatMessage>
     ) {
         client = ApolloClientService.setUpApolloClient("")
         val forwardMessageMutation =
-            ForwardMessageMutation(message, threadId, senderId, receiverId, url)
+            ForwardMessageMutation(getMessageListList(chatList), threadId, senderId, receiverId)
 
         GlobalScope.launch(Dispatchers.Main) {
             try {
@@ -300,7 +304,22 @@ class MainViewModel : ViewModel() {
             }
         }
 
+
     }
+
+
+    fun getMessageListList(chatList: List<ChatMessage>):List<ChatObject>{
+        return chatList.map {
+            ChatObject(
+                message = Optional.Present(it.message),
+                isAttachment = Optional.Present(false),
+                attachmentType = Optional.Present(AttachmentTypeEnum.text),
+                url = Optional.Present(""),
+                attachmentId = Optional.Present(null)
+            )
+        }
+    }
+
 
     fun deleteMessage(threadId: String, userId: String, messageId: List<String>) {
         client = ApolloClientService.setUpApolloClient("")

@@ -45,7 +45,7 @@ interface RetrofitService {
     fun getAllMessages(
         @Path("ID") id: Int,
         @Header("Authorization") token: String
-    ): Call<MessageList>
+    ): Call<MessagesList>
 
     @FormUrlEncoded
     @Headers("Accept: application/json")
@@ -55,7 +55,7 @@ interface RetrofitService {
         @Field("text") text: String,
         @Path("ID") id: Int,
         @Header("Authorization") token: String
-    ): Call<MessageList>
+    ): Call<MessagesList>
 
     companion object {
         var retrofitService: RetrofitService? = null

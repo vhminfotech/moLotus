@@ -213,7 +213,8 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
             }
         }
 
-
+        setChatListObserver()
+        getChatList()
         txtChats?.setOnClickListener {
             recyclerView?.visibility = View.GONE
             empty?.visibility = View.GONE
@@ -229,15 +230,6 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
             tabAppears = true
             toolbarVisible?.visibility = View.GONE
             getChatList()
-            if (threadList?.recipientUser?.size == 0) {
-                rvChatRecyclerView?.visibility = View.GONE
-                txtNoChat?.visibility = View.VISIBLE
-            } else {
-                rvChatRecyclerView?.visibility = View.VISIBLE
-                txtNoChat?.visibility = View.GONE
-                initRecyclerView(threadList)
-            }
-
         }
 
         imgClose.setOnClickListener {
@@ -332,10 +324,24 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
             }
     }
 
-    private fun getChatList() {
+    private fun displayChat(){
+        rvChatRecyclerView?.visibility = View.VISIBLE
+        txtNoChat?.visibility = View.GONE
+        initRecyclerView(threadList)
+    }
+
+    private fun setChatListObserver(){
         mainViewModel.chatList.observe(this) {
             Log.e("=====", "response:: $it")
             threadList = it.getThreadList
+            if(chatClicked){
+                if (threadList?.recipientUser?.size == 0) {
+                    rvChatRecyclerView?.visibility = View.GONE
+                    txtNoChat?.visibility = View.VISIBLE
+                } else {
+                    displayChat()
+                }
+            }
         }
         mainViewModel.errorMessage.observe(this) {
             Log.e("=====", "errorMessage:: $it")
@@ -363,6 +369,8 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
                 // requireActivity().toast(it.toString(), Toast.LENGTH_SHORT)
             }
         }
+    }
+    private fun getChatList() {
         mainViewModel.getChatList(
             PreferenceHelper.getStringPreference(
                 this,
@@ -603,6 +611,7 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
         }, 2000)*/
 
         //}
+        getChatList()
     }
 
     override fun onPause() {
@@ -732,6 +741,7 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
         chatClicked = true
         toolbarVisible?.visibility = View.GONE
         LogHelper.e("onChatClick", "===== item : $item")
+        threadIdList.clear()
         threadIdList.add(item?.threadId.toString())
 
         LogHelper.e("MESSAGEIDLIST", "==== $threadIdList")
@@ -741,8 +751,10 @@ class MainActivity : QkThemedActivity(), MainView, OnItemClickListener, OnChatCl
 
     private fun deleteThread(threadIdList: ArrayList<String>) {
         mainViewModel.deleteThread.observe(this) {
+            chatViewModel.clearThreadId(threadIdList)
             runOnUiThread {
                 toast("Chat Deleted!")
+                getChatList()
                 /*getChatList()
                 Handler(Looper.getMainLooper()).postDelayed({
                     if (threadList?.recipientUser?.size == 0) {

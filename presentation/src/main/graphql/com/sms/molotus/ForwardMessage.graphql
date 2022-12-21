@@ -1,20 +1,21 @@
 mutation ForwardMessage(
-    $message: String!,
+    $chat: [ChatObject]!,
     $threadId: ID!,
     $senderId:ID!,
     $receiverId:ID!,
-    $url: String!){
+    ){
     forwardMessage(messageInput:{
         threadId:$threadId
         senderId:$senderId
-        message:$message
-        url:$url
+        chat:$chat
         receiverId:$receiverId
     }){
-        isForwarded
-        message
-        threadId
-        senderId
-        _id
+        messages{
+            isForwarded
+            message
+            threadId
+            senderId
+            _id
+        }
     }
 }

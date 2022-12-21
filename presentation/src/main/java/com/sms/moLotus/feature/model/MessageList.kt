@@ -1,6 +1,6 @@
 package com.sms.moLotus.feature.model
 
-data class MessageList(
+data class MessagesList(
     val id: Int,
     val last_sender_id: Int,
     val message: String,

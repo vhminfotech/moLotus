@@ -26,6 +26,9 @@ interface ChatDao {
     @Query("SELECT * FROM UsersTable WHERE myUserId=:id")
     fun getAllUsers(id: String): LiveData<List<Users>>
 
+    @Query("UPDATE UsersTable SET threadId=:id WHERE myUserId=:myId AND userId=:userId")
+    fun updateThreadId(id: String, myId: String, userId: String)
+
     @Query("DELETE FROM ChatMessageTable")
     fun deleteTable()
 
@@ -37,4 +40,7 @@ interface ChatDao {
 
     @Query("DELETE FROM ChatMessageTable WHERE threadId in (:threadId)")
     fun deleteAllMessages(threadId: List<String>)
+
+    @Query("UPDATE UsersTable SET threadId='' WHERE threadId IN (:idList)")
+    fun clearThreadId(idList: List<String>)
 }

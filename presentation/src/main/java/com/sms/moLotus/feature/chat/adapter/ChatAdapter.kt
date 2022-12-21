@@ -31,6 +31,11 @@ class ChatAdapter(
     companion object {
         const val TYPE_MY_MESSAGE = 0
         const val TYPE_FRIEND_MESSAGE = 1
+        var selectedCount = 0
+
+        fun resetSelectedCount(){
+            selectedCount = 0
+        }
     }
 
     var getContext = context
@@ -158,22 +163,29 @@ class ChatAdapter(
             }
 
             constraintMyMsg?.setOnClickListener {
-                listener.onMessageDeselect()
-                llOnClick.setBackgroundColor(
-                    context.resources.getColor(
-                        android.R.color.transparent,
-                        context.theme
-                    )
-                )
-            }
-            constraintMyMsg?.setOnLongClickListener {
+                if(selectedCount == 0){
+                    return@setOnClickListener
+                }
+                if(data?.selected == true){
+                    selectedCount--
+                    data.selected = false
+                }else{
+                    selectedCount++
+                    data?.selected = true
+                }
                 listener.onMessageClick(data, llOnClick, adapterPosition)
-                llOnClick.setBackgroundColor(
-                    context.resources.getColor(
-                        R.color.grey_translucent,
-                        context.theme
-                    )
-                )
+                setBgColor(data, context)
+            }
+            setBgColor(data, context)
+            constraintMyMsg?.setOnLongClickListener {
+                if(data?.selected == true){
+                    return@setOnLongClickListener true
+                }else{
+                    selectedCount++
+                    data?.selected = true
+                    listener.onMessageLongClick(data, llOnClick, adapterPosition)
+                }
+                setBgColor(data, context)
                 return@setOnLongClickListener true
             }
 
@@ -188,7 +200,27 @@ class ChatAdapter(
                 imgSeen?.setImageResource(R.drawable.double_tick)
             }
         }
+
+        private fun setBgColor(data: ChatMessage?, context: Context){
+            if(data?.selected == true){
+                llOnClick.setBackgroundColor(
+                    context.resources.getColor(
+                        R.color.grey_translucent,
+                        context.theme
+                    )
+                )
+            }else{
+                llOnClick.setBackgroundColor(
+                    context.resources.getColor(
+                        android.R.color.transparent,
+                        context.theme
+                    )
+                )
+            }
+
+        }
     }
+
 
     class FriendMessageViewHolder(val view: View) :
         MessageViewHolder<ChatMessage>(view) {
@@ -258,13 +290,7 @@ class ChatAdapter(
                 txtName.visibility = View.GONE
             }
             constraintFriendMsg?.setOnClickListener {
-                listener.onMessageDeselect()
-                llOnClick.setBackgroundColor(
-                    context.resources.getColor(
-                        android.R.color.transparent,
-                        context.theme
-                    )
-                )
+                listener.onMessageClick(data, llOnClick, adapterPosition)
             }
             llDoc.setOnClickListener {
                 listener.onDocumentClick(data?.url.toString())
@@ -277,17 +303,52 @@ class ChatAdapter(
             imgThumbnail?.setOnClickListener {
                 listener.onAttachmentClick(data?.url.toString())
             }
-            constraintFriendMsg?.setOnLongClickListener {
+            constraintFriendMsg?.setOnClickListener {
+                if(selectedCount == 0){
+                    return@setOnClickListener
+                }
+                if(data?.selected == true){
+                    selectedCount--
+                    data.selected = false
+                }else{
+                    selectedCount++
+                    data?.selected = true
+                }
                 listener.onMessageClick(data, llOnClick, adapterPosition)
+                setBgColor(data, context)
+            }
+            setBgColor(data, context)
+            constraintFriendMsg?.setOnLongClickListener {
+                if(data?.selected == true){
+                    return@setOnLongClickListener true
+                }else{
+                    selectedCount++
+                    data?.selected = true
+                    listener.onMessageLongClick(data, llOnClick, adapterPosition)
+                }
+                setBgColor(data, context)
+                return@setOnLongClickListener true
+            }
+        }
+        private fun setBgColor(data: ChatMessage?, context: Context){
+            if(data?.selected == true){
                 llOnClick.setBackgroundColor(
                     context.resources.getColor(
                         R.color.grey_translucent,
                         context.theme
                     )
                 )
-                return@setOnLongClickListener true
+            }else{
+                llOnClick.setBackgroundColor(
+                    context.resources.getColor(
+                        android.R.color.transparent,
+                        context.theme
+                    )
+                )
             }
+
         }
+
     }
 
     fun onDelivered(delivered: Boolean) {

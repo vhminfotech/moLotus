@@ -27,7 +27,6 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.NotificationCompat
 import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -93,12 +92,16 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
     var threadId: String? = ""
     private var getMessageList: MutableList<GetMessageListQuery.Message> = mutableListOf()
     private var getGroupMessageList: MutableList<GetGroupMessageListQuery.Message> = mutableListOf()
-    private val messageIdList: ArrayList<String> = ArrayList()
-    var linearLayout: LinearLayout? = null
-    private var pos = 0
+    //private val messageIdList: ArrayList<String> = ArrayList()
+    private val selectedMessageList: ArrayList<ChatMessage> = ArrayList()
+    //var linearLayout: LinearLayout? = null
+    //private var pos = 0
     private var chatMessageList: ArrayList<ChatMessage>? = ArrayList()
     var usersList: ArrayList<Users> = ArrayList()
+    var lastMessageText = ""
+    var observerCalled = false
 
+    var newThreadReceiverId = ""
     //var isRead : Boolean = false
 
     companion object {
@@ -153,17 +156,19 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
         // mSocket?.off("typing")?.on("typing", typing)
         mSocket?.connect()
 
-        currentUserId = intent?.getStringExtra("currentUserId")
-        //receiverUserId = intent?.getStringExtra("receiverUserId").toString()
-        recipientsIds = intent?.getStringArrayListExtra("receiverUserId")
-        threadId = intent?.getStringExtra("threadId")
-        flag = intent?.getBooleanExtra("flag", false)
-        isChatContact = intent?.getBooleanExtra("isChatContact", false)
-        isGroup = intent.getBooleanExtra("isGroup", false)
-        isMute = intent.getBooleanExtra("isMute", false)
-        isNotParticipant = intent.getBooleanExtra("isNotParticipant", false)
-        userName = intent.getStringExtra("userName")
-        groupName = intent.getStringExtra("groupName")
+        if(currentUserId.isNullOrBlank()){
+            currentUserId = intent?.getStringExtra("currentUserId")
+            //receiverUserId = intent?.getStringExtra("receiverUserId").toString()
+            recipientsIds = intent?.getStringArrayListExtra("receiverUserId")
+            threadId = intent?.getStringExtra("threadId")
+            flag = intent?.getBooleanExtra("flag", false)
+            isChatContact = intent?.getBooleanExtra("isChatContact", false)
+            isGroup = intent.getBooleanExtra("isGroup", false)
+            isMute = intent.getBooleanExtra("isMute", false)
+            isNotParticipant = intent.getBooleanExtra("isNotParticipant", false)
+            userName = intent.getStringExtra("userName")
+            groupName = intent.getStringExtra("groupName")
+        }
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
         //LogHelper.e("NewGroupActivity", "userName:: $userName")
 
@@ -200,9 +205,14 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
             getGroupMessageList(threadId.toString())
         }
 
-        observeUsers()
-
-        setListeners()
+        if(!observerCalled){
+            observerCalled = true
+            observeUsers()
+            createMessageObserve()
+            observeMessages(threadId.toString())
+            txtMessage.text.toString()
+            setListeners()
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -297,17 +307,18 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
                             groupName.toString(), ""
                         )
                     } else {
+                        lastMessageText = txtMessage.text.toString()
                         if (isGroup) {
                             createMessage(
                                 threadId.toString(),
-                                txtMessage.text.toString(),
+                                lastMessageText,
                                 "",
                                 ""
                             )
                         } else {
                             createMessage(
                                 threadId.toString(),
-                                txtMessage.text.toString(),
+                                lastMessageText,
                                 recipientsIds?.get(0).toString(),
                                 ""
                             )
@@ -555,6 +566,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
         val intent = Intent()
         intent.type = "application/*"
         intent.action = Intent.ACTION_GET_CONTENT
+        intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true)
         startActivityForResult(
             Intent.createChooser(intent, "Complete action using"),
             100
@@ -707,22 +719,93 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
         rvMessageList.adapter = chatAdapter
     }
 
-    private fun createThread(message: String, isGroup: Boolean, groupName: String, url: String) {
+    var createThreadMessage = ""
+    var createThreadUrl = ""
+    var createThreadIsForward = false
+    var createThreadIsGroup = false
+    var createThreadGroupName = ""
+    var createThreadReceiverIdList: ArrayList<String>? = recipientsIds
+    var createThreadObserverCalled = false
+    private fun createThread(message: String, isGroup: Boolean, groupName: String, url: String, receiverIdList: ArrayList<String>? = recipientsIds, isFromForward: Boolean = false) {
         mSocket?.emit(
             "sendMessage", currentUserId,
-            recipientsIds,
+            receiverIdList,
             message, myUserName, url
         )
 
 
+        createThreadIsForward = isFromForward
+        createThreadMessage = message
+        createThreadUrl = url
+        createThreadIsGroup = isGroup
+        createThreadGroupName = groupName
+        createThreadReceiverIdList = receiverIdList
 
+        if(!createThreadObserverCalled){
+            observeCreateThread()
+            createThreadObserverCalled = true
+        }
 
+        viewModel.createThread(
+            message, currentUserId.toString(),
+            receiverIdList, PreferenceHelper.getStringPreference(this, Constants.TOKEN).toString(),
+            isGroup, groupName, url
+        )
+    }
+
+    private fun observeCreateThread(){
         viewModel.createThread.observe(this) {
             Log.e("==================", "createThread:: ${it.createThread}")
 
             txtMessage.text = null
             if (!isGroup) {
-                getMessageList(it.createThread?.id.toString())
+                chatViewModel.updateThreadId(it.createThread?.id.toString(), myUserId.toString(), createThreadReceiverIdList?.get(0).toString())
+                if(createThreadIsForward){
+                    if(selectedMessageList.size>1){
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            forwardMessage(
+                                threadId = it.createThread?.id.toString(),
+                                messageList = selectedMessageList.subList(1, selectedMessageList.size),
+                                receiverId = selectedUsersList[0]?.userId.toString(),
+                                name = selectedUsersList[0]?.name.toString(),
+                                isAlreadyEmiited = false
+                            )
+                        }, 750)
+                    }else{
+                        val list = ArrayList<String>()
+                        list.add(selectedUsersList[0]?.userId.toString())
+                        val intent = Intent(this, ChatActivity::class.java)
+                            .putExtra(
+                                "currentUserId",
+                                PreferenceHelper.getStringPreference(this, Constants.USERID)
+                            )
+                            .putExtra("threadId", it.createThread?.id.toString())
+                            .putExtra("userName", selectedUsersList[0]?.name.toString())
+                            .putStringArrayListExtra(
+                                "receiverUserId",
+                                list as ArrayList<String>?
+                            )
+                        startActivity(intent)
+                        overridePendingTransition(0, 0)
+                        finish()
+                    }
+
+                }else{
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        observeMessages(it.createThread?.id.toString())
+                        getMessageList(threadId.toString())
+/*
+                        createMessage(
+                            it.createThread?.id.toString(),
+                            createThreadMessage,
+                            createThreadReceiverIdList?.get(0).toString(),
+                            createThreadUrl,
+                            true
+                        )
+*/
+                    }, 750)
+                }
+
             } else {
                 getGroupMessageList(it.createThread?.id.toString())
             }
@@ -756,27 +839,22 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
                 toast(it.toString(), Toast.LENGTH_SHORT)
             }
         }
-
-        viewModel.createThread(
-            message, currentUserId.toString(),
-            recipientsIds, PreferenceHelper.getStringPreference(this, Constants.TOKEN).toString(),
-            isGroup, groupName, url
-        )
     }
 
-    private fun createMessage(threadId: String, message: String, receiverId: String, url: String) {
-        mSocket?.emit(
-            "sendMessage", currentUserId,
-            recipientsIds,
-            message, myUserName, url
-        )
-
-
-
+    var createMessageObserveCalled = false
+    private fun createMessageObserve(){
+        if(createMessageObserveCalled){
+            return
+        }
+        createMessageObserveCalled = true
         viewModel.createMessage.observe(this) {
 
             txtMessage.text = null
-            addMessage(currentUserId.toString(), message,it.createMessage?.dateSend.toString(),"",it.createMessage?.url.toString(),false)
+            if(chatMessageList.isNullOrEmpty()){
+                getMessageList(threadId.toString())
+            }else{
+                addMessage(currentUserId.toString(), lastMessageText,it.createMessage?.dateSend.toString(),"",it.createMessage?.url.toString(),false)
+            }
             /*if (!isGroup) {
                 getMessageList(it.createMessage?._id.toString())
             } else {
@@ -808,6 +886,18 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
             }
         }
 
+
+    }
+
+    private fun createMessage(threadId: String, message: String, receiverId: String, url: String, isAlreadyEmiited: Boolean = false) {
+        if(!isAlreadyEmiited){
+            mSocket?.emit(
+                "sendMessage", currentUserId,
+                recipientsIds,
+                message, myUserName, url
+            )
+        }
+
         viewModel.createMessage(
             message,
             threadId,
@@ -817,7 +907,15 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
         )
     }
 
+    var observeMessageCalled = false
     private fun observeMessages(threadId: String) {
+        if(threadId.isBlank() || threadId.toString().equals("null")){
+            return
+        }
+        if(observeMessageCalled){
+            return
+        }
+        observeMessageCalled = true
         lifecycleScope.launch {
             chatDatabase.getAllChat(
                 threadId
@@ -879,8 +977,8 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
                 }
                 txtMessage.text = null
                 Handler(Looper.getMainLooper()).postDelayed({
-                    observeMessages(threadId)
-                }, 500)
+                    //observeMessages(threadId)
+                }, 1500)
             }
         }
         viewModel.errorMessage.observe(this) {
@@ -941,7 +1039,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
                 }
                 txtMessage.text = null
                 Handler(Looper.getMainLooper()).postDelayed({
-                    observeMessages(threadId)
+                    //observeMessages(threadId)
                 }, 500)
             }
         }
@@ -974,14 +1072,39 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
         )
     }
 
+    override fun onMessageLongClick(item: ChatMessage?, llOnClick: LinearLayout, adapterPosition: Int) {
+        selectMessage(item)
+    }
+
     override fun onMessageClick(item: ChatMessage?, llOnClick: LinearLayout, adapterPosition: Int) {
+        if(selectedMessageList.isEmpty()){
+            return
+        }
+        if(selectedMessageList.contains(item)){
+            deselectMessage(item)
+        }else{
+            selectMessage(item)
+        }
+    }
+
+    private fun selectMessage(item: ChatMessage?){
         attachmentUrl = item?.url
         shareText = item?.message
-        messageIdList.add(item?.id.toString())
+        //messageIdList.add(item?.id.toString())
+        item?.let { selectedMessageList.add(it) }
         toolbar?.visibility = View.VISIBLE
-        linearLayout = llOnClick
-        pos = adapterPosition
     }
+
+    private fun deselectMessage(item: ChatMessage?){
+        //messageIdList.remove(item?.id.toString())
+        selectedMessageList.remove(item)
+        toolbar?.visibility = View.VISIBLE
+
+        if(selectedMessageList.isEmpty()){
+            toolbar?.visibility = View.GONE
+        }
+    }
+
 
     override fun onAttachmentClick(item: String?) {
         val intent = Intent(this, ViewPagerAdapterActivity::class.java)
@@ -993,7 +1116,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
     override fun onDocumentClick(item: String?) {
         if (item.toString().endsWith(".vcf")) {
             runOnUiThread {
-                customProgressDialog?.show(this, "")
+                //customProgressDialog?.show(this, "")
             }
             val vcfFile = Utils.downloadURL(URL(item))
             Handler(Looper.getMainLooper()).postDelayed({
@@ -1005,10 +1128,6 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
             startActivity(browserIntent)
         }
 
-    }
-
-    override fun onMessageDeselect() {
-        toolbar?.visibility = View.GONE
     }
 
     private fun readVcf(vcfFile: String?) {
@@ -1048,32 +1167,50 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
         return super.onCreateOptionsMenu(menu)
     }
 
+    fun deselectAllInAdapter(){
+        if(chatAdapter != null){
+            for(msg in chatAdapter?.list!!){
+                msg.selected = false
+            }
+            chatAdapter!!.notifyDataSetChanged()
+        }
+        ChatAdapter.resetSelectedCount()
+        //messageIdList.clear()
+        selectedMessageList.clear()
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> {
                 toolbar?.visibility = View.GONE
-                linearLayout?.setBackgroundColor(
+/*                linearLayout?.setBackgroundColor(
                     resources.getColor(
                         android.R.color.transparent,
                         theme
                     )
                 )
+
+ */
+                deselectAllInAdapter()
                 return true
             }
 
             R.id.delete -> {
                 toolbar?.visibility = View.GONE
-                linearLayout?.let { showDeleteDialog(it, messageIdList, pos) }
+                showDeleteDialog(selectedMessageList)
             }
 
             R.id.share -> {
                 toolbar?.visibility = View.GONE
-                linearLayout?.setBackgroundColor(
+/*                linearLayout?.setBackgroundColor(
                     resources.getColor(
                         android.R.color.transparent,
                         theme
                     )
                 )
+                */
+
+                deselectAllInAdapter()
                 val file = Utils.downloadURL(URL(attachmentUrl))
 
                 Handler(Looper.getMainLooper()).postDelayed({
@@ -1086,6 +1223,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
             }
 
             R.id.forward -> {
+                selectedUsersList = ArrayList()
                 showContactBottomSheet()
             }
 
@@ -1103,9 +1241,8 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
 
     @SuppressLint("SetTextI18n")
     private fun showDeleteDialog(
-        llOnClick: LinearLayout,
-        messageIdList: ArrayList<String>,
-        adapterPosition: Int,
+        messageIdList: ArrayList<ChatMessage>,
+        adapterPosition: Int = 0,
     ) {
         val dialog = Dialog(this)
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -1113,16 +1250,56 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
         dialog.setContentView(R.layout.dialog_delete_message)
         dialog.txtDesc?.text = "Do you want to delete the message?"
         dialog.btnCancel.setOnClickListener {
-            llOnClick.setBackgroundColor(resources.getColor(android.R.color.transparent, theme))
+//            llOnClick.setBackgroundColor(resources.getColor(android.R.color.transparent, theme))
             dialog.dismiss()
+            deselectAllInAdapter()
         }
         dialog.btnDelete.setOnClickListener {
-            llOnClick.setBackgroundColor(resources.getColor(android.R.color.transparent, theme))
-            chatAdapter?.deleteMessage(adapterPosition)
-            deleteMessage(messageIdList)
+
+            if(messageIdList.size == chatAdapter?.list?.size){
+                deleteThread()
+            }else{
+                val tempList = arrayListOf<String>()
+                messageIdList.forEach{
+                    tempList.add(it.id)
+                }
+                deleteMessage(tempList)
+            }
             dialog.dismiss()
+            deselectAllInAdapter()
         }
         dialog.show()
+    }
+
+    private fun deleteThread(threadIdList: ArrayList<String> = arrayListOf(threadId.toString())) {
+        chatViewModel.deleteThread.observe(this) {
+            chatViewModel.clearThreadId(threadIdList)
+            runOnUiThread {
+                finish()
+            }
+        }
+        chatViewModel.errorMessage.observe(this) {
+            Log.e("=====", "errorMessage:: $it")
+            val conMgr =
+                getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val netInfo = conMgr.activeNetworkInfo
+            if (netInfo == null) {
+                //No internet
+                Snackbar.make(
+                    findViewById(R.id.relMain),
+                    "No Internet Connection. Please turn on your internet!",
+                    Snackbar.LENGTH_INDEFINITE
+                )
+                    .setAction("Retry") {
+
+                    }
+                    .setActionTextColor(resources.getColor(android.R.color.holo_red_light))
+                    .show()
+            } else {
+                toast(it.toString(), Toast.LENGTH_SHORT)
+            }
+        }
+        chatViewModel.deleteThread(currentUserId.toString(), threadIdList)
     }
 
     private fun deleteMessage(messageIdList: ArrayList<String>) {
@@ -1251,7 +1428,7 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
             }
             Log.e("CHATACTIVITY", "data: getMessage read: $read")
 
-            addMessage(senderId.toString(), text, "", "", url, read)
+            //addMessage(senderId.toString(), text, "", "", url, read)
 
         })
     }
@@ -1286,9 +1463,29 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
                 read
             )
         }
-        chatMessageModel?.let { chatMessageList?.add(it) }
-        chatMessageList?.let { chatAdapter?.updateList(it as MutableList<ChatMessage>) }
-        rvMessageList?.scrollToPosition(chatMessageList?.size!!.toInt() - 1)
+        var msgFound = false
+/*
+        if(chatMessageModel != null && chatMessageList != null){
+            chatMessageList!!.forEach{
+                if(it.id == chatMessageModel.id){
+                    it.userId = chatMessageModel.userId
+                    it.senderId = chatMessageModel.senderId
+                    it.message = chatMessageModel.message
+                    it.url = chatMessageModel.url
+                    it.userName = chatMessageModel.userName
+                    it.read = it.read || chatMessageModel.read
+                    it.threadId = chatMessageModel.threadId
+                    it.dateSent = chatMessageModel.dateSent
+                    msgFound = true
+                }
+            }
+        }
+*/
+        if(!msgFound){
+            chatMessageModel?.let { chatMessageList?.add(it) }
+            chatMessageList?.let { chatAdapter?.updateList(it as MutableList<ChatMessage>) }
+            rvMessageList?.scrollToPosition(chatMessageList?.size!!.toInt() - 1)
+        }
     }
 
 
@@ -1345,14 +1542,31 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
 
         view.txtNext.setOnClickListener {
             if (selectedUsersList.size == 1) {
-                forwardMessage(
-                    selectedUsersList[0]?.threadId.toString(),
-                    shareText.toString(),
-                    selectedUsersList[0]?.userId.toString(),
-                    attachmentUrl.toString(),
-                    selectedUsersList[0]?.name.toString()
-                )
-                dialog.dismiss()
+                if ((selectedUsersList[0]?.threadId.toString().isEmpty() || selectedUsersList[0]?.threadId.toString() == "null")) {
+                    createThread(
+                        selectedMessageList[0].message, false,
+                        groupName.toString(), selectedMessageList[0].url,
+                        arrayListOf(selectedUsersList[0]!!.userId),
+                        true
+                    )
+/*
+                    createThread(
+                        shareText.toString(), false,
+                        groupName.toString(), "",
+                        arrayListOf(selectedUsersList[0]!!.userId),
+                        true
+                    )
+*/
+                    dialog.dismiss()
+                } else {
+                    forwardMessage(
+                        selectedUsersList[0]?.threadId.toString(),
+                        selectedMessageList,
+                        selectedUsersList[0]?.userId.toString(),
+                        selectedUsersList[0]?.name.toString()
+                    )
+                    dialog.dismiss()
+                }
             } else if (selectedUsersList.size > 1) {
                 toast("Cannot select more than 1 participant!")
             } else {
@@ -1366,30 +1580,32 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
 
     private fun forwardMessage(
         threadId: String,
-        message: String,
+        messageList: List<ChatMessage>,
         receiverId: String,
-        url: String,
         name: String,
+        isAlreadyEmiited: Boolean = false
     ) {
         val list = ArrayList<String>()
         list.add(receiverId)
-
-        mSocket?.emit(
-            "sendMessage", currentUserId,
-            list,
-            message, myUserName, url
-        )
-
-        addMessage(currentUserId.toString(), message, "", "", url, false)
+        if(!isAlreadyEmiited){
+            messageList.forEach{
+                mSocket?.emit(
+                    "sendMessage", currentUserId,
+                    list,
+                    it.message, myUserName, it.url
+                )
+            }
+        }
+        //addMessage(currentUserId.toString(), message, "", "", url, false)
 
         viewModel.forwardMessage.observe(this) {
-            LogHelper.e("CHATACTIVITY", "==== ${it?.forwardMessage?.threadId}")
+            LogHelper.e("CHATACTIVITY", "==== ${it?.forwardMessage?.messages?.get(0)?.threadId}")
             val intent = Intent(this, ChatActivity::class.java)
                 .putExtra(
                     "currentUserId",
                     PreferenceHelper.getStringPreference(this, Constants.USERID)
                 )
-                .putExtra("threadId", it?.forwardMessage?.threadId)
+                .putExtra("threadId", it?.forwardMessage?.messages?.get(0)?.threadId)
                 .putExtra("userName", name)
                 .putStringArrayListExtra(
                     "receiverUserId",
@@ -1420,11 +1636,10 @@ class ChatActivity : AppCompatActivity(), OnMessageClickListener, OnChatContactC
         }
 
         viewModel.forwardMessage(
-            message,
             threadId,
             PreferenceHelper.getStringPreference(this, Constants.USERID).toString(),
             receiverId,
-            url,
+            messageList,
         )
     }
 

@@ -2,6 +2,7 @@ package com.sms.moLotus.feature.chat.model
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Ignore
 import androidx.room.PrimaryKey
 
 /*data class ChatMessage(
@@ -15,25 +16,29 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "ChatMessageTable")
 data class ChatMessage(
     @ColumnInfo(name = "userId")
-    val userId: String,
+    var userId: String,
     @PrimaryKey
     @ColumnInfo(name = "id")
     val id: String,
     @ColumnInfo(name = "senderId")
-    val senderId: String,
+    var senderId: String,
     @ColumnInfo(name = "threadId")
-    val threadId: String,
+    var threadId: String,
     @ColumnInfo(name = "message")
-    val message: String,
+    var message: String,
     @ColumnInfo(name = "dateSent")
-    val dateSent: String,
+    var dateSent: String,
     @ColumnInfo(name = "userName")
-    val userName: String,
+    var userName: String,
     @ColumnInfo(name = "url")
-    val url: String,
+    var url: String,
     @ColumnInfo(name = "read")
-    val read: Boolean,
-)
+    var read: Boolean,
+){
+    @Transient
+    @Ignore
+    var selected = false
+}
 /*@Entity(tableName = "MessageTable")
 data class ChatMessage(
     val senderId: String,
